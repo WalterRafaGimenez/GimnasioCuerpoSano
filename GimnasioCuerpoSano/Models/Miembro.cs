@@ -8,6 +8,8 @@ namespace GimnasioCuerpoSano.Models
         // -----------------------------
         // Campos obligatorios inicializados
         // -----------------------------
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "El nombre es obligatorio")]
         [MaxLength(10)]
         public string Nombre { get; set; } = string.Empty;

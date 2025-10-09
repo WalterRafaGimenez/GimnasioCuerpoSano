@@ -1,0 +1,15 @@
+﻿@model GimnasioCuerpoSano.Models.Miembro
+
+<h2>Detalles del Miembro</h2>
+
+<div>
+    <p><strong>Nombre:</strong> @Model.Nombre</p>
+    <p><strong>Apellido:</strong> @Model.Apellido</p>
+    <p><strong>Dirección:</strong> @Model.Direccion</p>
+    <p><strong>Teléfono:</strong> @Model.Telefono</p>
+    <p><strong>Email:</strong> @Model.Mail</p>
+    <p><strong>Membresía:</strong> @Model.TipoMembresia</p>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

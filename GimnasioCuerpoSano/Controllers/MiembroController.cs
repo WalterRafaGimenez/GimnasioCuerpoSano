@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GimnasioCuerpoSano.Models;
 using GimnasioCuerpoSano.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GimnasioCuerpoSano.Controllers
+namespace GimnasioDesdeCero.Controllers
 {
     public class MiembrosController : Controller
     {
-       
-
         // GET: Miembros/Create
         public IActionResult Create()
         {
@@ -16,15 +15,29 @@ namespace GimnasioCuerpoSano.Controllers
             };
             return View(miembro);
         }
+
         // GET: Miembros
         public IActionResult Index()
         {
-            // Por ahora, vamos a usar una lista estática para pruebas
-            // Más adelante reemplazamos por base de datos
             var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            // Guardamos nuevamente la lista para mantenerla viva después del redirect
+            TempData.Keep("Miembros");
             return View(miembros);
         }
 
+        // GET: Miembros/Details/5
+        public IActionResult Details(int id)
+        {
+            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            var miembro = miembros[id];
+            TempData.Keep("Miembros");
+            return View(miembro);
+        }
+
+        // GET: Miembros/Edit/5
         public IActionResult Edit(int id)
         {
             var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
@@ -32,9 +45,9 @@ namespace GimnasioCuerpoSano.Controllers
                 return NotFound();
 
             var miembro = miembros[id];
+            TempData.Keep("Miembros");
             return View(miembro);
         }
-
 
         // POST: Miembros/Create
         [HttpPost]
@@ -43,7 +56,6 @@ namespace GimnasioCuerpoSano.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Valores base según tipo de membresía
                 decimal valorBase = miembro.TipoMembresia switch
                 {
                     "Mensual" => 35000,
@@ -52,20 +64,25 @@ namespace GimnasioCuerpoSano.Controllers
                     _ => 0
                 };
 
-                // Aplicar descuento del 15% si corresponde
                 if (miembro.DescuentoEspecial)
                     valorBase *= 0.85m;
 
                 miembro.ValorMembresia = valorBase;
                 miembro.FechaAlta = DateTime.Now;
 
+                var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+                miembros.Add(miembro);
+
+                TempData["Miembros"] = miembros;
                 TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
 
-                return RedirectToAction("Create");
+                return RedirectToAction("Index");
             }
+
             return View(miembro);
         }
 
+        // POST: Miembros/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Miembro miembro)
@@ -77,14 +94,12 @@ namespace GimnasioCuerpoSano.Controllers
             if (id < 0 || id >= miembros.Count)
                 return NotFound();
 
-            // Actualizamos datos
             miembros[id] = miembro;
             TempData["Miembros"] = miembros;
-
             TempData["Mensaje"] = "Miembro modificado correctamente.";
+
             return RedirectToAction("Index");
         }
-
-
     }
 }
+
