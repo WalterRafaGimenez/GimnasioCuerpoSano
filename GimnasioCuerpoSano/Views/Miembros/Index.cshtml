@@ -1,0 +1,38 @@
+﻿@model List<GimnasioCuerpoSano.Models.Miembro>
+
+<h2>Lista de Miembros</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+            <th>Mail</th>
+            <th>Membresía</th>
+            <th>Descuento</th>
+            <th>Valor</th>
+            <th>Fecha Alta</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.Nombre</td>
+                <td>@m.Apellido</td>
+                <td>@m.Telefono</td>
+                <td>@m.Mail</td>
+                <td>@m.TipoMembresia</td>
+                <td>@(m.DescuentoEspecial ? "Sí" : "No")</td>
+                <td>@m.ValorMembresia</td>
+                <td>@m.FechaAlta</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@Model.IndexOf(m)">Editar</a> |
+                    <a asp-action="Delete" asp-route-id="@Model.IndexOf(m)">Borrar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -5,7 +5,7 @@ namespace GimnasioCuerpoSano.Controllers
 {
     public class MiembrosController : Controller
     {
-        // Aquí pondremos nuestras acciones
+       
 
         // GET: Miembros/Create
         public IActionResult Create()
@@ -16,6 +16,25 @@ namespace GimnasioCuerpoSano.Controllers
             };
             return View(miembro);
         }
+        // GET: Miembros
+        public IActionResult Index()
+        {
+            // Por ahora, vamos a usar una lista estática para pruebas
+            // Más adelante reemplazamos por base de datos
+            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            return View(miembros);
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            var miembro = miembros[id];
+            return View(miembro);
+        }
+
 
         // POST: Miembros/Create
         [HttpPost]
@@ -45,6 +64,25 @@ namespace GimnasioCuerpoSano.Controllers
                 return RedirectToAction("Create");
             }
             return View(miembro);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Miembro miembro)
+        {
+            if (!ModelState.IsValid)
+                return View(miembro);
+
+            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            // Actualizamos datos
+            miembros[id] = miembro;
+            TempData["Miembros"] = miembros;
+
+            TempData["Mensaje"] = "Miembro modificado correctamente.";
+            return RedirectToAction("Index");
         }
 
 
