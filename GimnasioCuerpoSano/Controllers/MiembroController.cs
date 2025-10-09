@@ -10,7 +10,11 @@ namespace GimnasioCuerpoSano.Controllers
         // GET: Miembros/Create
         public IActionResult Create()
         {
-            return View();
+            var miembro = new Miembro
+            {
+                FechaAlta = DateTime.Now
+            };
+            return View(miembro);
         }
 
         // POST: Miembros/Create
@@ -20,12 +24,29 @@ namespace GimnasioCuerpoSano.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Aquí, más adelante, guardaríamos el miembro en la base de datos
-                TempData["Mensaje"] = "Miembro dado de alta correctamente";
-                return RedirectToAction("Create"); // o a una vista de éxito
+                // Valores base según tipo de membresía
+                decimal valorBase = miembro.TipoMembresia switch
+                {
+                    "Mensual" => 35000,
+                    "Trimestral" => 90000,
+                    "Anual" => 390000,
+                    _ => 0
+                };
+
+                // Aplicar descuento del 15% si corresponde
+                if (miembro.DescuentoEspecial)
+                    valorBase *= 0.85m;
+
+                miembro.ValorMembresia = valorBase;
+                miembro.FechaAlta = DateTime.Now;
+
+                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
+
+                return RedirectToAction("Create");
             }
-            return View(miembro); // Si hay errores, se vuelve a mostrar el formulario
+            return View(miembro);
         }
+
 
     }
 }

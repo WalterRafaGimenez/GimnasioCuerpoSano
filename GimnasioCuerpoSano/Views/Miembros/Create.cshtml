@@ -39,6 +39,41 @@
         <input asp-for="Mail" class="form-control" />
         <span asp-validation-for="Mail" class="text-danger"></span>
     </div>
+
+    <hr />
+    <h4>Membresía</h4>
+
+    <div class="form-group">
+        <label asp-for="TipoMembresia"></label>
+        <select asp-for="TipoMembresia" class="form-control" id="TipoMembresia">
+            <option value="">-- Seleccione --</option>
+            <option value="Mensual">Mensual</option>
+            <option value="Trimestral">Trimestral</option>
+            <option value="Anual">Anual</option>
+        </select>
+        <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="DescuentoEspecial" class="form-check-input" id="DescuentoEspecial" />
+        <label asp-for="DescuentoEspecial" class="form-check-label"></label>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ValorMembresia"></label>
+        <input asp-for="ValorMembresia" class="form-control" readonly id="ValorMembresia" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="FechaAlta"></label>
+        <input asp-for="FechaAlta" class="form-control" readonly />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Foto"></label>
+        <input asp-for="Foto" class="form-control" placeholder="Opcional" />
+    </div>
+
     <br />
     <button type="submit" class="btn btn-primary">Dar de alta</button>
 </form>
@@ -47,4 +82,29 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        const tipoSelect = document.getElementById("TipoMembresia");
+        const descuentoCheck = document.getElementById("DescuentoEspecial");
+        const valorInput = document.getElementById("ValorMembresia");
+
+        function calcularValor() {
+            let tipo = tipoSelect.value;
+            let descuento = descuentoCheck.checked;
+            let valor = 0;
+
+            switch (tipo) {
+                case "Mensual": valor = 35000; break;
+                case "Trimestral": valor = 90000; break;
+                case "Anual": valor = 350000; break;
+            }
+
+            if (descuento) valor *= 0.85;
+
+            valorInput.value = valor;
+        }
+
+        tipoSelect.addEventListener("change", calcularValor);
+        descuentoCheck.addEventListener("change", calcularValor);
+    </script>
 }

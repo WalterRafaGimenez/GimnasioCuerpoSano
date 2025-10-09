@@ -5,25 +5,48 @@ namespace GimnasioCuerpoSano.Models
 {
     public class Miembro
     {
+        // -----------------------------
+        // Campos obligatorios inicializados
+        // -----------------------------
         [Required(ErrorMessage = "El nombre es obligatorio")]
-        [MaxLength(10, ErrorMessage = "El nombre no puede tener más de 10 caracteres")]
-        public required string Nombre { get; set; }
+        [MaxLength(10)]
+        public string Nombre { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El apellido es obligatorio")]
-        [MaxLength(15, ErrorMessage = "El apellido no puede tener más de 15 caracteres")]
-        public required string Apellido { get; set; }
+        [MaxLength(15)]
+        public string Apellido { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La dirección es obligatoria")]
-        [MaxLength(50, ErrorMessage = "La dirección no puede tener más de 50 caracteres")]
-        public required string Direccion { get; set; }
+        [MaxLength(50)]
+        public string Direccion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El teléfono es obligatorio")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "El teléfono debe tener exactamente 10 números")]
-        public required string Telefono { get; set; }
+        [MaxLength(10)]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Solo se permiten números")]
+        public string Telefono { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El correo es obligatorio")]
-        [EmailAddress(ErrorMessage = "Ingrese un correo válido con @")]
-        public required string Mail { get; set; }
+        [Required(ErrorMessage = "El mail es obligatorio")]
+        [EmailAddress(ErrorMessage = "Debe ser un correo válido")]
+        public string Mail { get; set; } = string.Empty;
+
+        // -----------------------------
+        // Campos de membresía
+        // -----------------------------
+        [Required(ErrorMessage = "Seleccione un tipo de membresía")]
+        public string TipoMembresia { get; set; } = string.Empty; // Mensual, Trimestral, Anual
+
+        [Display(Name = "Es estudiante o jubilado")]
+        public bool DescuentoEspecial { get; set; } // true = 15% de descuento
+
+        [Display(Name = "Valor de membresía")]
+        public decimal ValorMembresia { get; set; } // Valor calculado según tipo y descuento
+
+        [Display(Name = "Fecha y hora de alta")]
+        public DateTime FechaAlta { get; set; } = DateTime.Now;
+
+        [Display(Name = "Foto (opcional)")]
+        public string? Foto { get; set; } = string.Empty; // Opcional, ruta o nombre de archivo, no obligatorio
     }
 }
+
 
