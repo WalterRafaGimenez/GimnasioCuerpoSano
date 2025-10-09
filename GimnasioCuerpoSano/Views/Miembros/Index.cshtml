@@ -2,37 +2,34 @@
 
 <h2>Lista de Miembros</h2>
 
-<table class="table table-bordered table-striped">
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Nombre</th>
             <th>Apellido</th>
-            <th>Teléfono</th>
-            <th>Mail</th>
             <th>Membresía</th>
-            <th>Descuento</th>
-            <th>Valor</th>
-            <th>Fecha Alta</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var m in Model)
+        @for (int i = 0; i < Model.Count; i++)
         {
             <tr>
-                <td>@m.Nombre</td>
-                <td>@m.Apellido</td>
-                <td>@m.Telefono</td>
-                <td>@m.Mail</td>
-                <td>@m.TipoMembresia</td>
-                <td>@(m.DescuentoEspecial ? "Sí" : "No")</td>
-                <td>@m.ValorMembresia</td>
-                <td>@m.FechaAlta</td>
+                <td>@Model[i].Nombre</td>
+                <td>@Model[i].Apellido</td>
+                <td>@Model[i].TipoMembresia</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@Model.IndexOf(m)">Editar</a> |
-                    <a asp-action="Delete" asp-route-id="@Model.IndexOf(m)">Borrar</a>
+                    <a asp-action="Details" asp-route-id="@i" class="btn btn-info btn-sm">Ver</a>
+                    <a asp-action="Edit" asp-route-id="@i" class="btn btn-warning btn-sm">Editar</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<a asp-action="Create" class="btn btn-success">Nuevo Miembro</a>

@@ -1,8 +1,8 @@
-﻿using GimnasioCuerpoSano.Models;
+﻿using GimnasioCuerpoSano;
 using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GimnasioDesdeCero.Controllers
+namespace GimnasioCuerpoSano.Controllers
 {
     public class MiembrosController : Controller
     {
@@ -20,12 +20,11 @@ namespace GimnasioDesdeCero.Controllers
         public IActionResult Index()
         {
             var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
-            // Guardamos nuevamente la lista para mantenerla viva después del redirect
             TempData.Keep("Miembros");
             return View(miembros);
         }
 
-        // GET: Miembros/Details/5
+        // GET: Miembros/Details/{index}
         public IActionResult Details(int id)
         {
             var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
@@ -34,10 +33,11 @@ namespace GimnasioDesdeCero.Controllers
 
             var miembro = miembros[id];
             TempData.Keep("Miembros");
+            ViewData["Index"] = id; // para el botón de Edit
             return View(miembro);
         }
 
-        // GET: Miembros/Edit/5
+        // GET: Miembros/Edit/{index}
         public IActionResult Edit(int id)
         {
             var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
@@ -46,6 +46,7 @@ namespace GimnasioDesdeCero.Controllers
 
             var miembro = miembros[id];
             TempData.Keep("Miembros");
+            ViewData["Index"] = id;
             return View(miembro);
         }
 
@@ -63,7 +64,6 @@ namespace GimnasioDesdeCero.Controllers
                     "Anual" => 390000,
                     _ => 0
                 };
-
                 if (miembro.DescuentoEspecial)
                     valorBase *= 0.85m;
 
@@ -72,17 +72,15 @@ namespace GimnasioDesdeCero.Controllers
 
                 var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
                 miembros.Add(miembro);
-
                 TempData["Miembros"] = miembros;
                 TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
 
                 return RedirectToAction("Index");
             }
-
             return View(miembro);
         }
 
-        // POST: Miembros/Edit/5
+        // POST: Miembros/Edit/{index}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Miembro miembro)
