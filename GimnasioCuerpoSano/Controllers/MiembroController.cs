@@ -99,6 +99,18 @@ namespace GimnasioCuerpoSano.Controllers
             return View(miembro);
         }
 
+        // GET: Miembros/Delete/{id}
+        public IActionResult Delete(int id)
+        {
+            var miembros = ObtenerMiembros();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            var miembro = miembros[id];
+            ViewData["Index"] = id;
+            return View(miembro);
+        }
+
         // POST: Miembros/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -117,5 +129,23 @@ namespace GimnasioCuerpoSano.Controllers
             TempData["Mensaje"] = "Miembro modificado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: Miembros/Delete/{id}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var miembros = ObtenerMiembros();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            miembros.RemoveAt(id);
+            GuardarMiembros(miembros);
+
+            TempData["Mensaje"] = "Miembro eliminado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
     }
 }

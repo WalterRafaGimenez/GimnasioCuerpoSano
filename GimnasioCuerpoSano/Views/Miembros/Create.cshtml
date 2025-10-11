@@ -1,110 +1,112 @@
 ﻿@model GimnasioCuerpoSano.Models.Miembro
 
 @{
-    ViewData["Title"] = "Dar de alta miembro";
+    Layout = null;
+    ViewData["Title"] = "Alta de Miembro";
 }
 
-<h2>@ViewData["Title"]</h2>
-
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["Mensaje"]
-    </div>
-}
-
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="Nombre"></label>
-        <input asp-for="Nombre" class="form-control" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Apellido"></label>
-        <input asp-for="Apellido" class="form-control" />
-        <span asp-validation-for="Apellido" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Direccion"></label>
-        <input asp-for="Direccion" class="form-control" />
-        <span asp-validation-for="Direccion" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Telefono"></label>
-        <input asp-for="Telefono" class="form-control" />
-        <span asp-validation-for="Telefono" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Mail"></label>
-        <input asp-for="Mail" class="form-control" />
-        <span asp-validation-for="Mail" class="text-danger"></span>
-    </div>
-
-    <hr />
-    <h4>Membresía</h4>
-
-    <div class="form-group">
-        <label asp-for="TipoMembresia"></label>
-        <select asp-for="TipoMembresia" class="form-control" id="TipoMembresia">
-            <option value="">-- Seleccione --</option>
-            <option value="Mensual">Mensual</option>
-            <option value="Trimestral">Trimestral</option>
-            <option value="Anual">Anual</option>
-        </select>
-        <span asp-validation-for="TipoMembresia" class="text-danger"></span>
-    </div>
-
-    <div class="form-group form-check">
-        <input asp-for="DescuentoEspecial" class="form-check-input" id="DescuentoEspecial" />
-        <label asp-for="DescuentoEspecial" class="form-check-label"></label>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="ValorMembresia"></label>
-        <input asp-for="ValorMembresia" class="form-control" readonly id="ValorMembresia" />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="FechaAlta"></label>
-        <input asp-for="FechaAlta" class="form-control" readonly />
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Foto"></label>
-        <input asp-for="Foto" class="form-control" placeholder="Opcional" />
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-primary">Dar de alta</button>
-</form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
-    <script>
-        const tipoSelect = document.getElementById("TipoMembresia");
-        const descuentoCheck = document.getElementById("DescuentoEspecial");
-        const valorInput = document.getElementById("ValorMembresia");
-
-        function calcularValor() {
-            let tipo = tipoSelect.value;
-            let descuento = descuentoCheck.checked;
-            let valor = 0;
-
-            switch (tipo) {
-                case "Mensual": valor = 35000; break;
-                case "Trimestral": valor = 90000; break;
-                case "Anual": valor = 350000; break;
-            }
-
-            if (descuento) valor *= 0.85;
-
-            valorInput.value = valor;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        tipoSelect.addEventListener("change", calcularValor);
-        descuentoCheck.addEventListener("change", calcularValor);
-    </script>
-}
+        h2 {
+            color: #198754;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            background: white;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="text-center">Alta de Miembro</h2>
+
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Apellido" class="form-label"></label>
+                    <input asp-for="Apellido" class="form-control" />
+                    <span asp-validation-for="Apellido" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Direccion" class="form-label"></label>
+                    <input asp-for="Direccion" class="form-control" />
+                    <span asp-validation-for="Direccion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Telefono" class="form-label"></label>
+                    <input asp-for="Telefono" class="form-control" />
+                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Mail" class="form-label"></label>
+                    <input asp-for="Mail" class="form-control" />
+                    <span asp-validation-for="Mail" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TipoMembresia" class="form-label"></label>
+                    <select asp-for="TipoMembresia" class="form-control">
+                        <option value="">Seleccione...</option>
+                        <option>Mensual</option>
+                        <option>Trimestral</option>
+                        <option>Anual</option>
+                    </select>
+                    <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="DescuentoEspecial" class="form-check-input" />
+                    <label asp-for="DescuentoEspecial" class="form-check-label"></label>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success px-4">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }
+</body>
+</html>
+

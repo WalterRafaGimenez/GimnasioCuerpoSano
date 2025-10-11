@@ -1,69 +1,114 @@
 ﻿@model GimnasioCuerpoSano.Models.Miembro
 
 @{
+    Layout = null;
     ViewData["Title"] = "Editar Miembro";
 }
 
-<h2>Editar Miembro</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" name="id" value="@ViewData["Index"]" />
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+        }
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            background: white;
+            max-width: 600px;
+            margin: auto;
+        }
 
-    <div class="form-group">
-        <label asp-for="Nombre"></label>
-        <input asp-for="Nombre" class="form-control" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="text-center">Editar Miembro</h2>
+
+            <form asp-action="Edit" method="post">
+                <input type="hidden" name="id" value="@ViewData["Index"]" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Apellido" class="form-label"></label>
+                    <input asp-for="Apellido" class="form-control" />
+                    <span asp-validation-for="Apellido" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Direccion" class="form-label"></label>
+                    <input asp-for="Direccion" class="form-control" />
+                    <span asp-validation-for="Direccion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Telefono" class="form-label"></label>
+                    <input asp-for="Telefono" class="form-control" />
+                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Mail" class="form-label"></label>
+                    <input asp-for="Mail" class="form-control" />
+                    <span asp-validation-for="Mail" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TipoMembresia" class="form-label"></label>
+                    <select asp-for="TipoMembresia" class="form-control">
+                        <option value="">Seleccione...</option>
+                        <option>Mensual</option>
+                        <option>Trimestral</option>
+                        <option>Anual</option>
+                    </select>
+                    <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="DescuentoEspecial" class="form-check-input" />
+                    <label asp-for="DescuentoEspecial" class="form-check-label"></label>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4">Guardar cambios</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
+
+        </div>
     </div>
 
-    <div class="form-group">
-        <label asp-for="Apellido"></label>
-        <input asp-for="Apellido" class="form-control" />
-        <span asp-validation-for="Apellido" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Direccion"></label>
-        <input asp-for="Direccion" class="form-control" />
-        <span asp-validation-for="Direccion" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Telefono"></label>
-        <input asp-for="Telefono" class="form-control" />
-        <span asp-validation-for="Telefono" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Mail"></label>
-        <input asp-for="Mail" class="form-control" />
-        <span asp-validation-for="Mail" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="TipoMembresia"></label>
-        <select asp-for="TipoMembresia" class="form-control">
-            <option value="">Seleccione...</option>
-            <option>Mensual</option>
-            <option>Trimestral</option>
-            <option>Anual</option>
-        </select>
-        <span asp-validation-for="TipoMembresia" class="text-danger"></span>
-    </div>
-
-    <div class="form-group form-check">
-        <input asp-for="DescuentoEspecial" class="form-check-input" />
-        <label asp-for="DescuentoEspecial" class="form-check-label"></label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
     }
-}
+</body>
+</html>
 

@@ -2,7 +2,7 @@
 
 @{
     Layout = null;
-    ViewData["Title"] = "Detalles del Miembro";
+    ViewData["Title"] = "Eliminar Miembro";
 }
 
 <!DOCTYPE html>
@@ -29,14 +29,13 @@
         }
 
         h2 {
-            color: #0d6efd;
+            color: #dc3545;
             margin-bottom: 1.5rem;
             text-align: center;
         }
 
         .form-label {
             font-weight: bold;
-            color: #495057;
         }
 
         .value-box {
@@ -55,7 +54,7 @@
 
     <div class="container">
         <div class="card">
-            <h2>Detalles del Miembro</h2>
+            <h2>¿Eliminar este miembro?</h2>
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
@@ -68,46 +67,23 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Dirección</label>
-                <div class="value-box">@Model.Direccion</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Teléfono</label>
-                <div class="value-box">@Model.Telefono</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Correo electrónico</label>
-                <div class="value-box">@Model.Mail</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Tipo de membresía</label>
+                <label class="form-label">Tipo de Membresía</label>
                 <div class="value-box">@Model.TipoMembresia</div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Descuento especial</label>
-                <div class="value-box">@(Model.DescuentoEspecial ? "Sí (15%)" : "No")</div>
+            <div class="alert alert-warning text-center">
+                <strong>Atención:</strong> esta acción no se puede deshacer.
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Valor de la membresía</label>
-                <div class="value-box">$@Model.ValorMembresia</div>
-            </div>
+            <form asp-action="Delete" method="post">
+                <input type="hidden" name="id" value="@ViewData["Index"]" />
+                <div class="text-center">
+                    <button type="submit" class="btn btn-danger px-4">Eliminar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
 
-            <div class="mb-3">
-                <label class="form-label">Fecha de alta</label>
-                <div class="value-box">@Model.FechaAlta.ToString("dd/MM/yyyy HH:mm")</div>
-            </div>
-
-            <div class="text-center mt-4">
-                <a asp-action="Edit" asp-route-id="@ViewData["Index"]" class="btn btn-primary px-4">Editar</a>
-                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
-            </div>
         </div>
-
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

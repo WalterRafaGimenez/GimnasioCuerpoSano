@@ -1,39 +1,115 @@
-﻿@{
-    Layout = null;
+﻿@model List<GimnasioCuerpoSano.Models.Miembro>
+
+@{
+    Layout = null; // Por si querés asegurarte de que no use layout
+    ViewData["Title"] = "Listado de Miembros";
 }
 
-@model List<GimnasioCuerpoSano.Models.Miembro>
-
-<h2>Lista de Miembros</h2>
-
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
-}
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Membresía</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < Model.Count; i++)
-        {
-            <tr>
-                <td>@Model[i].Nombre</td>
-                <td>@Model[i].Apellido</td>
-                <td>@Model[i].TipoMembresia</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@i" class="btn btn-info btn-sm">Ver</a>
-                    <a asp-action="Edit" asp-route-id="@i" class="btn btn-warning btn-sm">Editar</a>
-                </td>
-            </tr>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
         }
-    </tbody>
-</table>
 
-<a asp-action="Create" class="btn btn-success">Nuevo Miembro</a>
+        .card {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2>Listado de Miembros</h2>
+
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success">@TempData["Mensaje"]</div>
+            }
+
+            <a asp-action="Create" class="btn btn-success mb-3">Agregar nuevo miembro</a>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Mail</th>
+                            <th>Tipo</th>
+                            <th>Descuento</th>
+                            <th>Valor</th>
+                            <th>Fecha Alta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            var item = Model[i];
+                            <tr>
+                                <td>@item.Nombre</td>
+                                <td>@item.Apellido</td>
+                                <td>@item.Direccion</td>
+                                <td>@item.Telefono</td>
+                                <td>@item.Mail</td>
+                                <td>@item.TipoMembresia</td>
+                                <td>@(item.DescuentoEspecial ? "Sí" : "No")</td>
+                                <td>$@item.ValorMembresia</td>
+                                <td>@item.FechaAlta.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@i" class="btn btn-warning btn-sm">Editar</a>
+                                    <a asp-action="Details" asp-route-id="@i" class="btn btn-info btn-sm">Ver</a>
+                                    <a asp-action="Delete" asp-route-id="@i" class="btn btn-danger btn-sm">Eliminar</a>
+                             
+                                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-sm">Volver</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">No hay miembros registrados.</div>
+        }
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
