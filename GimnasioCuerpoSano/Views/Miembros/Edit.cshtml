@@ -1,5 +1,69 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model GimnasioCuerpoSano.Models.Miembro
+
 @{
+    ViewData["Title"] = "Editar Miembro";
 }
+
+<h2>Editar Miembro</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" name="id" value="@ViewData["Index"]" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="Nombre"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Apellido"></label>
+        <input asp-for="Apellido" class="form-control" />
+        <span asp-validation-for="Apellido" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Direccion"></label>
+        <input asp-for="Direccion" class="form-control" />
+        <span asp-validation-for="Direccion" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Telefono"></label>
+        <input asp-for="Telefono" class="form-control" />
+        <span asp-validation-for="Telefono" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Mail"></label>
+        <input asp-for="Mail" class="form-control" />
+        <span asp-validation-for="Mail" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TipoMembresia"></label>
+        <select asp-for="TipoMembresia" class="form-control">
+            <option value="">Seleccione...</option>
+            <option>Mensual</option>
+            <option>Trimestral</option>
+            <option>Anual</option>
+        </select>
+        <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="DescuentoEspecial" class="form-check-input" />
+        <label asp-for="DescuentoEspecial" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

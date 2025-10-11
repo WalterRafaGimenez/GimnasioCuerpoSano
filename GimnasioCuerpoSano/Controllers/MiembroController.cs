@@ -1,11 +1,39 @@
-﻿using GimnasioCuerpoSano;
-using GimnasioCuerpoSano.Models;
+﻿using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace GimnasioCuerpoSano.Controllers
 {
     public class MiembrosController : Controller
     {
+        // ✅ Método auxiliar: leer lista desde TempData
+        private List<Miembro> ObtenerMiembros()
+        {
+            if (TempData.ContainsKey("Miembros") && TempData["Miembros"] is string miembrosJson)
+            {
+                var lista = JsonSerializer.Deserialize<List<Miembro>>(miembrosJson);
+                if (lista != null)
+                {
+                    TempData.Keep("Miembros"); // conservar datos tras redirect
+                    return lista;
+                }
+            }
+            return new List<Miembro>();
+        }
+
+        // ✅ Método auxiliar: guardar lista en TempData
+        private void GuardarMiembros(List<Miembro> miembros)
+        {
+            TempData["Miembros"] = JsonSerializer.Serialize(miembros);
+        }
+
+        // GET: Miembros
+        public IActionResult Index()
+        {
+            var miembros = ObtenerMiembros();
+            return View(miembros);
+        }
+
         // GET: Miembros/Create
         public IActionResult Create()
         {
@@ -13,40 +41,6 @@ namespace GimnasioCuerpoSano.Controllers
             {
                 FechaAlta = DateTime.Now
             };
-            return View(miembro);
-        }
-
-        // GET: Miembros
-        public IActionResult Index()
-        {
-            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
-            TempData.Keep("Miembros");
-            return View(miembros);
-        }
-
-        // GET: Miembros/Details/{index}
-        public IActionResult Details(int id)
-        {
-            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
-            if (id < 0 || id >= miembros.Count)
-                return NotFound();
-
-            var miembro = miembros[id];
-            TempData.Keep("Miembros");
-            ViewData["Index"] = id; // para el botón de Edit
-            return View(miembro);
-        }
-
-        // GET: Miembros/Edit/{index}
-        public IActionResult Edit(int id)
-        {
-            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
-            if (id < 0 || id >= miembros.Count)
-                return NotFound();
-
-            var miembro = miembros[id];
-            TempData.Keep("Miembros");
-            ViewData["Index"] = id;
             return View(miembro);
         }
 
@@ -64,23 +58,48 @@ namespace GimnasioCuerpoSano.Controllers
                     "Anual" => 390000,
                     _ => 0
                 };
+
                 if (miembro.DescuentoEspecial)
                     valorBase *= 0.85m;
 
                 miembro.ValorMembresia = valorBase;
                 miembro.FechaAlta = DateTime.Now;
 
-                var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+                var miembros = ObtenerMiembros();
                 miembros.Add(miembro);
-                TempData["Miembros"] = miembros;
-                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
+                GuardarMiembros(miembros);
 
-                return RedirectToAction("Index");
+                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
+                return RedirectToAction(nameof(Index));
             }
             return View(miembro);
         }
 
-        // POST: Miembros/Edit/{index}
+        // GET: Miembros/Details/{id}
+        public IActionResult Details(int id)
+        {
+            var miembros = ObtenerMiembros();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            var miembro = miembros[id];
+            ViewData["Index"] = id;
+            return View(miembro);
+        }
+
+        // GET: Miembros/Edit/{id}
+        public IActionResult Edit(int id)
+        {
+            var miembros = ObtenerMiembros();
+            if (id < 0 || id >= miembros.Count)
+                return NotFound();
+
+            var miembro = miembros[id];
+            ViewData["Index"] = id;
+            return View(miembro);
+        }
+
+        // POST: Miembros/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Miembro miembro)
@@ -88,16 +107,15 @@ namespace GimnasioCuerpoSano.Controllers
             if (!ModelState.IsValid)
                 return View(miembro);
 
-            var miembros = TempData["Miembros"] as List<Miembro> ?? new List<Miembro>();
+            var miembros = ObtenerMiembros();
             if (id < 0 || id >= miembros.Count)
                 return NotFound();
 
             miembros[id] = miembro;
-            TempData["Miembros"] = miembros;
-            TempData["Mensaje"] = "Miembro modificado correctamente.";
+            GuardarMiembros(miembros);
 
-            return RedirectToAction("Index");
+            TempData["Mensaje"] = "Miembro modificado correctamente.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }
-
