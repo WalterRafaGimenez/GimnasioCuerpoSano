@@ -78,15 +78,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="TipoMembresia" class="form-label"></label>
-                    <select asp-for="TipoMembresia" class="form-control">
-                        <option value="">Seleccione...</option>
-                        <option>Mensual</option>
-                        <option>Trimestral</option>
-                        <option>Anual</option>
+                    <label asp-for="MembresiaId" class="form-label">Tipo de membresía</label>
+                    <select asp-for="MembresiaId" class="form-control" asp-items="ViewBag.Membresias">
+                        <option value="">Seleccione una membresía...</option>
                     </select>
-                    <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+                    <span asp-validation-for="MembresiaId" class="text-danger"></span>
                 </div>
+
 
                 <div class="form-check mb-3">
                     <input asp-for="DescuentoEspecial" class="form-check-input" />

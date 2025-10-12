@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GimnasioCuerpoSano.Models
 {
@@ -34,14 +35,18 @@ namespace GimnasioCuerpoSano.Models
         // -----------------------------
         // Campos de membresía
         // -----------------------------
-        [Required(ErrorMessage = "Seleccione un tipo de membresía")]
-        public string TipoMembresia { get; set; } = string.Empty; // Mensual, Trimestral, Anual
+        [Display(Name = "Tipo de membresía")]
+        [ForeignKey("Membresia")]
+        public int MembresiaId { get; set; } // clave foránea
+
+        public Membresia? Membresia { get; set; } // navegación
 
         [Display(Name = "Es estudiante o jubilado")]
-        public bool DescuentoEspecial { get; set; } // true = 15% de descuento
+        public bool DescuentoEspecial { get; set; }
 
         [Display(Name = "Valor de membresía")]
-        public decimal ValorMembresia { get; set; } // Valor calculado según tipo y descuento
+        public decimal ValorMembresia { get; set; }
+
 
         [Display(Name = "Fecha y hora de alta")]
         public DateTime FechaAlta { get; set; } = DateTime.Now;

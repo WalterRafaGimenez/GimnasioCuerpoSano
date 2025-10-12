@@ -68,8 +68,14 @@
 
             <div class="mb-3">
                 <label class="form-label">Tipo de Membresía</label>
-                <div class="value-box">@Model.TipoMembresia</div>
+                <div class="value-box">@Model.Membresia?.Nombre</div>
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">Precio de Membresía</label>
+                <div class="value-box">$@Model.Membresia?.Precio</div>
+            </div>
+
 
             <div class="alert alert-warning text-center">
                 <strong>Atención:</strong> esta acción no se puede deshacer.

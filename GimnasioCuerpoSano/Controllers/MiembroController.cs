@@ -1,151 +1,186 @@
-﻿using GimnasioCuerpoSano.Models;
+﻿using GimnasioCuerpoSano.Data;
+using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace GimnasioCuerpoSano.Controllers
 {
     public class MiembrosController : Controller
     {
-        // ✅ Método auxiliar: leer lista desde TempData
-        private List<Miembro> ObtenerMiembros()
+        private readonly ApplicationDbContext _context;
+
+        public MiembrosController(ApplicationDbContext context)
         {
-            if (TempData.ContainsKey("Miembros") && TempData["Miembros"] is string miembrosJson)
-            {
-                var lista = JsonSerializer.Deserialize<List<Miembro>>(miembrosJson);
-                if (lista != null)
-                {
-                    TempData.Keep("Miembros"); // conservar datos tras redirect
-                    return lista;
-                }
-            }
-            return new List<Miembro>();
+            _context = context;
         }
 
-        // ✅ Método auxiliar: guardar lista en TempData
-        private void GuardarMiembros(List<Miembro> miembros)
-        {
-            TempData["Miembros"] = JsonSerializer.Serialize(miembros);
-        }
-
-        // GET: Miembros
+        // =====================================================
+        // LISTAR (INDEX)
+        // =====================================================
         public IActionResult Index()
         {
-            var miembros = ObtenerMiembros();
+            var miembros = _context.Miembros
+                                   .Include(m => m.Membresia)
+                                   .OrderBy(m => m.Apellido)
+                                   .ToList();
             return View(miembros);
         }
 
-        // GET: Miembros/Create
-        public IActionResult Create()
+        // =====================================================
+        // DETALLES
+        // =====================================================
+        public IActionResult Details(int id)
         {
-            var miembro = new Miembro
-            {
-                FechaAlta = DateTime.Now
-            };
+            var miembro = _context.Miembros
+                                  .Include(m => m.Membresia)
+                                  .FirstOrDefault(m => m.Id == id);
+
+            if (miembro == null)
+                return NotFound();
+
             return View(miembro);
         }
 
-        // POST: Miembros/Create
+        // =====================================================
+        // CREAR (GET)
+        // =====================================================
+        public IActionResult Create()
+        {
+            ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
+            return View();
+        }
+
+        // =====================================================
+        // CREAR (POST)
+        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Miembro miembro)
         {
             if (ModelState.IsValid)
             {
-                decimal valorBase = miembro.TipoMembresia switch
+                var membresia = _context.Membresias.Find(miembro.MembresiaId);
+
+                if (membresia == null)
                 {
-                    "Mensual" => 35000,
-                    "Trimestral" => 90000,
-                    "Anual" => 390000,
-                    _ => 0
-                };
+                    ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
+                    ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
+                    return View(miembro);
+                }
+
+                decimal valorBase = membresia.Precio;
 
                 if (miembro.DescuentoEspecial)
-                    valorBase *= 0.85m;
+                    valorBase *= 0.85m; // 15% de descuento
 
                 miembro.ValorMembresia = valorBase;
                 miembro.FechaAlta = DateTime.Now;
 
-                var miembros = ObtenerMiembros();
-                miembros.Add(miembro);
-                GuardarMiembros(miembros);
+                _context.Miembros.Add(miembro);
+                _context.SaveChanges();
 
-                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia}";
+                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia:N2}";
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
             return View(miembro);
         }
 
-        // GET: Miembros/Details/{id}
-        public IActionResult Details(int id)
-        {
-            var miembros = ObtenerMiembros();
-            if (id < 0 || id >= miembros.Count)
-                return NotFound();
-
-            var miembro = miembros[id];
-            ViewData["Index"] = id;
-            return View(miembro);
-        }
-
-        // GET: Miembros/Edit/{id}
+        // =====================================================
+        // EDITAR (GET)
+        // =====================================================
         public IActionResult Edit(int id)
         {
-            var miembros = ObtenerMiembros();
-            if (id < 0 || id >= miembros.Count)
+            var miembro = _context.Miembros.Find(id);
+            if (miembro == null)
                 return NotFound();
 
-            var miembro = miembros[id];
-            ViewData["Index"] = id;
+            ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
             return View(miembro);
         }
 
-        // GET: Miembros/Delete/{id}
-        public IActionResult Delete(int id)
-        {
-            var miembros = ObtenerMiembros();
-            if (id < 0 || id >= miembros.Count)
-                return NotFound();
-
-            var miembro = miembros[id];
-            ViewData["Index"] = id;
-            return View(miembro);
-        }
-
-        // POST: Miembros/Edit/{id}
+        // =====================================================
+        // EDITAR (POST)
+        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Miembro miembro)
         {
-            if (!ModelState.IsValid)
-                return View(miembro);
-
-            var miembros = ObtenerMiembros();
-            if (id < 0 || id >= miembros.Count)
+            if (id != miembro.Id)
                 return NotFound();
 
-            miembros[id] = miembro;
-            GuardarMiembros(miembros);
+            if (ModelState.IsValid)
+            {
+                var membresia = _context.Membresias.Find(miembro.MembresiaId);
 
-            TempData["Mensaje"] = "Miembro modificado correctamente.";
-            return RedirectToAction(nameof(Index));
+                if (membresia == null)
+                {
+                    ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
+                    ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                    return View(miembro);
+                }
+
+                decimal valorBase = membresia.Precio;
+                if (miembro.DescuentoEspecial)
+                    valorBase *= 0.85m;
+
+                miembro.ValorMembresia = valorBase;
+
+                try
+                {
+                    _context.Update(miembro);
+                    _context.SaveChanges();
+                    TempData["Mensaje"] = $"Miembro actualizado correctamente. Valor final: ${miembro.ValorMembresia:N2}";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Miembros.Any(e => e.Id == miembro.Id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+            return View(miembro);
         }
 
-        // POST: Miembros/Delete/{id}
+        // =====================================================
+        // ELIMINAR (GET)
+        // =====================================================
+        public IActionResult Delete(int id)
+        {
+            var miembro = _context.Miembros
+                                  .Include(m => m.Membresia)
+                                  .FirstOrDefault(m => m.Id == id);
+
+            if (miembro == null)
+                return NotFound();
+
+            return View(miembro);
+        }
+
+        // =====================================================
+        // ELIMINAR (POST)
+        // =====================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var miembros = ObtenerMiembros();
-            if (id < 0 || id >= miembros.Count)
-                return NotFound();
+            var miembro = _context.Miembros.Find(id);
+            if (miembro != null)
+            {
+                _context.Miembros.Remove(miembro);
+                _context.SaveChanges();
+                TempData["Mensaje"] = "Miembro eliminado correctamente.";
+            }
 
-            miembros.RemoveAt(id);
-            GuardarMiembros(miembros);
-
-            TempData["Mensaje"] = "Miembro eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-
-
     }
 }
+

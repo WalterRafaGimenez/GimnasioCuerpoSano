@@ -44,15 +44,13 @@
     <h4>Membresía</h4>
 
     <div class="form-group">
-        <label asp-for="TipoMembresia"></label>
-        <select asp-for="TipoMembresia" class="form-control" id="TipoMembresia">
-            <option value="">-- Seleccione --</option>
-            <option value="Mensual">Mensual</option>
-            <option value="Trimestral">Trimestral</option>
-            <option value="Anual">Anual</option>
+        <label asp-for="MembresiaId" class="form-label">Tipo de Membresía</label>
+        <select asp-for="MembresiaId" class="form-control" asp-items="ViewBag.Membresias">
+            <option value="">-- Seleccione una membresía --</option>
         </select>
-        <span asp-validation-for="TipoMembresia" class="text-danger"></span>
+        <span asp-validation-for="MembresiaId" class="text-danger"></span>
     </div>
+
 
     <div class="form-group form-check">
         <input asp-for="DescuentoEspecial" class="form-check-input" id="DescuentoEspecial" />
