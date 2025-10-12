@@ -1,4 +1,6 @@
-﻿using GimnasioCuerpoSano.Models;
+﻿using System.Linq;
+using GimnasioCuerpoSano.Data;
+using GimnasioCuerpoSano.Models;
 
 namespace GimnasioCuerpoSano.Data
 {
