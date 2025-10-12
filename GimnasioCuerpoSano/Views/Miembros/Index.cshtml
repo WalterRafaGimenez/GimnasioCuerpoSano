@@ -92,9 +92,9 @@
                                 <td>$@item.ValorMembresia</td>
                                 <td>@item.FechaAlta.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
-                                    <a asp-action="Edit" asp-route-id="@i" class="btn btn-warning btn-sm">Editar</a>
-                                    <a asp-action="Details" asp-route-id="@i" class="btn btn-info btn-sm">Ver</a>
-                                    <a asp-action="Delete" asp-route-id="@i" class="btn btn-danger btn-sm">Eliminar</a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
                              
                                     <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-sm">Volver</a>
                                 </td>

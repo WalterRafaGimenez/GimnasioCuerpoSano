@@ -45,7 +45,7 @@
             <h2 class="text-center">Editar Miembro</h2>
 
             <form asp-action="Edit" method="post">
-                <input type="hidden" name="id" value="@ViewData["Index"]" />
+                <input type="hidden" asp-for="Id" />
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">

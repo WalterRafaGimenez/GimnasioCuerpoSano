@@ -82,7 +82,7 @@
             </div>
 
             <form asp-action="Delete" method="post">
-                <input type="hidden" name="id" value="@ViewData["Index"]" />
+                <input type="hidden" asp-for="Id" />
                 <div class="text-center">
                     <button type="submit" class="btn btn-danger px-4">Eliminar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
