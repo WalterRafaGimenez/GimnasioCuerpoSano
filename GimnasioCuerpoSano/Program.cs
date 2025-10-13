@@ -54,17 +54,19 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
     var context = services.GetRequiredService<ApplicationDbContext>();
-    DbInitializer.Initialize(context); // Tu inicializador de membres�as
-
-    // Crear roles si no existen
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roles = { "Administrador", "Empleado", "Miembro" };
+
+    // Inicializa datos de ejemplo solo si no existen
+    DbInitializer.Initialize(context);
+
+    // 👉 Crea los roles si aún no existen
+    string[] roles = new[] { "Administrador", "Empleado", "Miembro" };
 
     foreach (var role in roles)
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        var roleExist = await roleManager.RoleExistsAsync(role);
+        if (!roleExist)
         {
             await roleManager.CreateAsync(new IdentityRole(role));
         }
@@ -97,6 +99,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // -----------------------------------------------------
-app.Run();
+await app.RunAsync();
+
 
 

@@ -1,22 +1,120 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
   margin-bottom: 60px;
+}
+/* === ESTILO GLOBAL GIMNASIO CUERPO SANO === */
+body {
+    background-color: #f4f4f4;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: #1e293b;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ==== BOTONES PERSONALIZADOS ==== */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin: 5px;
+}
+
+/* Colores por acción */
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+    .btn-primary:hover {
+        background-color: #1d4ed8;
+    }
+
+.btn-success {
+    background-color: #16a34a;
+    color: white;
+}
+
+    .btn-success:hover {
+        background-color: #15803d;
+    }
+
+.btn-warning {
+    background-color: #eab308;
+    color: black;
+}
+
+    .btn-warning:hover {
+        background-color: #ca8a04;
+    }
+
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #b91c1c;
+    }
+
+.btn-secondary {
+    background-color: #64748b;
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background-color: #475569;
+    }
+
+/* ==== TABLAS ==== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+    table th, table td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    table th {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+
+/* ==== FORMULARIOS ==== */
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 12px;
+}
+
+label {
+    font-weight: bold;
+    color: #334155;
+}
+
+.text-center {
+    text-align: center;
 }
