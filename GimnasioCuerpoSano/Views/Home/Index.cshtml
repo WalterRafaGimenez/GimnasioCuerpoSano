@@ -1,73 +1,41 @@
 ﻿@{
-    Layout = null; // sin layout
-    ViewData["Title"] = "Inicio - Gimnasio Cuerpo Sano";
+    Layout = null;
 }
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <style>
-        body {
-            background: linear-gradient(135deg, #0d6efd, #198754);
-            min-height: 100vh;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .menu-card {
-            background: white;
-            color: #212529;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            padding: 2rem;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn {
-            border-radius: 10px;
-            width: 200px;
-            margin: 0.5rem;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            color: rgba(255,255,255,0.7);
-        }
-    </style>
+    <title>Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body>
-    <div class="menu-card">
-        <h1>Gimnasio Cuerpo Sano</h1>
-        <p class="mb-4">Bienvenido al sistema de gestión del gimnasio</p>
+<body style="font-family:Arial; text-align:center; margin-top:50px;">
+    <h1>🏋️ Gimnasio Cuerpo Sano</h1>
 
-        <div>
-            <a asp-controller="Miembros" asp-action="Create" class="btn btn-success">Alta de miembro</a>
-            <a asp-controller="Miembros" asp-action="Index" class="btn btn-primary">Listado de miembros</a>
-          
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p>Bienvenido, <strong>@User.Identity.Name</strong></p>
+
+        @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
+        {
+            <div style="margin:20px;">
+                <a asp-controller="Miembros" asp-action="Index" class="btn btn-outline-primary mx-2">Miembros</a>
+                <a asp-controller="Membresias" asp-action="Index" class="btn btn-outline-success mx-2">Membresías</a>
+            </div>
+        }
+
+        <form asp-area="Identity" asp-page="/Account/Logout" method="post">
+            <button type="submit" class="btn btn-outline-danger mt-3">Cerrar sesión</button>
+        </form>
+    }
+    else
+    {
+        <div style="margin:20px;">
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary mx-2">Iniciar sesión</a>
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-secondary mx-2">Registrarse</a>
         </div>
-    </div>
-
-    <footer>
-        &copy; @DateTime.Now.Year - Gimnasio Cuerpo Sano
-    </footer>
-
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    }
 </body>
 </html>
+
 

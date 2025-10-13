@@ -1,7 +1,7 @@
 ﻿@model List<GimnasioCuerpoSano.Models.Miembro>
 
 @{
-    Layout = null; // Por si querés asegurarte de que no use layout
+    Layout = null; // que no use layout
     ViewData["Title"] = "Listado de Miembros";
 }
 
@@ -95,8 +95,7 @@
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
                                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
-                             
-                                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-sm">Volver</a>
+                          
                                 </td>
                             </tr>
                         }
@@ -108,6 +107,11 @@
         {
             <div class="alert alert-info text-center">No hay miembros registrados.</div>
         }
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-action="Create" class="btn btn-success px-4">Nueva Membresía</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
