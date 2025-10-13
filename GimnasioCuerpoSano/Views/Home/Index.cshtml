@@ -20,14 +20,14 @@
             @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
             {
                 <div class="text-center mt-4">
-                    <a asp-controller="Miembros" asp-action="Index" class="btn btn-outline-primary">Miembros</a>
-                    <a asp-controller="Membresias" asp-action="Index" class="btn btn-outline-success">Membresías</a>
+                    <a asp-controller="Miembros" asp-action="Index" class="btn btn-primary">📋 Miembros</a>
+                    <a asp-controller="Membresias" asp-action="Index" class="btn btn-success">💳 Membresías</a>
                 </div>
             }
 
             <div class="text-center mt-4">
                 <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                    <button type="submit" class="btn btn-danger">Cerrar sesión</button>
+                    <button type="submit" class="btn btn-danger">🚪 Cerrar sesión</button>
                 </form>
             </div>
         }
@@ -41,5 +41,6 @@
     </div>
 </body>
 </html>
+
 
 
