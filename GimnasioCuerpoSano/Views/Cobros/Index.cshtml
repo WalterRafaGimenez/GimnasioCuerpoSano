@@ -1,0 +1,66 @@
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.Cobro>
+@{
+    Layout = null;
+    ViewData["Title"] = "Listado de Cobros";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️‍♂️ Listado de Cobros</h1>
+
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success text-center">@TempData["Mensaje"]</div>
+        }
+
+        <div class="text-center mb-4">
+            <a asp-action="Create" class="btn btn-success">➕ Registrar Nuevo Cobro</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Socio</th>
+                    <th>Membresía</th>
+                    <th>Método Pago</th>
+                    <th>Monto</th>
+                    <th>Fecha Pago</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cobro in Model)
+                {
+                    <tr>
+                        <td>@cobro.Codigo</td>
+                        <td>@($"{cobro.Miembro?.Nombre} {cobro.Miembro?.Apellido}")</td>
+                        <td>@cobro.Membresia?.Nombre</td>
+                        <td>@cobro.MetodoPago</td>
+                        <td>$@cobro.Monto.ToString("N2")</td>
+                        <td>@cobro.FechaPago.ToString("dd/MM/yyyy")</td>
+                        <td style="color:@(cobro.Estado == "Vencido" ? "red" : "green")">
+                            @cobro.Estado
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@cobro.Id" class="btn btn-primary btn-sm">👁 Ver</a>
+                            <a asp-action="Delete" asp-route-id="@cobro.Id" class="btn btn-danger btn-sm">🗑 Eliminar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+

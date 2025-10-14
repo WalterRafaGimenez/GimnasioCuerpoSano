@@ -82,13 +82,17 @@ namespace GimnasioCuerpoSano.Controllers
                 _context.Miembros.Add(miembro);
                 _context.SaveChanges();
 
-                TempData["Mensaje"] = $"Miembro dado de alta correctamente. Valor final: ${miembro.ValorMembresia:N2}";
-                return RedirectToAction(nameof(Index));
+                // Guardar el ID del miembro recién creado en TempData
+                TempData["UltimoMiembroId"] = miembro.Id;
+
+                // Redirigir automáticamente al registro de cobro
+                return RedirectToAction("Create", "Cobros");
             }
 
             ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
             return View(miembro);
         }
+
 
         // =====================================================
         // EDITAR (GET)
