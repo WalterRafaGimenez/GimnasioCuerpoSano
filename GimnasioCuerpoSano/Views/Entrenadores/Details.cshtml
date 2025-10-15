@@ -1,0 +1,68 @@
+﻿@model GimnasioCuerpoSano.Models.Entrenador
+@{
+    Layout = null;
+    ViewData["Title"] = "Detalles del Entrenador";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header bg-info text-white text-center">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre</dt>
+                    <dd class="col-sm-9">@Model.Nombre</dd>
+
+                    <dt class="col-sm-3">Apellido</dt>
+                    <dd class="col-sm-9">@Model.Apellido</dd>
+
+                    <dt class="col-sm-3">Dirección</dt>
+                    <dd class="col-sm-9">@Model.Direccion</dd>
+
+                    <dt class="col-sm-3">Teléfono</dt>
+                    <dd class="col-sm-9">@Model.Telefono</dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@Model.Email</dd>
+
+                    <dt class="col-sm-3">Especialidad</dt>
+                    <dd class="col-sm-9">@Model.Especialidad</dd>
+
+                    <dt class="col-sm-3">Vencimiento Certificado</dt>
+                    <dd class="col-sm-9">@Model.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</dd>
+
+                    <dt class="col-sm-3">Certificado</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.RutaCertificado))
+                        {
+                            <a href="@("/certificados/" + System.IO.Path.GetFileName(Model.RutaCertificado))" target="_blank">Ver archivo</a>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </dd>
+                </dl>
+                <div class="text-center">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2"><i class="bi bi-pencil-square"></i> Editar</a>
+                    <a asp-action="Index" class="btn btn-secondary me-2"><i class="bi bi-arrow-left-circle"></i> Volver al listado</a>
+                    <a href="/" class="btn btn-primary"><i class="bi bi-house-door"></i> Volver al menú</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+

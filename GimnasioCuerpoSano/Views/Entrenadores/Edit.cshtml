@@ -1,0 +1,89 @@
+﻿@model GimnasioCuerpoSano.Models.Entrenador
+@{
+    ViewData["Title"] = "Editar Entrenador";
+    Layout = null;
+}
+
+<link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+
+<div class="container mt-4">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+    @if (ViewBag.Advertencia != null)
+    {
+        <div class="alert alert-warning">@ViewBag.Advertencia</div>
+    }
+
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label"></label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Apellido" class="form-label"></label>
+            <input asp-for="Apellido" class="form-control" />
+            <span asp-validation-for="Apellido" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Direccion" class="form-label"></label>
+            <input asp-for="Direccion" class="form-control" />
+            <span asp-validation-for="Direccion" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Telefono" class="form-label"></label>
+            <input asp-for="Telefono" class="form-control" maxlength="10" />
+            <span asp-validation-for="Telefono" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Especialidad" class="form-label"></label>
+            <input asp-for="Especialidad" class="form-control" />
+            <span asp-validation-for="Especialidad" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FechaVencimientoCertificado" class="form-label"></label>
+            <input asp-for="FechaVencimientoCertificado" class="form-control" type="date" />
+            <span asp-validation-for="FechaVencimientoCertificado" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Certificado (PDF o imagen)</label>
+            <input type="file" name="certificado" class="form-control" />
+            @if (!string.IsNullOrEmpty(Model.RutaCertificado))
+            {
+                <span class="text-muted">Archivo actual: <a href="@Model.RutaCertificado" target="_blank">Ver</a></span>
+            }
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success me-2">Guardar cambios</button>
+            <a href="/Menu" class="btn btn-secondary">Volver al menú</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+
+
