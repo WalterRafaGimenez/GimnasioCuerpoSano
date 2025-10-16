@@ -62,10 +62,11 @@
                                     </a>
                                     @if (!string.IsNullOrEmpty(entrenador.RutaCertificado))
                                     {
-                                        <a href="@("/certificados/" + System.IO.Path.GetFileName(entrenador.RutaCertificado))" target="_blank" class="btn btn-secondary btn-sm">
+                                        <a href="@entrenador.RutaCertificado" target="_blank" class="btn btn-secondary btn-sm">
                                             <i class="bi bi-file-earmark-pdf"></i> Ver Certificado
                                         </a>
                                     }
+
                                 </td>
                             </tr>
                         }

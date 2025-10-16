@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Guardar Archivo";
+}
+
+<h2>Prueba de guardado de archivo</h2>
+
+<form asp-action="GuardarArchivo" asp-controller="Entrenadores" method="post" enctype="multipart/form-data">
+    <div class="form-group mt-3">
+        <label for="archivo">Seleccione un archivo:</label>
+        <input type="file" name="archivo" id="archivo" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+</form>
+
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-info mt-3">@ViewBag.Mensaje</div>
+}
+
