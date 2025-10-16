@@ -1,0 +1,104 @@
+﻿@model GimnasioCuerpoSano.Models.Sala
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Editar Sala";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            background: white;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Editar Sala</h2>
+
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="ID_Sala" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Numero" class="form-label"></label>
+                    <input asp-for="Numero" class="form-control" />
+                    <span asp-validation-for="Numero" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CapacidadMaxima" class="form-label"></label>
+                    <input asp-for="CapacidadMaxima" class="form-control" />
+                    <span asp-validation-for="CapacidadMaxima" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Ubicacion" class="form-label"></label>
+                    <input asp-for="Ubicacion" class="form-control" />
+                    <span asp-validation-for="Ubicacion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TipoSala" class="form-label"></label>
+                    <input asp-for="TipoSala" class="form-control" />
+                    <span asp-validation-for="TipoSala" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Disponible" class="form-label"></label>
+                    <select asp-for="Disponible" class="form-select">
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                    </select>
+                    <span asp-validation-for="Disponible" class="text-danger"></span>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4">Guardar cambios</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @section Scripts {
+        @await Html.PartialAsync("_ValidationScriptsPartial")
+    }
+</body>
+</html>
+

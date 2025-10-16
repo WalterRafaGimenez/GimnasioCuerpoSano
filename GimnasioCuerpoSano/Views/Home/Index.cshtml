@@ -7,48 +7,71 @@
 <head>
     <meta charset="utf-8" />
     <title>Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="container">
-        <h1>🏋️ Gimnasio Cuerpo Sano</h1>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">🏋️ Gimnasio Cuerpo Sano</h1>
 
         @if (User?.Identity?.IsAuthenticated ?? false)
         {
-            <p style="text-align:center;">Bienvenido, <strong>@User.Identity?.Name</strong></p>
+            <p class="text-center">Bienvenido, <strong>@User.Identity?.Name</strong></p>
 
-            @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
-            {
-                <div class="text-center mt-4">
-                    <a asp-controller="Miembros" asp-action="Index" class="btn btn-primary">📋 Miembros</a>
-                    <a asp-controller="Membresias" asp-action="Index" class="btn btn-success">💳 Membresías</a>
-                    <div class="text-center mt-3">
-                        <a asp-controller="Cobros" asp-action="Index" class="btn btn-primary">Gestión de Cobros</a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a asp-controller="Entrenadores" asp-action="Index" class="btn btn-info w-100 py-3 text-white">Entrenadores</a>
-                    </div>
+            <div class="text-center mt-4 d-grid gap-3 d-md-flex justify-content-center flex-wrap">
 
+                @* Botones visibles para Administrador y Empleado *@
+                @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
+                {
+                    <a asp-controller="Miembros" asp-action="Index" class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-person-check"></i> Miembros
+                    </a>
+                    <a asp-controller="Membresias" asp-action="Index" class="btn btn-success btn-lg me-2">
+                        <i class="bi bi-credit-card-2-front"></i> Membresías
+                    </a>
+                    <a asp-controller="Cobros" asp-action="Index" class="btn btn-info btn-lg me-2">
+                        <i class="bi bi-cash-stack"></i> Cobros
+                    </a>
+                    <a asp-controller="Entrenadores" asp-action="Index" class="btn btn-warning btn-lg me-2">
+                        <i class="bi bi-people"></i> Entrenadores
+                    </a>
+                    <a asp-controller="Salas" asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                        <i class="bi bi-building"></i> Salas
+                    </a>
+                }
 
-                </div>
-            }
+                @* Botones visibles solo para Miembros, si corresponde *@
+                @if (User.IsInRole("Miembro"))
+                {
+                    <a asp-controller="Miembros" asp-action="Details" asp-route-id="@User.Identity?.Name" class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-person"></i> Mi Perfil
+                    </a>
+                }
+            </div>
 
             <div class="text-center mt-4">
                 <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                    <button type="submit" class="btn btn-danger">🚪 Cerrar sesión</button>
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                    </button>
                 </form>
             </div>
         }
         else
         {
             <div class="text-center mt-4">
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Iniciar sesión</a>
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-secondary">Registrarse</a>
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg me-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-person-plus"></i> Registrarse
+                </a>
             </div>
         }
     </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
 

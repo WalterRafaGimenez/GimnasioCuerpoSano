@@ -1,0 +1,84 @@
+﻿@model GimnasioCuerpoSano.Models.Sala
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Eliminar Sala";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            background: white;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #dc3545;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        dt {
+            font-weight: bold;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>¿Seguro que deseas eliminar esta sala?</h2>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-4">Número:</dt>
+                <dd class="col-sm-8">@Model.Numero</dd>
+
+                <dt class="col-sm-4">Nombre:</dt>
+                <dd class="col-sm-8">@Model.Nombre</dd>
+
+                <dt class="col-sm-4">Capacidad:</dt>
+                <dd class="col-sm-8">@Model.CapacidadMaxima</dd>
+
+                <dt class="col-sm-4">Ubicación:</dt>
+                <dd class="col-sm-8">@Model.Ubicacion</dd>
+
+                <dt class="col-sm-4">Tipo:</dt>
+                <dd class="col-sm-8">@Model.TipoSala</dd>
+
+                <dt class="col-sm-4">Disponible:</dt>
+                <dd class="col-sm-8">@((Model.Disponible) ? "Sí" : "No")</dd>
+            </dl>
+
+            <form asp-action="DeleteConfirmed" method="post">
+                <input type="hidden" asp-for="ID_Sala" />
+                <div class="text-center">
+                    <button type="submit" class="btn btn-danger px-4">Eliminar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

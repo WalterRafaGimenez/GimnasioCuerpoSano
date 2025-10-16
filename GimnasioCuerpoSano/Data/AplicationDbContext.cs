@@ -32,6 +32,8 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Membresia> Membresias { get; set; }
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
+        public DbSet<Sala> Salas { get; set; }
+
 
 
     }

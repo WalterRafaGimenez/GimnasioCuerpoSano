@@ -1,0 +1,94 @@
+﻿@model GimnasioCuerpoSano.Models.Sala
+@{
+    Layout = null;
+    ViewData["Title"] = "Detalles de Sala";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: white;
+            padding: 2rem;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .value-box {
+            background-color: #f1f3f5;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-info text-white text-center">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">ID Sala</dt>
+                <dd class="col-sm-9">@Model.ID_Sala</dd>
+
+                <dt class="col-sm-3">Número</dt>
+                <dd class="col-sm-9">@Model.Numero</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.Nombre</dd>
+
+                <dt class="col-sm-3">Capacidad Máxima</dt>
+                <dd class="col-sm-9">@Model.CapacidadMaxima</dd>
+
+                <dt class="col-sm-3">Ubicación</dt>
+                <dd class="col-sm-9">@Model.Ubicacion</dd>
+
+                <dt class="col-sm-3">Tipo de Sala</dt>
+                <dd class="col-sm-9">@Model.TipoSala</dd>
+
+                <dt class="col-sm-3">Disponible</dt>
+                <dd class="col-sm-9">@((Model.Disponible) ? "Sí" : "No")</dd>
+            </dl>
+
+            <div class="text-center mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.ID_Sala" class="btn btn-warning me-2">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>
+    <!--<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+</body>
+</html>
