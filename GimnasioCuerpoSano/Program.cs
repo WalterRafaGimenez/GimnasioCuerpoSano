@@ -2,8 +2,15 @@ using GimnasioCuerpoSano.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// -----------------------------------------------------
+// Configurar licencia de QuestPDF (Community)
+// -----------------------------------------------------
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 
 // -----------------------------------------------------
 // Logging detallado para debug

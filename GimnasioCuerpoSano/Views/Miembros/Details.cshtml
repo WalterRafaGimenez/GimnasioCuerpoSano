@@ -78,13 +78,14 @@
             }
 
             <!-- CÓDIGO DE BARRA -->
-            @if (!string.IsNullOrEmpty(Model.CodigoBarra))
+            @if (ViewBag.Barcode != null)
             {
                 <div class="text-center barcode">
-                    <img src="https://barcode.tec-it.com/barcode.ashx?data=@Model.CodigoBarra&code=Code128&translate-esc=true" alt="Código de barras" />
+                    <img src="data:image/png;base64,@Convert.ToBase64String((byte[])ViewBag.Barcode)" alt="Código de barras" />
                     <div class="mt-1">@Model.CodigoBarra</div>
                 </div>
             }
+
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>

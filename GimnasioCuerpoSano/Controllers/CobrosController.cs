@@ -1,12 +1,8 @@
 ﻿using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
-using iText.IO.Font.Constants;
-using iText.Kernel.Colors;
-using iText.Kernel.Font;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
@@ -162,7 +158,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // GENERAR PDF (iText7) - ABRIR EN NAVEGADOR
+        // GENERAR PDF (QuestPDF) - ABRIR EN NAVEGADOR
         // =====================================================
         public async Task<IActionResult> GenerarReciboPdf(int id)
         {
@@ -174,43 +170,44 @@ namespace GimnasioCuerpoSano.Controllers
             if (cobro == null)
                 return NotFound();
 
-            using var memoryStream = new MemoryStream();
-            var writer = new PdfWriter(memoryStream);
-            var pdf = new PdfDocument(writer);
-            var document = new Document(pdf);
+            // Crear PDF en memoria
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(40);
 
-            var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-            var regularFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                    page.Header()
+                        .Text("🏋️‍♂️ Gimnasio Cuerpo Sano")
+                        .SemiBold().FontSize(20).AlignCenter().FontColor(Colors.Blue.Medium);
 
-            document.Add(new Paragraph("🏋️‍♂️ Gimnasio Cuerpo Sano")
-                .SetFont(boldFont)
-                .SetFontSize(20)
-                .SetTextAlignment(TextAlignment.CENTER));
+                    page.Content()
+                        .PaddingVertical(20)
+                        .Column(column =>
+                        {
+                            column.Item().Text("Comprobante de Pago").Bold().FontSize(16).AlignCenter().FontColor(Colors.Black);
+                            column.Item().Text($"Código: {cobro.Codigo}");
+                            column.Item().Text($"Socio: {cobro.Miembro?.Nombre} {cobro.Miembro?.Apellido}");
+                            column.Item().Text($"Membresía: {cobro.Membresia?.Nombre}");
+                            column.Item().Text($"Método de Pago: {cobro.MetodoPago}");
+                            column.Item().Text($"Monto: ${cobro.Monto:N2}");
+                            column.Item().Text($"Fecha de Pago: {cobro.FechaPago:g}");
+                            column.Item().Text($"Estado: {cobro.Estado}")
+                                  .FontColor(cobro.Estado == "Vencido" ? Colors.Red.Medium : Colors.Green.Medium);
+                            column.Item().PaddingTop(20).Text("Gracias por su pago.").Italic().AlignCenter();
+                        });
 
-            document.Add(new Paragraph("Comprobante de Pago")
-                .SetFont(regularFont)
-                .SetFontSize(14)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(20));
+                    page.Footer()
+                        .AlignCenter()
+                        .Text(x =>
+                        {
+                            x.Span("© Gimnasio Cuerpo Sano ");
+                            x.Span(DateTime.Now.Year.ToString());
+                        });
+                });
+            })
+            .GeneratePdf();
 
-            document.Add(new Paragraph($"Código: {cobro.Codigo}").SetFont(regularFont));
-            document.Add(new Paragraph($"Socio: {cobro.Miembro?.Nombre} {cobro.Miembro?.Apellido}").SetFont(regularFont));
-            document.Add(new Paragraph($"Membresía: {cobro.Membresia?.Nombre}").SetFont(regularFont));
-            document.Add(new Paragraph($"Método de Pago: {cobro.MetodoPago}").SetFont(regularFont));
-            document.Add(new Paragraph($"Monto: ${cobro.Monto:N2}").SetFont(regularFont));
-            document.Add(new Paragraph($"Fecha de Pago: {cobro.FechaPago:g}").SetFont(regularFont));
-            document.Add(new Paragraph($"Estado: {cobro.Estado}")
-                .SetFont(regularFont)
-                .SetFontColor(cobro.Estado == "Vencido" ? ColorConstants.RED : ColorConstants.GREEN));
-
-            document.Add(new Paragraph("\nGracias por su pago.")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFont(regularFont)
-                .SetFontSize(10));
-
-            document.Close();
-
-            var pdfBytes = memoryStream.ToArray();
             Response.Headers["Content-Disposition"] = $"inline; filename=Recibo_{cobro.Codigo}.pdf";
             return File(pdfBytes, "application/pdf");
         }

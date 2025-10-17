@@ -1,16 +1,25 @@
 ﻿using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
-using iText.IO.Font.Constants;
-using iText.IO.Image;
-using iText.Kernel.Font;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Net.Http;
+using ZXing;
+using ZXing.Common;
+using ZXing.ImageSharp;
+using ZXing.ImageSharp.Rendering;
+using ZXing.Rendering;
+
 
 namespace GimnasioCuerpoSano.Controllers
 {
@@ -39,19 +48,57 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // DETALLES
+        // DETALLES DE MIEMBRO
         // =====================================================
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
-            var miembro = _context.Miembros
-                                  .Include(m => m.Membresia)
-                                  .FirstOrDefault(m => m.Id == id);
+            if (id == null) return NotFound();
 
-            if (miembro == null)
-                return NotFound();
+            var miembro = await _context.Miembros
+                .Include(m => m.Membresia)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (miembro == null) return NotFound();
+
+            // Generar código de barras Code128 con ZXing + ImageSharp
+            var writer = new BarcodeWriterPixelData
+            {
+                Format = BarcodeFormat.CODE_128,
+                Options = new EncodingOptions
+                {
+                    Width = 300,
+                    Height = 80,
+                    Margin = 1
+                }
+            };
+
+            var pixelData = writer.Write(miembro.CodigoBarra);
+
+            using var image = new Image<Rgba32>(pixelData.Width, pixelData.Height);
+
+            for (int y = 0; y < pixelData.Height; y++)
+            {
+                for (int x = 0; x < pixelData.Width; x++)
+                {
+                    int idx = (y * pixelData.Width + x) * 4;
+                    image[x, y] = new Rgba32(
+                        pixelData.Pixels[idx],
+                        pixelData.Pixels[idx + 1],
+                        pixelData.Pixels[idx + 2],
+                        pixelData.Pixels[idx + 3]);
+                }
+            }
+
+            using var ms = new MemoryStream();
+            image.Save(ms, new PngEncoder());
+
+            ViewBag.Barcode = ms.ToArray();
 
             return View(miembro);
         }
+
+
+
 
         // =====================================================
         // CREAR (GET)
@@ -187,7 +234,27 @@ namespace GimnasioCuerpoSano.Controllers
             }
         }
 
+        // =====================================================
+        // MÉTODOS PRIVADOS AUXILIARES
+        // =====================================================
+        private string GenerarCodigoBarra()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
+        }
 
+        private string CalcularEstado(string tipoMembresia, DateTime fechaPago)
+        {
+            int diasVigencia = tipoMembresia switch
+            {
+                "Mensual" => 30,
+                "Trimestral" => 90,
+                "Anual" => 365,
+                _ => 30
+            };
+
+            var fechaVencimiento = fechaPago.AddDays(diasVigencia);
+            return DateTime.Now > fechaVencimiento ? "Vencido" : "Vigente";
+        }
 
         // =====================================================
         // EDITAR (GET)
@@ -309,69 +376,72 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // GENERAR PDF
+        // GENERAR PDF DEL CARNET DEL MIEMBRO
         // =====================================================
         public async Task<IActionResult> GenerarPDF(int id)
         {
-            var miembro = _context.Miembros.Include(m => m.Membresia).FirstOrDefault(m => m.Id == id);
+            var miembro = await _context.Miembros
+                .Include(m => m.Membresia)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (miembro == null)
                 return NotFound();
 
-            using (var ms = new MemoryStream())
+            // -----------------------------
+            // Generar código de barras en memoria con ZXing + ImageSharp
+            // -----------------------------
+
+            // Generar el código de barras en memoria
+            byte[] barcodeBytes;
+            var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>
             {
-                var writer = new PdfWriter(ms);
-                var pdf = new PdfDocument(writer);
-                var document = new Document(pdf);
-
-                var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-
-                var title = new Paragraph("Carnet de Miembro")
-                                .SetFont(boldFont)
-                                .SetFontSize(18)
-                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
-                document.Add(title);
-
-                if (!string.IsNullOrEmpty(miembro.Foto))
+                Format = BarcodeFormat.CODE_128,
+                Options = new ZXing.Common.EncodingOptions
                 {
-                    var fotoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", miembro.Foto.TrimStart('/'));
-                    if (System.IO.File.Exists(fotoPath))
-                    {
-                        var image = new Image(ImageDataFactory.Create(fotoPath))
-                                    .ScaleToFit(150, 150)
-                                    .SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.CENTER);
-                        document.Add(image);
-                    }
-                }
+                    Width = 200,
+                    Height = 50,
+                    Margin = 0,
+                    PureBarcode = true
+                },
+               // Renderer = new ZXing.Rendering.PixelDataRenderer() // ZXing por defecto
+            };
 
-                document.Add(new Paragraph($"Nombre: {miembro.Nombre}"));
-                document.Add(new Paragraph($"Apellido: {miembro.Apellido}"));
-                document.Add(new Paragraph($"Membresía: {miembro.Membresia?.Nombre}"));
-
-                if (!string.IsNullOrEmpty(miembro.CodigoBarra))
-                {
-                    var barcodeUrl = $"https://barcode.tec-it.com/barcode.ashx?data={miembro.CodigoBarra}&code=Code128&translate-esc=true";
-                    using var httpClient = new HttpClient();
-                    var barcodeData = await httpClient.GetByteArrayAsync(barcodeUrl);
-                    var barcodeImage = new Image(ImageDataFactory.Create(barcodeData))
-                                       .ScaleToFit(200, 50)
-                                       .SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.CENTER);
-                    document.Add(barcodeImage);
-                }
-
-                document.Close();
-
-                return File(ms.ToArray(), "application/pdf", $"Carnet_{miembro.Nombre}_{miembro.Apellido}.pdf");
+            // Generar imagen
+            using (var image = writer.Write(miembro.CodigoBarra))
+            {
+                using var ms = new MemoryStream();
+                image.Save(ms, new PngEncoder());
+                barcodeBytes = ms.ToArray();
             }
-        }
 
-        private string GenerarCodigoBarra()
-        {
-            // Genera un código basado en fecha y un número aleatorio
-            // Formato: YYYYMMDDHHMMSS + 3 dígitos aleatorios
-            var fecha = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var random = new Random();
-            var aleatorio = random.Next(100, 999);
-            return $"{fecha}{aleatorio}";
+            // -----------------------------
+            // Generar PDF con QuestPDF
+            // -----------------------------
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A7); // tamaño carnet pequeño
+                    page.Margin(10);
+                    page.Content().Column(col =>
+                    {
+                        col.Item().Text("CARNET DE SOCIO").FontSize(14).AlignCenter();
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                        col.Item().Text($"{miembro.Nombre} {miembro.Apellido}").FontSize(12).AlignCenter();
+
+                        col.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}").FontSize(10).AlignCenter();
+                        col.Item().Text($"Alta: {miembro.FechaAlta:dd/MM/yyyy}").FontSize(10).AlignCenter();
+
+                        // Imagen del código de barras
+                        col.Item().Image(barcodeBytes, ImageScaling.FitWidth);
+                    });
+                });
+            }).GeneratePdf();
+
+            Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
+            return File(pdfBytes, "application/pdf");
         }
 
 
