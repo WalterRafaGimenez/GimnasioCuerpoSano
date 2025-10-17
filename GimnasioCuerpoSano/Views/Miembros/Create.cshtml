@@ -39,12 +39,11 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="card">
             <h2 class="text-center">Alta de Miembro</h2>
 
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">
@@ -85,11 +84,19 @@
                     <span asp-validation-for="MembresiaId" class="text-danger"></span>
                 </div>
 
-
                 <div class="form-check mb-3">
                     <input asp-for="DescuentoEspecial" class="form-check-input" />
                     <label asp-for="DescuentoEspecial" class="form-check-label"></label>
                 </div>
+
+                <!-- FOTO OPCIONAL -->
+                <div class="mb-3">
+                    <label for="fotoArchivo" class="form-label">Foto (opcional)</label>
+                    <input type="file" name="fotoArchivo" class="form-control" accept="image/*" />
+                </div>
+
+                <!-- CÓDIGO DE BARRA OCULTO -->
+                <input type="hidden" asp-for="CodigoBarra" />
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-success px-4">Guardar</button>
@@ -97,18 +104,14 @@
                 </div>
             </form>
         </div>
-        <div class="text-center mt-3">
-            <a asp-controller="Cobros" asp-action="Create" class="btn btn-warning px-4">Registrar Cobro</a>
-        </div>
-
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
-    }
 </body>
 </html>
+
+
 

@@ -10,11 +10,14 @@ namespace GimnasioCuerpoSano.Data
             : base(options)
         {
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            //Evita el borrado en cascada en la relación Cobro / Miembro y Cobro / Membresía
+            // -----------------------------
+            // Evita el borrado en cascada
+            // -----------------------------
             modelBuilder.Entity<Cobro>()
                 .HasOne(c => c.Miembro)
                 .WithMany()
@@ -26,6 +29,28 @@ namespace GimnasioCuerpoSano.Data
                 .WithMany()
                 .HasForeignKey(c => c.MembresiaId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // -----------------------------
+            // Configuración de decimales
+            // -----------------------------
+            modelBuilder.Entity<Cobro>()
+                .Property(c => c.Monto)
+                .HasPrecision(18, 2); // 18 dígitos, 2 decimales
+
+            modelBuilder.Entity<Membresia>()
+                .Property(m => m.Precio)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Miembro>()
+                .Property(m => m.ValorMembresia)
+                .HasPrecision(18, 2);
+
+            // -----------------------------
+            // Código de barras obligatorio
+            // -----------------------------
+            modelBuilder.Entity<Miembro>()
+                .Property(m => m.CodigoBarra)
+                .IsRequired();
         }
 
         public DbSet<Miembro> Miembros { get; set; }
@@ -33,8 +58,6 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
         public DbSet<Sala> Salas { get; set; }
-
-
-
     }
 }
+

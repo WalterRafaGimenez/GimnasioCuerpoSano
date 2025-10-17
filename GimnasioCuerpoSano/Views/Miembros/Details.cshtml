@@ -49,6 +49,18 @@
         .btn {
             border-radius: 8px;
         }
+
+        .foto-miembro {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        .barcode {
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -56,6 +68,23 @@
     <div class="container">
         <div class="card">
             <h2>Detalles del Miembro</h2>
+
+            <!-- FOTO -->
+            @if (!string.IsNullOrEmpty(Model.Foto))
+            {
+                <div class="text-center">
+                    <img src="@Model.Foto" alt="Foto del miembro" class="foto-miembro shadow-sm" />
+                </div>
+            }
+
+            <!-- CÓDIGO DE BARRA -->
+            @if (!string.IsNullOrEmpty(Model.CodigoBarra))
+            {
+                <div class="text-center barcode">
+                    <img src="https://barcode.tec-it.com/barcode.ashx?data=@Model.CodigoBarra&code=Code128&translate-esc=true" alt="Código de barras" />
+                    <div class="mt-1">@Model.CodigoBarra</div>
+                </div>
+            }
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
@@ -87,7 +116,6 @@
                 <div class="value-box">@Model.Membresia?.Nombre</div>
             </div>
 
-
             <div class="mb-3">
                 <label class="form-label">Descuento especial</label>
                 <div class="value-box">@(Model.DescuentoEspecial ? "Sí (15%)" : "No")</div>
@@ -106,12 +134,14 @@
             <div class="text-center mt-4">
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
                 <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+                <a asp-action="GenerarPDF" asp-route-id="@Model.Id" class="btn btn-success px-4 ms-2">Imprimir carnet</a>
+
             </div>
         </div>
-
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 

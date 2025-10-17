@@ -20,6 +20,11 @@
             <div class="alert alert-success text-center">@TempData["Mensaje"]</div>
         }
 
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
         <div class="text-center mb-4">
             <a asp-action="Create" class="btn btn-success">➕ Registrar Nuevo Cobro</a>
             <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>

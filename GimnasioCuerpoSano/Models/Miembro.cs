@@ -53,6 +53,9 @@ namespace GimnasioCuerpoSano.Models
 
         [Display(Name = "Foto (opcional)")]
         public string? Foto { get; set; } = string.Empty; // Opcional, ruta o nombre de archivo, no obligatorio
+
+        [Display(Name = "Código de barras")]
+        public string? CodigoBarra { get; set; } = string.Empty;
     }
 }
 

@@ -39,12 +39,11 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="card">
             <h2 class="text-center">Editar Miembro</h2>
 
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -86,10 +85,19 @@
                     <span asp-validation-for="MembresiaId" class="text-danger"></span>
                 </div>
 
-
                 <div class="form-check mb-3">
                     <input asp-for="DescuentoEspecial" class="form-check-input" />
                     <label asp-for="DescuentoEspecial" class="form-check-label"></label>
+                </div>
+
+                <!-- FOTO OPCIONAL -->
+                <div class="mb-3">
+                    <label for="fotoArchivo" class="form-label">Foto (opcional)</label>
+                    <input type="file" name="fotoArchivo" class="form-control" accept="image/*" />
+                    @if (!string.IsNullOrEmpty(Model.Foto))
+                    {
+                        <img src="@Model.Foto" alt="Foto actual" class="img-thumbnail mt-2" style="max-width:150px;" />
+                    }
                 </div>
 
                 <div class="text-center">
@@ -97,16 +105,14 @@
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
             </form>
-
         </div>
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
+        @await Html.PartialAsync("_ValidationScriptsPartial")
     }
+
 </body>
 </html>
+
 

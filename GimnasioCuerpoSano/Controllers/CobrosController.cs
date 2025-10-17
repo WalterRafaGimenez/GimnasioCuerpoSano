@@ -122,11 +122,23 @@ namespace GimnasioCuerpoSano.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var cobro = await _context.Cobros.FindAsync(id);
-            if (cobro != null)
+            var cobro = await _context.Cobros
+                .Include(c => c.Miembro)
+                .Include(c => c.Membresia)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cobro == null)
+                return NotFound();
+
+            try
             {
                 _context.Cobros.Remove(cobro);
                 await _context.SaveChangesAsync();
+                TempData["Mensaje"] = "Cobro eliminado correctamente.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["Error"] = "No se puede eliminar este cobro porque está relacionado con otro registro.";
             }
 
             return RedirectToAction(nameof(Index));

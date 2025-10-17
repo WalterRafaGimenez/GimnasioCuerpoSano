@@ -1,17 +1,23 @@
 using GimnasioCuerpoSano.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// -----------------------------------------------------
+// Logging detallado para debug
+// -----------------------------------------------------
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 // -----------------------------------------------------
 // Servicios principales
 // -----------------------------------------------------
 builder.Services.AddControllersWithViews();
 
-//Configuraci�n de EF Core (con tu conexi�n actual)
+// Configuración de EF Core
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -25,9 +31,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 // -----------------------------------------------------
 var app = builder.Build();
-// -----------------------------------------------------
 
-//Configuraci�n del pipeline HTTP
+// Configuración del pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -36,23 +41,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
-//Habilitar autenticaci�n y autorizaci�n
+// Habilitar autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapRazorPages();//esto habilita las páginas de login/register
+app.MapRazorPages(); // Login/Register
 
-
-//Rutas por defecto
+// Rutas por defecto
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // -----------------------------------------------------
-// Inicializaci�n de datos (DB + Roles base)
-// -----------------------------------------------------
+// Inicialización de datos (DB + Roles base)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -62,13 +64,11 @@ using (var scope = app.Services.CreateScope())
     // Inicializa datos de ejemplo solo si no existen
     DbInitializer.Initialize(context);
 
-    // 👉 Crea los roles si aún no existen
+    // Crear roles base
     string[] roles = new[] { "Administrador", "Empleado", "Miembro" };
-
     foreach (var role in roles)
     {
-        var roleExist = await roleManager.RoleExistsAsync(role);
-        if (!roleExist)
+        if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
         }
@@ -94,14 +94,18 @@ using (var scope = app.Services.CreateScope())
         {
             await userManager.AddToRoleAsync(newAdmin, "Administrador");
         }
+        else
+        {
+            // Loguea errores si no se pudo crear el admin
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"Error creando admin: {error.Description}");
+            }
+        }
     }
-
-
-
 }
 
 // -----------------------------------------------------
 await app.RunAsync();
-
 
 
