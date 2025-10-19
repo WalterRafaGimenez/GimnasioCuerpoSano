@@ -89,6 +89,21 @@
                     <label asp-for="DescuentoEspecial" class="form-check-label"></label>
                 </div>
 
+                <div class="form-group">
+                    <label asp-for="TipoDocumento" class="control-label"></label>
+                    <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
+                        <option value="DNI">DNI</option>
+                        <option value="DNI-Extranjero">DNI Extranjero</option>
+                    </select>
+                    <span asp-validation-for="TipoDocumento" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DNI" class="control-label"></label>
+                    <input asp-for="DNI" class="form-control" id="dniInput" maxlength="12" />
+                    <span asp-validation-for="DNI" class="text-danger"></span>
+                </div>
+
                 <!-- FOTO OPCIONAL -->
                 <div class="mb-3">
                     <label for="fotoArchivo" class="form-label">Foto (opcional)</label>
@@ -106,10 +121,89 @@
         </div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @section Scripts {
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            const tipoDocumento = document.getElementById("tipoDocumento");
+            const dniInput = document.getElementById("dniInput");
+            const errorSpan = document.querySelector('[data-valmsg-for="DNI"]');
+            const form = document.querySelector("form");
+
+            // --- Actualiza configuración según tipo ---
+            tipoDocumento.addEventListener("change", () => {
+                dniInput.value = "";
+                errorSpan.textContent = "";
+                dniInput.setAttribute("maxlength", tipoDocumento.value === "DNI" ? "8" : "9");
+                dniInput.focus();
+            });
+
+            // --- Validación en tiempo real ---
+            dniInput.addEventListener("input", validarDNI);
+
+            // --- Bloquear símbolos según tipo ---
+            dniInput.addEventListener("keypress", function (e) {
+                const tipo = tipoDocumento.value;
+                const key = e.key;
+
+                if (tipo === "DNI") {
+                    // Solo números permitidos
+                    if (!/[0-9]/.test(key)) {
+                        e.preventDefault();
+                    }
+                } else if (tipo === "DNI-Extranjero") {
+                    // Permite números o letras (sin símbolos)
+                    if (!/[0-9a-zA-Z]/.test(key)) {
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            // --- Validación al enviar formulario ---
+            form.addEventListener("submit", function (e) {
+                const valido = validarDNI();
+                if (!valido) {
+                    e.preventDefault();
+                    dniInput.focus();
+                }
+            });
+
+            function validarDNI() {
+                const tipo = tipoDocumento.value;
+                const dni = dniInput.value.trim();
+
+                errorSpan.textContent = "";
+
+                if (!tipo) {
+                    errorSpan.textContent = "Seleccione el tipo de documento.";
+                    return false;
+                }
+
+                const soloNumeros = /^\d{8}$/;
+                const extranjero = /^\d{8}[A-Za-z0-9]{1}$/;
+
+                if (tipo === "DNI") {
+                    if (!soloNumeros.test(dni)) {
+                        errorSpan.textContent = "El DNI nacional debe tener exactamente 8 números (sin letras ni símbolos).";
+                        return false;
+                    }
+                } else if (tipo === "DNI-Extranjero") {
+                    if (!extranjero.test(dni)) {
+                        errorSpan.textContent = "El DNI extranjero debe tener 8 números seguidos de 1 letra o número (sin símbolos).";
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        </script>
+    }
+
+
+
 </body>
 </html>
 

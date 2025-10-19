@@ -56,6 +56,18 @@
         <div class="card">
             <h2>¿Eliminar este miembro?</h2>
 
+            <!-- DNI y TipoDocumento primero -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Documento</label>
+                <div class="value-box">@Model.TipoDocumento</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">DNI</label>
+                <div class="value-box">@Model.DNI</div>
+            </div>
+
+            <!-- Luego el resto de los campos -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="value-box">@Model.Nombre</div>
@@ -76,7 +88,6 @@
                 <div class="value-box">$@Model.Membresia?.Precio</div>
             </div>
 
-
             <div class="alert alert-warning text-center">
                 <strong>Atención:</strong> esta acción no se puede deshacer.
             </div>
@@ -95,4 +106,5 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 

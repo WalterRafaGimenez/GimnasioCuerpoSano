@@ -86,7 +86,19 @@
                 </div>
             }
 
+            <!-- 1️⃣ TIPO DE DOCUMENTO -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Documento</label>
+                <div class="value-box">@Model.TipoDocumento</div>
+            </div>
 
+            <!-- 2️⃣ DNI -->
+            <div class="mb-3">
+                <label class="form-label">DNI</label>
+                <div class="value-box">@Model.DNI</div>
+            </div>
+
+            <!-- 3️⃣ RESTO DE LOS CAMPOS -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="value-box">@Model.Nombre</div>
@@ -136,10 +148,10 @@
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
                 <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
                 <a asp-action="GenerarPDF" asp-route-id="@Model.Id" class="btn btn-success px-4 ms-2">Imprimir carnet</a>
-
             </div>
         </div>
     </div>
+
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>

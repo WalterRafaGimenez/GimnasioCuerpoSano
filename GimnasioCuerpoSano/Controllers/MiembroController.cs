@@ -121,6 +121,20 @@ namespace GimnasioCuerpoSano.Controllers
 
             try
             {
+                // --------------- Validación personalizada DNI ---------------
+                if (miembro.TipoDocumento == "DNI" && (miembro.DNI == null || miembro.DNI.Length != 8))
+                {
+                    ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
+                }
+                else if (miembro.TipoDocumento == "DNI-Extranjero" && (miembro.DNI == null || miembro.DNI.Length != 9))
+                {
+                    ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
+                }
+                else if (string.IsNullOrWhiteSpace(miembro.DNI))
+                {
+                    ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
+                }
+
                 // --------------- Validación ModelState ---------------
                 if (!ModelState.IsValid)
                 {
@@ -387,62 +401,86 @@ namespace GimnasioCuerpoSano.Controllers
             if (miembro == null)
                 return NotFound();
 
-            // -----------------------------
-            // Generar código de barras en memoria con ZXing + ImageSharp
-            // -----------------------------
-
-            // Generar el código de barras en memoria
+            // Código de barras
             byte[] barcodeBytes;
             var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>
             {
-                Format = BarcodeFormat.CODE_128,
+                Format = ZXing.BarcodeFormat.CODE_128,
                 Options = new ZXing.Common.EncodingOptions
                 {
-                    Width = 200,
-                    Height = 50,
+                    Width = 300,
+                    Height = 80,
                     Margin = 0,
                     PureBarcode = true
-                },
-               // Renderer = new ZXing.Rendering.PixelDataRenderer() // ZXing por defecto
+                }
             };
 
-            // Generar imagen
             using (var image = writer.Write(miembro.CodigoBarra))
             {
                 using var ms = new MemoryStream();
-                image.Save(ms, new PngEncoder());
+                image.Save(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
                 barcodeBytes = ms.ToArray();
             }
 
-            // -----------------------------
-            // Generar PDF con QuestPDF
-            // -----------------------------
+            // Foto opcional
+            byte[]? fotoBytes = null;
+            if (!string.IsNullOrEmpty(miembro.Foto))
+            {
+                var rutaFoto = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", miembro.Foto.TrimStart('/'));
+                if (System.IO.File.Exists(rutaFoto))
+                    fotoBytes = await System.IO.File.ReadAllBytesAsync(rutaFoto);
+            }
+
+            // Generar PDF
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
             var pdfBytes = Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(PageSizes.A7); // tamaño carnet pequeño
+                    page.Size(PageSizes.A7);
                     page.Margin(10);
-                    page.Content().Column(col =>
+                    page.Background(Colors.Grey.Lighten3);
+
+                    page.Content().Padding(5).Column(col =>
                     {
-                        col.Item().Text("CARNET DE SOCIO").FontSize(14).AlignCenter();
-                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
-                        col.Item().Text($"{miembro.Nombre} {miembro.Apellido}").FontSize(12).AlignCenter();
+                        // Contenedor principal con borde
+                        col.Item().Border(1).BorderColor(Colors.Grey.Medium).Padding(5).Column(innerCol =>
+                        {
+                            innerCol.Item().Text("CARNET DE SOCIO")
+                                .FontSize(14)
+                                .Bold()
+                                .FontColor(Colors.Blue.Medium)
+                                .AlignCenter();
 
-                        col.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}").FontSize(10).AlignCenter();
-                        col.Item().Text($"Alta: {miembro.FechaAlta:dd/MM/yyyy}").FontSize(10).AlignCenter();
+                            innerCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
 
-                        // Imagen del código de barras
-                        col.Item().Image(barcodeBytes, ImageScaling.FitWidth);
+                            innerCol.Item().Text($"DNI: {miembro.DNI}").FontSize(10).AlignCenter();
+                            innerCol.Item().Text($"{miembro.Nombre} {miembro.Apellido}").FontSize(12).Bold().AlignCenter();
+                            innerCol.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}").FontSize(10).AlignCenter();
+                            innerCol.Item().Text($"Fecha de alta: {miembro.FechaAlta:dd/MM/yyyy}").FontSize(10).AlignCenter();
+
+                            if (fotoBytes != null)
+                            {
+                                innerCol.Item().AlignCenter().Image(fotoBytes);
+                            }
+
+                            innerCol.Item().AlignCenter().Image(barcodeBytes);
+                        });
                     });
                 });
             }).GeneratePdf();
 
+
+
+
+
             Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
             return File(pdfBytes, "application/pdf");
         }
+
+
+
 
 
 

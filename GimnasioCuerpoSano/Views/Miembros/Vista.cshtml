@@ -14,27 +14,53 @@
 }
 
 <form asp-action="Create" method="post">
-    <div class="form-group">
+    <!-- TIPO DE DOCUMENTO -->
+    <div class="form-group mb-3">
+        <label asp-for="TipoDocumento"></label>
+        <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
+            <option value="DNI">DNI</option>
+            <option value="DNI-Extranjero">DNI Extranjero</option>
+        </select>
+        <span asp-validation-for="TipoDocumento" class="text-danger"></span>
+    </div>
+
+    <!-- DNI -->
+    <div class="form-group mb-3">
+        <label asp-for="DNI"></label>
+        <input asp-for="DNI" class="form-control" id="dniInput" maxlength="12" />
+        <span asp-validation-for="DNI" class="text-danger"></span>
+    </div>
+
+    <!-- NOMBRE -->
+    <div class="form-group mb-3">
         <label asp-for="Nombre"></label>
         <input asp-for="Nombre" class="form-control" />
         <span asp-validation-for="Nombre" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <!-- APELLIDO -->
+    <div class="form-group mb-3">
         <label asp-for="Apellido"></label>
         <input asp-for="Apellido" class="form-control" />
         <span asp-validation-for="Apellido" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <!-- DIRECCIÓN -->
+    <div class="form-group mb-3">
         <label asp-for="Direccion"></label>
         <input asp-for="Direccion" class="form-control" />
         <span asp-validation-for="Direccion" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <!-- TELÉFONO -->
+    <div class="form-group mb-3">
         <label asp-for="Telefono"></label>
         <input asp-for="Telefono" class="form-control" />
         <span asp-validation-for="Telefono" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <!-- MAIL -->
+    <div class="form-group mb-3">
         <label asp-for="Mail"></label>
         <input asp-for="Mail" class="form-control" />
         <span asp-validation-for="Mail" class="text-danger"></span>
@@ -43,31 +69,35 @@
     <hr />
     <h4>Membresía</h4>
 
-    <div class="form-group">
+    <!-- TIPO DE MEMBRESÍA -->
+    <div class="form-group mb-3">
         <label asp-for="MembresiaId" class="form-label">Tipo de Membresía</label>
-        <select asp-for="MembresiaId" class="form-control" asp-items="ViewBag.Membresias">
+        <select asp-for="MembresiaId" class="form-control" asp-items="ViewBag.Membresias" id="TipoMembresia">
             <option value="">-- Seleccione una membresía --</option>
         </select>
         <span asp-validation-for="MembresiaId" class="text-danger"></span>
     </div>
 
-
-    <div class="form-group form-check">
+    <!-- DESCUENTO -->
+    <div class="form-group form-check mb-3">
         <input asp-for="DescuentoEspecial" class="form-check-input" id="DescuentoEspecial" />
         <label asp-for="DescuentoEspecial" class="form-check-label"></label>
     </div>
 
-    <div class="form-group">
+    <!-- VALOR -->
+    <div class="form-group mb-3">
         <label asp-for="ValorMembresia"></label>
         <input asp-for="ValorMembresia" class="form-control" readonly id="ValorMembresia" />
     </div>
 
-    <div class="form-group">
+    <!-- FECHA ALTA -->
+    <div class="form-group mb-3">
         <label asp-for="FechaAlta"></label>
         <input asp-for="FechaAlta" class="form-control" readonly />
     </div>
 
-    <div class="form-group">
+    <!-- FOTO -->
+    <div class="form-group mb-3">
         <label asp-for="Foto"></label>
         <input asp-for="Foto" class="form-control" placeholder="Opcional" />
     </div>
@@ -77,11 +107,54 @@
 </form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script>
+        const tipoDocumento = document.getElementById("tipoDocumento");
+        const dniInput = document.getElementById("dniInput");
+        const errorSpan = document.querySelector('[data-valmsg-for="DNI"]');
+
+        tipoDocumento.addEventListener("change", () => {
+            dniInput.value = "";
+            errorSpan.textContent = "";
+            dniInput.focus();
+        });
+
+        dniInput.addEventListener("input", validarDNI);
+
+        function validarDNI() {
+            const tipo = tipoDocumento.value;
+            const dni = dniInput.value.trim();
+
+            if (!tipo) {
+                errorSpan.textContent = "Seleccione el tipo de documento.";
+                return;
+            }
+
+            if (tipo === "DNI") {
+                if (!/^\d*$/.test(dni)) {
+                    errorSpan.textContent = "Solo se permiten números.";
+                    return;
+                }
+                if (dni.length !== 8 && dni.length !== 0) {
+                    errorSpan.textContent = "El DNI nacional debe tener exactamente 8 dígitos.";
+                } else {
+                    errorSpan.textContent = "";
+                }
+            } else if (tipo === "DNI-Extranjero") {
+                if (!/^[a-zA-Z0-9]*$/.test(dni)) {
+                    errorSpan.textContent = "Solo se permiten números o letras, sin símbolos.";
+                    return;
+                }
+                if (dni.length !== 9 && dni.length !== 0) {
+                    errorSpan.textContent = "El DNI extranjero debe tener exactamente 9 caracteres.";
+                } else {
+                    errorSpan.textContent = "";
+                }
+            }
+        }
+
+        // Membresía
         const tipoSelect = document.getElementById("TipoMembresia");
         const descuentoCheck = document.getElementById("DescuentoEspecial");
         const valorInput = document.getElementById("ValorMembresia");
@@ -106,3 +179,4 @@
         descuentoCheck.addEventListener("change", calcularValor);
     </script>
 }
+

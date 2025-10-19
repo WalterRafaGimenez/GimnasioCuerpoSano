@@ -48,6 +48,22 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">
+                    <label asp-for="TipoDocumento" class="form-label"></label>
+                    <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
+                        {{-- Razor seleccionará automáticamente el valor que coincida con Model.TipoDocumento --}}
+                        <option value="DNI">DNI</option>
+                        <option value="DNI-Extranjero">DNI Extranjero</option>
+                    </select>
+                    <span asp-validation-for="TipoDocumento" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DNI" class="form-label"></label>
+                    <input asp-for="DNI" class="form-control" id="dniInput" maxlength="12" />
+                    <span asp-validation-for="DNI" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
                     <label asp-for="Nombre" class="form-label"></label>
                     <input asp-for="Nombre" class="form-control" />
                     <span asp-validation-for="Nombre" class="text-danger"></span>

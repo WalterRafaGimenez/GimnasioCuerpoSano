@@ -1,14 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace GimnasioCuerpoSano.Models
 {
-    public class Miembro
+    public class Miembro : IValidatableObject
     {
-        // -----------------------------
-        // Campos obligatorios inicializados
-        // -----------------------------
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -32,14 +30,11 @@ namespace GimnasioCuerpoSano.Models
         [EmailAddress(ErrorMessage = "Debe ser un correo válido")]
         public string Mail { get; set; } = string.Empty;
 
-        // -----------------------------
-        // Campos de membresía
-        // -----------------------------
         [Display(Name = "Tipo de membresía")]
         [ForeignKey("Membresia")]
-        public int MembresiaId { get; set; } // clave foránea
+        public int MembresiaId { get; set; }
 
-        public Membresia? Membresia { get; set; } // navegación
+        public Membresia? Membresia { get; set; }
 
         [Display(Name = "Es estudiante o jubilado")]
         public bool DescuentoEspecial { get; set; }
@@ -47,16 +42,42 @@ namespace GimnasioCuerpoSano.Models
         [Display(Name = "Valor de membresía")]
         public decimal ValorMembresia { get; set; }
 
-
         [Display(Name = "Fecha y hora de alta")]
         public DateTime FechaAlta { get; set; } = DateTime.Now;
 
         [Display(Name = "Foto (opcional)")]
-        public string? Foto { get; set; } = string.Empty; // Opcional, ruta o nombre de archivo, no obligatorio
+        public string? Foto { get; set; } = string.Empty;
 
         [Display(Name = "Código de barras")]
         public string? CodigoBarra { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El DNI es obligatorio")]
+        [Display(Name = "Número de Documento")]
+        [StringLength(12, ErrorMessage = "El DNI no puede superar los 12 caracteres")]
+        public string DNI { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El tipo de documento es obligatorio")]
+        [Display(Name = "Tipo de Documento")]
+        public string TipoDocumento { get; set; } = "DNI"; // valores: "DNI" o "DNI Extranjero"
+
+        // ===============================
+        // VALIDACIÓN PERSONALIZADA
+        // ===============================
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (TipoDocumento == "DNI")
+            {
+                if (!Regex.IsMatch(DNI, @"^\d{8}$"))
+                    yield return new ValidationResult("El DNI debe tener exactamente 8 dígitos numéricos.", new[] { nameof(DNI) });
+            }
+            else if (TipoDocumento == "DNI Extranjero")
+            {
+                if (!Regex.IsMatch(DNI, @"^\d{8}[A-Za-z0-9]{1}$"))
+                    yield return new ValidationResult("El DNI extranjero debe tener 8 números seguidos de un carácter (número o letra, sin símbolos).", new[] { nameof(DNI) });
+            }
+        }
     }
 }
+
 
 
