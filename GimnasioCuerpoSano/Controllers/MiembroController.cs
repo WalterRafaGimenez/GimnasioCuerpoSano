@@ -411,7 +411,7 @@ namespace GimnasioCuerpoSano.Controllers
                     Width = 300,
                     Height = 80,
                     Margin = 0,
-                    PureBarcode = true
+                   //PureBarcode = true
                 }
             };
 
@@ -432,44 +432,57 @@ namespace GimnasioCuerpoSano.Controllers
             }
 
             // Generar PDF
+            float mmToPoints(float mm) => mm * 72f / 25.4f; // 1 pulgada = 25.4 mm, 1 pulgada = 72 pt
+
+            float width = mmToPoints(85);  // 85 mm
+            float height = mmToPoints(54); // 54 mm
+
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
             var pdfBytes = Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(PageSizes.A7);
-                    page.Margin(10);
-                    page.Background(Colors.Grey.Lighten3);
+                    page.Size(width, height); // tamaño carnet
+                    page.Margin(5);
+                    page.Background(QuestPDF.Helpers.Colors.White);
 
                     page.Content().Padding(5).Column(col =>
                     {
-                        // Contenedor principal con borde
-                        col.Item().Border(1).BorderColor(Colors.Grey.Medium).Padding(5).Column(innerCol =>
-                        {
-                            innerCol.Item().Text("CARNET DE SOCIO")
-                                .FontSize(14)
-                                .Bold()
-                                .FontColor(Colors.Blue.Medium)
-                                .AlignCenter();
+                        col.Spacing(2);
+                        col.Item().Text("CARNET DE SOCIO")
+                            .FontSize(10)
+                            .Bold()
+                            .AlignCenter();
 
-                            innerCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                        col.Item().LineHorizontal(1)
+                            .LineColor(QuestPDF.Helpers.Colors.Grey.Medium);
 
-                            innerCol.Item().Text($"DNI: {miembro.DNI}").FontSize(10).AlignCenter();
-                            innerCol.Item().Text($"{miembro.Nombre} {miembro.Apellido}").FontSize(12).Bold().AlignCenter();
-                            innerCol.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}").FontSize(10).AlignCenter();
-                            innerCol.Item().Text($"Fecha de alta: {miembro.FechaAlta:dd/MM/yyyy}").FontSize(10).AlignCenter();
+                        col.Item().Text($"DNI: {miembro.DNI}").FontSize(8).AlignCenter();
+                        col.Item().Text($"{miembro.Nombre} {miembro.Apellido}")
+                            .FontSize(10)
+                            .Bold()
+                            .AlignCenter();
+                        col.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}")
+                            .FontSize(8)
+                            .AlignCenter();
+                        col.Item().Text($"Fecha de alta: {miembro.FechaAlta:dd/MM/yyyy}")
+                            .FontSize(8)
+                            .AlignCenter();
 
-                            if (fotoBytes != null)
-                            {
-                                innerCol.Item().AlignCenter().Image(fotoBytes);
-                            }
+                        if (fotoBytes != null)
+                            col.Item().AlignCenter().Image(fotoBytes, ImageScaling.FitArea);
 
-                            innerCol.Item().AlignCenter().Image(barcodeBytes);
-                        });
+                        col.Item().AlignCenter().Image(barcodeBytes, ImageScaling.FitWidth);
                     });
                 });
             }).GeneratePdf();
+
+            Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
+            return File(pdfBytes, "application/pdf");
+
+
+
 
 
 

@@ -37,6 +37,8 @@
         .form-label {
             font-weight: bold;
             color: #495057;
+            display: block;
+            text-align: center;
         }
 
         .value-box {
@@ -44,6 +46,9 @@
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
         }
 
         .btn {
@@ -60,7 +65,13 @@
 
         .barcode {
             margin-top: 1rem;
+            text-align: center;
         }
+
+            .barcode img {
+                display: block;
+                margin: auto;
+            }
     </style>
 </head>
 <body>
@@ -80,7 +91,7 @@
             <!-- CÓDIGO DE BARRA -->
             @if (ViewBag.Barcode != null)
             {
-                <div class="text-center barcode">
+                <div class="barcode">
                     <img src="data:image/png;base64,@Convert.ToBase64String((byte[])ViewBag.Barcode)" alt="Código de barras" />
                     <div class="mt-1">@Model.CodigoBarra</div>
                 </div>
@@ -152,9 +163,9 @@
         </div>
     </div>
 
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 

@@ -11,7 +11,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <!--<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />-->
+    <!-- Incluimos Bootstrap para las clases de tabla y botones -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 
     <style>
@@ -19,6 +20,13 @@
             background-color: #f8f9fa;
             padding: 2rem;
             font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* NUEVA CLASE PARA CENTRAR EL LISTADO */
+        .list-container {
+            max-width: 1400px; /* Ancho máximo para el contenido, puedes ajustarlo si quieres más o menos */
+            margin: 0 auto; /* Centra el contenedor horizontalmente */
+            padding: 0 15px; /* Pequeño padding lateral para responsividad */
         }
 
         .card {
@@ -49,7 +57,8 @@
 </head>
 <body>
 
-    <div class="container">
+    <!-- APLICAMOS LA CLASE list-container AL DIV PRINCIPAL -->
+    <div class="list-container">
         <div class="text-center mb-4">
             <h2>Listado de Miembros</h2>
 
@@ -63,7 +72,8 @@
 
         @if (Model != null && Model.Any())
         {
-            <div class="table-responsive">
+            <!-- La tabla está envuelta en table-responsive y usa las clases de Bootstrap -->
+            <div class="table-responsive card">
                 <table class="table table-striped table-bordered align-middle text-center">
                     <thead>
                         <tr>
@@ -98,9 +108,13 @@
                                 <td>$@item.ValorMembresia</td>
                                 <td>@item.FechaAlta.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Editar</a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Ver</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Eliminar</a>
+                                    <!-- Agrupamos los botones en un div para mejor control de espacio -->
+                                    <div class="d-grid gap-2 d-md-block">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
+                                        <!-- Usamos un botón para Delete que puede requerir confirmación -->
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -112,13 +126,15 @@
         {
             <div class="alert alert-info text-center">No hay miembros registrados.</div>
         }
-    </div>
 
-    <div class="text-center mt-4">
-        <a asp-action="Create" class="btn btn-success px-4">Nueva Membresía</a>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
-    </div>
+        <!-- También centramos los botones inferiores en el listado -->
+        <div class="text-center mt-4">
+            <a asp-action="Create" class="btn btn-success px-4">Nueva Membresía</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
+        </div>
+    </div> <!-- Cierre de .list-container -->
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
