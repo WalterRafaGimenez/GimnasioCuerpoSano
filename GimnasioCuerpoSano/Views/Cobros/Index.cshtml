@@ -26,7 +26,10 @@
         }
 
         <div class="text-center mb-4">
-            <a asp-action="Create" class="btn btn-success">➕ Registrar Nuevo Cobro</a>
+            <a asp-action="Create" class="btn btn-success">Registrar Nuevo Cobro</a>
+            <a asp-action="ListadoPDF" class="btn btn-primary" target="_blank">
+                Imprimir Listado PDF
+            </a>
             <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
         </div>
 
@@ -57,8 +60,8 @@
                             @cobro.Estado
                         </td>
                         <td>
-                            <a asp-action="Details" asp-route-id="@cobro.Id" class="btn btn-primary btn-sm">👁 Ver</a>
-                            <a asp-action="Delete" asp-route-id="@cobro.Id" class="btn btn-danger btn-sm">🗑 Eliminar</a>
+                            <a asp-action="Details" asp-route-id="@cobro.Id" class="btn btn-primary btn-sm">Ver</a>
+                            <a asp-action="Delete" asp-route-id="@cobro.Id" class="btn btn-danger btn-sm">Eliminar</a>
                         </td>
                     </tr>
                 }

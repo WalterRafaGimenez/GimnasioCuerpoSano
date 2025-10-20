@@ -10,10 +10,28 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        /* Estilo para centrar y dimensionar el logo */
+        .header-logo {
+            display: block; /* Asegura que la imagen sea un bloque */
+            margin: 0 auto 10px auto; /* Centra horizontalmente y añade margen inferior */
+            max-width: 120px; /* Define el ancho máximo del logo (ajusta este valor) */
+            height: auto; /* Mantiene la proporción */
+        }
+
+        /* Oculta o ajusta el título si el logo ocupa su lugar */
+        .main-title {
+            text-align: center;
+            margin-bottom: 0; /* Lo hacemos pegado al título */
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">🏋️ Gimnasio Cuerpo Sano</h1>
+
+        <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
+
+        <h1 class="text-center mb-4 main-title">Gimnasio Cuerpo Sano</h1>
 
         @if (User?.Identity?.IsAuthenticated ?? false)
         {
@@ -74,4 +92,3 @@
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

@@ -178,7 +178,7 @@ namespace GimnasioCuerpoSano.Controllers
                     page.Margin(40);
 
                     page.Header()
-                        .Text("🏋️‍♂️ Gimnasio Cuerpo Sano")
+                        .Text("Gimnasio Cuerpo Sano")
                         .SemiBold().FontSize(20).AlignCenter().FontColor(Colors.Blue.Medium);
 
                     page.Content()
@@ -211,6 +211,105 @@ namespace GimnasioCuerpoSano.Controllers
             Response.Headers["Content-Disposition"] = $"inline; filename=Recibo_{cobro.Codigo}.pdf";
             return File(pdfBytes, "application/pdf");
         }
+
+        // =====================================================
+        // LISTADO DE COBROS EN PDF - ABRIR EN NAVEGADOR
+        // =====================================================
+        public async Task<IActionResult> ListadoPDF()
+        {
+            var cobros = await _context.Cobros
+                .Include(c => c.Miembro)
+                .Include(c => c.Membresia)
+                .OrderBy(c => c.FechaPago)
+                .ToListAsync();
+
+            // Ruta del logo
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.PageColor(Colors.White);
+
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado de Cobros")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // ============= CONTENIDO =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(70);   // Código
+                            columns.RelativeColumn(2);    // Socio
+                            columns.RelativeColumn(2);    // Membresía
+                            columns.RelativeColumn(1);    // Método Pago
+                            columns.RelativeColumn(1);    // Monto
+                            columns.RelativeColumn(1);    // Fecha Pago
+                            columns.RelativeColumn(1);    // Estado
+                        });
+
+                        // Encabezado
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Código").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Socio").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Membresía").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Método Pago").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Monto").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Fecha Pago").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Estado").Bold();
+                        });
+
+                        // Filas de datos
+                        foreach (var c in cobros)
+                        {
+                            table.Cell().Padding(5).Text(c.Codigo);
+                            table.Cell().Padding(5).Text($"{c.Miembro?.Nombre} {c.Miembro?.Apellido}");
+                            table.Cell().Padding(5).Text(c.Membresia?.Nombre);
+                            table.Cell().Padding(5).Text(c.MetodoPago);
+                            table.Cell().Padding(5).Text($"${c.Monto:N2}");
+                            table.Cell().Padding(5).Text(c.FechaPago.ToString("dd/MM/yyyy"));
+                            table.Cell().Padding(5).Text(c.Estado)
+                                 .FontColor(c.Estado == "Vencido" ? Colors.Red.Medium : Colors.Green.Medium);
+                        }
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("Generado el ").FontSize(10);
+                        x.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(10).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // Abrir PDF directamente en navegador
+            Response.Headers["Content-Disposition"] = "inline; filename=ListadoCobros.pdf";
+            return File(pdfBytes, "application/pdf");
+        }
+
     }
 }
 

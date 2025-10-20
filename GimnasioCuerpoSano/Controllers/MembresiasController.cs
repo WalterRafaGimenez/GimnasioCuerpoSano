@@ -3,7 +3,9 @@ using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 
 namespace GimnasioCuerpoSano.Controllers
@@ -153,5 +155,90 @@ namespace GimnasioCuerpoSano.Controllers
         {
             return _context.Membresias.Any(e => e.Id == id);
         }
+
+        //Listado de Membresia por pdf
+        public async Task<IActionResult> ListadoPDF()
+        {
+            var membresias = await _context.Membresias
+                .OrderBy(m => m.Nombre)
+                .ToListAsync();
+
+            // Ruta del logo
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.PageColor(Colors.White);
+
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                        {
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+                        }
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado de Membresías")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // ============= CONTENIDO =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(50);   // ID
+                            columns.RelativeColumn(2);    // Nombre
+                            columns.RelativeColumn(1);    // Precio
+                        });
+
+                        // Encabezado
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("ID").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Precio").Bold();
+                        });
+
+                        // Filas
+                        foreach (var m in membresias)
+                        {
+                            table.Cell().Padding(5).Text(m.Id.ToString());
+                            table.Cell().Padding(5).Text(m.Nombre);
+                            table.Cell().Padding(5).Text($"${m.Precio:F2}");
+                        }
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Generado el ").FontSize(10);
+                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(10).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // Abrir PDF directamente en el navegador
+            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoMembresias.pdf");
+            return File(pdfBytes, "application/pdf");
+
+        }
     }
+
 }

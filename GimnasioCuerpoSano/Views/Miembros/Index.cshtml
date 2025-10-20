@@ -11,6 +11,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <!-- Ícono del navegador -->
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <!-- Incluimos Bootstrap para las clases de tabla y botones -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
@@ -68,6 +70,9 @@
             }
 
             <a asp-action="Create" class="btn btn-success mb-3">Agregar nuevo miembro</a>
+            <a asp-action="ImprimirListado" class="btn btn-primary mb-3 ms-2" target="_blank">
+                Imprimir Listado PDF
+            </a>
         </div>
 
         @if (Model != null && Model.Any())

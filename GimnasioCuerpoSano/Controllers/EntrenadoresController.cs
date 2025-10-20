@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace GimnasioCuerpoSano.Controllers
 {
@@ -260,6 +263,107 @@ namespace GimnasioCuerpoSano.Controllers
 
             return View();
         }
+
+        // =====================================================
+        // GENERAR PDF LISTADO DE ENTRENADORES - ABRIR EN NAVEGADOR
+        // =====================================================
+        public async Task<IActionResult> GenerarListadoPdf()
+        {
+            var entrenadores = await _context.Entrenadores
+                .OrderBy(e => e.Apellido)
+                .ThenBy(e => e.Nombre)
+                .ToListAsync();
+
+            // Ruta del logo
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.PageColor(Colors.White);
+
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado de Entrenadores")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // ============= CONTENIDO =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        // Columnas
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(60);  // Tipo Doc
+                            columns.ConstantColumn(80);  // DNI
+                            columns.RelativeColumn(2);   // Nombre
+                            columns.RelativeColumn(2);   // Apellido
+                            columns.RelativeColumn(2);   // Especialidad
+                            columns.ConstantColumn(80);  // Teléfono
+                            columns.RelativeColumn(3);   // Email
+                            columns.ConstantColumn(80);  // Venc. Certificado
+                        });
+
+                        // Encabezado
+                        table.Header(headerRow =>
+                        {
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Tipo Doc.").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("DNI").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Apellido").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Especialidad").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Teléfono").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Email").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Venc. Certificado").Bold();
+                        });
+
+                        // Filas
+                        foreach (var e in entrenadores)
+                        {
+                            table.Cell().Padding(5).Text(e.TipoDocumento);
+                            table.Cell().Padding(5).Text(e.DNI);
+                            table.Cell().Padding(5).Text(e.Nombre);
+                            table.Cell().Padding(5).Text(e.Apellido);
+                            table.Cell().Padding(5).Text(e.Especialidad);
+                            table.Cell().Padding(5).Text(e.Telefono);
+                            table.Cell().Padding(5).Text(e.Email);
+                            table.Cell().Padding(5).Text(e.FechaVencimientoCertificado?.ToString("yyyy-MM-dd") ?? "");
+                        }
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Line("© Gimnasio Cuerpo Sano " + DateTime.Now.Year);
+                        x.Line("Generado el " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // Abrir PDF directamente en nueva pestaña
+            Response.Headers["Content-Disposition"] = "inline; filename=Listado_Entrenadores.pdf";
+            return File(pdfBytes, "application/pdf");
+        }
+
     }
 }
 

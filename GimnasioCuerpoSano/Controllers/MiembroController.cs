@@ -527,6 +527,144 @@ namespace GimnasioCuerpoSano.Controllers
             return File(pdfBytes, "application/pdf");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ImprimirListado()
+        {
+            var miembros = await _context.Miembros
+                .Include(m => m.Membresia)
+                .OrderBy(m => m.Apellido)
+                .ToListAsync();
+
+            if (miembros == null || !miembros.Any())
+            {
+                return Content("No hay miembros registrados para imprimir.");
+            }
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            // Ruta del logo (ajustala si tu imagen está en otra carpeta)
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo.png");
+            var logoBytes = System.IO.File.Exists(logoPath) ? System.IO.File.ReadAllBytes(logoPath) : null;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(40);
+                    page.Size(PageSizes.A4);
+                    page.PageColor(Colors.White);
+
+                    /// ============= CABECERA =============
+                    
+                    page.Header().Row(header =>
+                    {
+                        // Columna izquierda: logo
+                        if (logoBytes != null)
+                        {
+                            header.RelativeColumn(1)
+                                  .AlignLeft()
+                                  .Container()
+                                  .Width(100)
+                                  .Image(logoBytes);
+                        }
+                        else
+                        {
+                            header.RelativeColumn(1); // espacio vacío si no hay logo
+                        }
+
+                        // Columna derecha: textos alineados a la derecha
+                        header.RelativeColumn(3).AlignRight().Column(col =>
+                        {
+                            col.Item().Text("Gimnasio Cuerpo Sano")
+                                .FontSize(20)
+                                .Bold()
+                                .FontColor(Colors.Blue.Medium)
+                                .AlignRight();
+
+                            col.Item().Text("Listado de Miembros")
+                                .FontSize(16)
+                                .Bold()
+                                .FontColor(Colors.Grey.Darken1)
+                                .AlignRight();
+
+                            col.Item().PaddingTop(5).Text($"Generado: {DateTime.Now:dd/MM/yyyy HH:mm}")
+                                .FontSize(10)
+                                .FontColor(Colors.Grey.Darken2)
+                                .AlignRight();
+                        });
+                    });
+
+
+
+                    // ============= CONTENIDO =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(60); // DNI
+                            columns.RelativeColumn(1);  // Nombre
+                            columns.RelativeColumn(1);  // Apellido
+                            columns.RelativeColumn(1);  // Mail
+                            columns.RelativeColumn(1);  // Membresía
+                            columns.RelativeColumn(1);  // Fecha Alta
+                        });
+
+                        // Encabezado
+                        table.Header(header =>
+                        {
+                            header.Cell().Element(CellStyleHeader).Text("DNI");
+                            header.Cell().Element(CellStyleHeader).Text("Nombre");
+                            header.Cell().Element(CellStyleHeader).Text("Apellido");
+                            header.Cell().Element(CellStyleHeader).Text("Mail");
+                            header.Cell().Element(CellStyleHeader).Text("Membresía");
+                            header.Cell().Element(CellStyleHeader).Text("Fecha Alta");
+
+                            static IContainer CellStyleHeader(IContainer container) =>
+                                container.DefaultTextStyle(x => x.Bold().FontColor(Colors.White))
+                                         .Background(Colors.Blue.Medium)
+                                         .PaddingVertical(5)
+                                         .PaddingHorizontal(3)
+                                         .BorderBottom(1)
+                                         .BorderColor(Colors.Grey.Lighten1);
+                        });
+
+                        // Filas
+                        bool alternar = false;
+                        foreach (var m in miembros)
+                        {
+                            var fondo = alternar ? Colors.Grey.Lighten4 : Colors.White;
+                            alternar = !alternar;
+
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.DNI);
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Nombre);
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Apellido);
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Mail ?? "-");
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Membresia?.Nombre ?? "-");
+                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.FechaAlta.ToString("dd/MM/yyyy"));
+                        }
+
+                        static IContainer CellStyle(IContainer container, string background) =>
+                            container.Background(background)
+                                     .PaddingVertical(4)
+                                     .PaddingHorizontal(3)
+                                     .BorderBottom(0.5f)
+                                     .BorderColor(Colors.Grey.Lighten2);
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Generado el ").FontSize(9);
+                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(9).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // Mostramos el PDF directamente en el navegador
+            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoMiembros.pdf");
+            return File(pdfBytes, "application/pdf");
+        }
 
 
 
