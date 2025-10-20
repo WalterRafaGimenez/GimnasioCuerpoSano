@@ -1,68 +1,141 @@
-﻿@model GimnasioCuerpoSano.Models.Entrenador
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.Entrenador>
+
 @{
     Layout = null;
-    ViewData["Title"] = "Detalles del Entrenador";
+    ViewData["Title"] = "Listado de Entrenadores";
 }
+
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Contenedor principal para centrar el listado */
+        .main-content-wrapper {
+            max-width: 1200px; /* Ancho máximo para el contenido (ajusta si es necesario) */
+            margin: 20px auto; /* Centra el contenido principal horizontalmente */
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Banner Azul Superior */
+        .header-banner {
+            background-color: #0d6efd; /* Azul de Bootstrap */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            margin: -20px -20px 20px -20px; /* Ajusta los márgenes para que encaje con el wrapper */
+        }
+
+        /* Estilo para la cabecera de la tabla (parte "negra" que quieres cambiar) */
+        .table thead th {
+            background-color: #e9ecef; /* Color gris claro para que se vea el texto negro */
+            color: #212529; /* Color de texto negro/oscuro */
+            text-align: center;
+            vertical-align: middle;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        /* Estilo para los botones de acción */
+        .btn-action-group .btn {
+            display: block; /* Hace que los botones sean bloques para que se apilen */
+            margin-bottom: 5px; /* Espacio entre botones */
+            width: 100%;
+        }
+
+        /* Contenedor de las acciones para mantenerlos alineados a la derecha y centrados */
+        td:last-child {
+            width: 1%;
+            white-space: nowrap; /* Evita que los botones se rompan en varias líneas */
+        }
+
+        /* Botones principales de la parte superior */
+        .top-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <div class="card shadow-lg">
-            <div class="card-header bg-info text-white text-center">
-                <h4>@ViewData["Title"]</h4>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Nombre</dt>
-                    <dd class="col-sm-9">@Model.Nombre</dd>
 
-                    <dt class="col-sm-3">Apellido</dt>
-                    <dd class="col-sm-9">@Model.Apellido</dd>
+    <div class="main-content-wrapper">
+        <div class="header-banner">
+            @ViewData["Title"]
+        </div>
 
-                    <dt class="col-sm-3">Dirección</dt>
-                    <dd class="col-sm-9">@Model.Direccion</dd>
+        <div class="top-buttons">
+            <a asp-action="Create" class="btn btn-success">Alta de Entrenador</a>
+            <a href="/" class="btn btn-secondary">Volver al Menú</a>
+        </div>
 
-                    <dt class="col-sm-3">Teléfono</dt>
-                    <dd class="col-sm-9">@Model.Telefono</dd>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Tipo Doc.</th>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Especialidad</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Venc. Certificado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => item.TipoDocumento)</td>
+                            <td>@Html.DisplayFor(modelItem => item.DNI)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Apellido)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Especialidad)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                            <td>@item.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="btn-action-group">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                                    <a asp-action="VerCertificado" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Ver Certificado</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-                    <dt class="col-sm-3">Email</dt>
-                    <dd class="col-sm-9">@Model.Email</dd>
-
-                    <dt class="col-sm-3">Especialidad</dt>
-                    <dd class="col-sm-9">@Model.Especialidad</dd>
-
-                    <dt class="col-sm-3">Vencimiento Certificado</dt>
-                    <dd class="col-sm-9">@Model.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</dd>
-
-                    <dt class="col-sm-3">Certificado</dt>
-                    <dd class="col-sm-9">
-                        @if (!string.IsNullOrEmpty(Model.RutaCertificado))
-                        {
-                            <a href="@("/certificados/" + System.IO.Path.GetFileName(Model.RutaCertificado))" target="_blank">Ver archivo</a>
-                        }
-                        else
-                        {
-                            <span>-</span>
-                        }
-                    </dd>
-                </dl>
-                <div class="text-center">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2"><i class="bi bi-pencil-square"></i> Editar</a>
-                    <a asp-action="Index" class="btn btn-secondary me-2"><i class="bi bi-arrow-left-circle"></i> Volver al listado</a>
-                    <a href="/" class="btn btn-primary"><i class="bi bi-house-door"></i> Volver al menú</a>
-                </div>
-            </div>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Volver al Menú</a>
         </div>
     </div>
-    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
 

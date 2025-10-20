@@ -1,7 +1,7 @@
 ﻿@model GimnasioCuerpoSano.Models.Entrenador
 @{
-    ViewData["Title"] = "Alta de Entrenador";
-    Layout = null; // Sin layout para evitar menús no deseados
+    ViewData["Title"] = "Crear Entrenador";
+    Layout = null;
 }
 
 <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
@@ -19,6 +19,33 @@
     }
 
     <form asp-action="Create" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label asp-for="TipoDocumento" class="form-label"></label>
+            <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
+                <option value="DNI">DNI</option>
+                <option value="DNI-Extranjero">DNI Extranjero</option>
+            </select>
+            <span asp-validation-for="TipoDocumento" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DNI" class="form-label"></label>
+            <input asp-for="DNI" class="form-control" id="dniInput"
+                   data-val-remote-url="@Url.Action("VerificarDNI", "Entrenadores")"
+                   data-val-remote-additionalfields="*.Id"
+                   data-val-remote-error="Ya existe otro entrenador con este DNI" />
+            <span asp-validation-for="DNI" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control"
+                   data-val-remote-url="@Url.Action("VerificarEmail", "Entrenadores")"
+                   data-val-remote-additionalfields="*.Id"
+                   data-val-remote-error="Ya existe otro entrenador con este email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
         <div class="mb-3">
             <label asp-for="Nombre" class="form-label"></label>
             <input asp-for="Nombre" class="form-control" />
@@ -44,12 +71,6 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
             <label asp-for="Especialidad" class="form-label"></label>
             <input asp-for="Especialidad" class="form-control" />
             <span asp-validation-for="Especialidad" class="text-danger"></span>
@@ -64,7 +85,6 @@
         <div class="mb-3">
             <label class="form-label">Certificado (PDF o imagen)</label>
             <input type="file" name="certificado" class="form-control" />
-            <span class="text-muted">Opcional</span>
         </div>
 
         <div class="mt-4">
@@ -75,10 +95,32 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Ajuste de maxlength según TipoDocumento
+        const tipoDocumento = document.getElementById('tipoDocumento');
+        const dniInput = document.getElementById('dniInput');
+
+        function ajustarMaxLength() {
+            if (tipoDocumento.value === 'DNI') {
+                dniInput.maxLength = 8;
+            } else {
+                dniInput.maxLength = 9;
+            }
+        }
+
+        // Solo números
+        dniInput.addEventListener('input', () => {
+            dniInput.value = dniInput.value.replace(/\D/g, '');
+        });
+
+        tipoDocumento.addEventListener('change', ajustarMaxLength);
+        ajustarMaxLength(); // inicial al cargar
+    </script>
 }
+
+
 
 
 

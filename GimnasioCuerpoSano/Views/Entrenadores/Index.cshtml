@@ -1,19 +1,41 @@
 ﻿@model IEnumerable<GimnasioCuerpoSano.Models.Entrenador>
+
 @{
     Layout = null;
     ViewData["Title"] = "Listado de Entrenadores";
 }
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        /* CSS para que el contenedor principal sea más ancho y centre el contenido */
+        .wide-container {
+            max-width: 1300px; /* Aumenta este valor para hacerlo más largo/ancho */
+            margin: auto; /* Centra el contenedor horizontalmente */
+            padding: 0 15px; /* Mantiene el padding de Bootstrap */
+        }
+
+        /* Asegura que el texto oscuro de la cabecera se vea */
+        .table-light th {
+            color: #212529 !important; /* Texto oscuro para la cabecera clara */
+            vertical-align: middle;
+        }
+
+        /* Fuerza a que los botones se queden en una sola línea y reduce el ancho de la columna Acciones */
+        .table td.actions {
+            white-space: nowrap; /* Evita saltos de línea */
+            width: 1%; /* Minimiza el ancho de la columna */
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="wide-container mt-4">
         <div class="card shadow-lg">
             <div class="card-header bg-primary text-white text-center">
                 <h4>@ViewData["Title"]</h4>
@@ -28,50 +50,47 @@
                     </a>
                 </div>
 
-                <table class="table table-bordered table-striped align-middle text-center">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>Especialidad</th>
-                            <th>Teléfono</th>
-                            <th>Email</th>
-                            <th>Venc. Certificado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var entrenador in Model)
-                        {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
                             <tr>
-                                <td>@entrenador.Nombre</td>
-                                <td>@entrenador.Apellido</td>
-                                <td>@entrenador.Especialidad</td>
-                                <td>@entrenador.Telefono</td>
-                                <td>@entrenador.Email</td>
-                                <td>@entrenador.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</td>
-                                <td>
-                                    <a asp-action="Details" asp-route-id="@entrenador.Id" class="btn btn-info btn-sm me-1">
-                                        <i class="bi bi-eye"></i> Ver
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@entrenador.Id" class="btn btn-warning btn-sm me-1">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@entrenador.Id" class="btn btn-danger btn-sm me-1">
-                                        <i class="bi bi-trash"></i> Eliminar
-                                    </a>
-                                    @if (!string.IsNullOrEmpty(entrenador.RutaCertificado))
-                                    {
-                                        <a href="@entrenador.RutaCertificado" target="_blank" class="btn btn-secondary btn-sm">
-                                            <i class="bi bi-file-earmark-pdf"></i> Ver Certificado
-                                        </a>
-                                    }
-
-                                </td>
+                                <th>Tipo Doc.</th>
+                                <th>DNI</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Especialidad</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Venc. Certificado</th>
+                                <th>Acciones</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var entrenador in Model)
+                            {
+                                <tr>
+                                    <td>@entrenador.TipoDocumento</td>
+                                    <td>@entrenador.DNI</td>
+                                    <td>@entrenador.Nombre</td>
+                                    <td>@entrenador.Apellido</td>
+                                    <td>@entrenador.Especialidad</td>
+                                    <td>@entrenador.Telefono</td>
+                                    <td>@entrenador.Email</td>
+                                    <td>@entrenador.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</td>
+                                    <td class="actions">
+                                        <a asp-action="Details" asp-route-id="@entrenador.Id" class="btn btn-info btn-sm me-1">Ver</a>
+                                        <a asp-action="Edit" asp-route-id="@entrenador.Id" class="btn btn-warning btn-sm me-1">Editar</a>
+                                        <a asp-action="Delete" asp-route-id="@entrenador.Id" class="btn btn-danger btn-sm me-1">Eliminar</a>
+                                        @if (!string.IsNullOrEmpty(entrenador.RutaCertificado))
+                                        {
+                                            <a href="@entrenador.RutaCertificado" target="_blank" class="btn btn-secondary btn-sm">Certificado</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="text-center mt-3">
                     <a href="/" class="btn btn-primary">
@@ -85,8 +104,3 @@
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-

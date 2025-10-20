@@ -31,6 +31,16 @@ namespace GimnasioCuerpoSano.Models
 
         // Nueva propiedad para guardar la ruta del archivo subido
         public string? RutaCertificado { get; set; }
+
+        [Required(ErrorMessage = "El DNI es obligatorio")]
+        [Display(Name = "Número de Documento")]
+        [StringLength(12, ErrorMessage = "El DNI no puede superar los 12 caracteres")]
+        public string DNI { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El tipo de documento es obligatorio")]
+        [Display(Name = "Tipo de Documento")]
+        public string TipoDocumento { get; set; } = "DNI"; // valores: "DNI" o "DNI-Extranjero"
+
     }
 }
 

@@ -36,6 +36,11 @@
         .btn {
             border-radius: 8px;
         }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -50,7 +55,6 @@
                 <div class="mb-3">
                     <label asp-for="TipoDocumento" class="form-label"></label>
                     <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
-                        {{-- Razor seleccionará automáticamente el valor que coincida con Model.TipoDocumento --}}
                         <option value="DNI">DNI</option>
                         <option value="DNI-Extranjero">DNI Extranjero</option>
                     </select>
@@ -61,6 +65,7 @@
                     <label asp-for="DNI" class="form-label"></label>
                     <input asp-for="DNI" class="form-control" id="dniInput" maxlength="12" />
                     <span asp-validation-for="DNI" class="text-danger"></span>
+                    <div class="info-text">El DNI debe ser único para cada miembro.</div>
                 </div>
 
                 <div class="mb-3">
@@ -91,6 +96,7 @@
                     <label asp-for="Mail" class="form-label"></label>
                     <input asp-for="Mail" class="form-control" />
                     <span asp-validation-for="Mail" class="text-danger"></span>
+                    <div class="info-text">El correo electrónico debe ser único para cada miembro.</div>
                 </div>
 
                 <div class="mb-3">
@@ -125,9 +131,87 @@
     </div>
 
     @section Scripts {
-        @await Html.PartialAsync("_ValidationScriptsPartial")
-    }
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
+        <script>
+            const tipoDocumento = document.getElementById("tipoDocumento");
+            const dniInput = document.getElementById("dniInput");
+            const mailInput = document.querySelector('[asp-for="Mail"]');
+            const dniErrorSpan = document.querySelector('[data-valmsg-for="DNI"]');
+            const mailErrorSpan = document.querySelector('[data-valmsg-for="Mail"]');
+            const form = document.querySelector("form");
+            const miembroId = @Model.Id;
+
+            tipoDocumento.addEventListener("change", () => {
+                dniInput.value = "";
+                dniErrorSpan.textContent = "";
+                dniInput.setAttribute("maxlength", tipoDocumento.value === "DNI" ? "8" : "9");
+                dniInput.focus();
+            });
+
+            dniInput.addEventListener("input", validarDNI);
+            dniInput.addEventListener("blur", validarDNIAjax);
+            mailInput.addEventListener("blur", validarMailAjax);
+
+            dniInput.addEventListener("keypress", function (e) {
+                const tipo = tipoDocumento.value;
+                const key = e.key;
+                if (tipo === "DNI" && !/[0-9]/.test(key)) e.preventDefault();
+                else if (tipo === "DNI-Extranjero" && !/[0-9a-zA-Z]/.test(key)) e.preventDefault();
+            });
+
+            form.addEventListener("submit", function (e) {
+                if (!validarDNI()) e.preventDefault();
+            });
+
+            function validarDNI() {
+                const tipo = tipoDocumento.value;
+                const dni = dniInput.value.trim();
+                dniErrorSpan.textContent = "";
+
+                if (!tipo) {
+                    dniErrorSpan.textContent = "Seleccione el tipo de documento.";
+                    return false;
+                }
+
+                const soloNumeros = /^\d{8}$/;
+                const extranjero = /^\d{8}[A-Za-z0-9]{1}$/;
+
+                if (tipo === "DNI" && !soloNumeros.test(dni)) {
+                    dniErrorSpan.textContent = "El DNI nacional debe tener exactamente 8 números (sin letras ni símbolos).";
+                    return false;
+                } else if (tipo === "DNI-Extranjero" && !extranjero.test(dni)) {
+                    dniErrorSpan.textContent = "El DNI extranjero debe tener 8 números seguidos de 1 letra o número (sin símbolos).";
+                    return false;
+                }
+
+                return true;
+            }
+
+            function validarDNIAjax() {
+                const dni = dniInput.value.trim();
+                if (!dni) return;
+
+                $.get('@Url.Action("CheckDNI", "Miembros")', { dni: dni, id: miembroId })
+                    .done(function (res) {
+                        dniErrorSpan.textContent = res.isUnique ? "" : "Este DNI ya está registrado.";
+                    });
+            }
+
+            function validarMailAjax() {
+                const mail = mailInput.value.trim();
+                if (!mail) return;
+
+                $.get('@Url.Action("CheckMail", "Miembros")', { mail: mail, id: miembroId })
+                    .done(function (res) {
+                        mailErrorSpan.textContent = res.isUnique ? "" : "Este correo ya está registrado.";
+                    });
+            }
+        </script>
+    }
 </body>
 </html>
 

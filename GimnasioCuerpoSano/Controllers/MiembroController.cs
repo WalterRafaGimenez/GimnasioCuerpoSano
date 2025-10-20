@@ -35,6 +35,22 @@ namespace GimnasioCuerpoSano.Controllers
             _logger = logger;
         }
 
+        // GET: Miembro/CheckDNI
+        public JsonResult CheckDNI(string dni)
+        {
+            var exists = _context.Miembros.Any(m => m.DNI == dni);
+            return Json(new { exists });
+        }
+
+        // GET: Miembro/CheckMail
+        public JsonResult CheckMail(string mail)
+        {
+            var exists = _context.Miembros.Any(m => m.Mail == mail);
+            return Json(new { exists });
+        }
+
+
+
         // =====================================================
         // LISTAR (INDEX)
         // =====================================================
@@ -48,7 +64,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // DETALLES DE MIEMBRO
+        // DETALLES
         // =====================================================
         public async Task<IActionResult> Details(int? id)
         {
@@ -60,22 +76,15 @@ namespace GimnasioCuerpoSano.Controllers
 
             if (miembro == null) return NotFound();
 
-            // Generar código de barras Code128 con ZXing + ImageSharp
+            // Código de barras
             var writer = new BarcodeWriterPixelData
             {
                 Format = BarcodeFormat.CODE_128,
-                Options = new EncodingOptions
-                {
-                    Width = 300,
-                    Height = 80,
-                    Margin = 1
-                }
+                Options = new EncodingOptions { Width = 300, Height = 80, Margin = 1 }
             };
 
             var pixelData = writer.Write(miembro.CodigoBarra);
-
             using var image = new Image<Rgba32>(pixelData.Width, pixelData.Height);
-
             for (int y = 0; y < pixelData.Height; y++)
             {
                 for (int x = 0; x < pixelData.Width; x++)
@@ -88,10 +97,8 @@ namespace GimnasioCuerpoSano.Controllers
                         pixelData.Pixels[idx + 3]);
                 }
             }
-
             using var ms = new MemoryStream();
             image.Save(ms, new PngEncoder());
-
             ViewBag.Barcode = ms.ToArray();
 
             return View(miembro);
@@ -105,8 +112,13 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public IActionResult Create()
         {
+            // Cargar lista de membresías para el dropdown
             ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-            return View();
+
+            // Crear objeto vacío para la vista
+            var miembro = new Miembro();
+
+            return View(miembro);
         }
 
         // =====================================================
@@ -135,6 +147,18 @@ namespace GimnasioCuerpoSano.Controllers
                     ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
                 }
 
+                // --------------- Validación de unicidad DNI y Mail ---------------
+                if (await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI))
+                {
+                    ModelState.AddModelError("DNI", "Ya existe un miembro registrado con este DNI.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(miembro.Mail) &&
+                    await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail))
+                {
+                    ModelState.AddModelError("Mail", "Ya existe un miembro registrado con este correo electrónico.");
+                }
+
                 // --------------- Validación ModelState ---------------
                 if (!ModelState.IsValid)
                 {
@@ -149,7 +173,7 @@ namespace GimnasioCuerpoSano.Controllers
                     }
 
                     ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-                    return View(miembro); // esto muestra la misma vista: puede parecer 'pegada'
+                    return View(miembro);
                 }
 
                 Console.WriteLine("ModelState válido. Buscando membresía...");
@@ -188,7 +212,6 @@ namespace GimnasioCuerpoSano.Controllers
                 }
 
                 // --------------- Generar Código de barras y validar unicidad ---------------
-                // Intentamos generar y comprobar hasta N veces si hay colisión
                 const int MAX_INTENTOS = 5;
                 bool codigoUnico = false;
                 string codigoGenerado = null;
@@ -210,10 +233,8 @@ namespace GimnasioCuerpoSano.Controllers
 
                 if (!codigoUnico)
                 {
-                    // Falla segura si no conseguimos un código único
                     ModelState.AddModelError("", "No se pudo generar un código de barras único. Intente nuevamente.");
                     ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-                    Console.WriteLine("No se logró generar código de barras único tras varios intentos.");
                     return View(miembro);
                 }
 
@@ -221,16 +242,8 @@ namespace GimnasioCuerpoSano.Controllers
                 Console.WriteLine("Código de barras final asignado: " + miembro.CodigoBarra);
 
                 // --------------- Agregar y guardar ---------------
-                Console.WriteLine("Antes de _context.Miembros.Add");
                 _context.Miembros.Add(miembro);
-                Console.WriteLine("Después de Add, antes de SaveChangesAsync");
-
-                // Opcional: establecer un timeout corto para detectar bloqueos largos (requires SQL client config normally).
-                // Aquí medimos tiempo con Stopwatch y si excede X ms, lo reportamos en consola.
-                sw.Restart();
                 await _context.SaveChangesAsync();
-                sw.Stop();
-                Console.WriteLine($"SaveChangesAsync completado en {sw.ElapsedMilliseconds} ms");
 
                 TempData["UltimoMiembroId"] = miembro.Id;
                 TempData["Mensaje"] = $"Miembro registrado correctamente. Código de barra: {miembro.CodigoBarra}";
@@ -241,12 +254,12 @@ namespace GimnasioCuerpoSano.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine("Excepción al crear miembro: " + ex.ToString());
-                // Agregamos mensaje de error para ver qué pasó
                 ModelState.AddModelError("", "Error al guardar el miembro: " + ex.Message);
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
                 return View(miembro);
             }
         }
+
 
         // =====================================================
         // MÉTODOS PRIVADOS AUXILIARES
@@ -270,6 +283,7 @@ namespace GimnasioCuerpoSano.Controllers
             return DateTime.Now > fechaVencimiento ? "Vencido" : "Vigente";
         }
 
+
         // =====================================================
         // EDITAR (GET)
         // =====================================================
@@ -283,9 +297,6 @@ namespace GimnasioCuerpoSano.Controllers
             return View(miembro);
         }
 
-        // =====================================================
-        // EDITAR (POST)
-        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Miembro miembro, IFormFile? fotoArchivo)
@@ -294,6 +305,22 @@ namespace GimnasioCuerpoSano.Controllers
                 return NotFound();
 
             ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+
+            // --- Validación DNI ---
+            if (miembro.TipoDocumento == "DNI" && (miembro.DNI == null || miembro.DNI.Length != 8))
+                ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
+            else if (miembro.TipoDocumento == "DNI-Extranjero" && (miembro.DNI == null || miembro.DNI.Length != 9))
+                ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
+            else if (string.IsNullOrWhiteSpace(miembro.DNI))
+                ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
+
+            // --- Validación unicidad DNI y Mail ---
+            if (await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI && m.Id != miembro.Id))
+                ModelState.AddModelError("DNI", "Ya existe otro miembro registrado con este DNI.");
+
+            if (!string.IsNullOrWhiteSpace(miembro.Mail) &&
+                await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail && m.Id != miembro.Id))
+                ModelState.AddModelError("Mail", "Ya existe otro miembro registrado con este correo electrónico.");
 
             if (!ModelState.IsValid)
                 return View(miembro);
@@ -315,7 +342,7 @@ namespace GimnasioCuerpoSano.Controllers
 
             miembro.ValorMembresia = valorBase;
 
-            // FOTO
+            // --- Manejo de foto ---
             if (fotoArchivo != null && fotoArchivo.Length > 0)
             {
                 var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
@@ -337,6 +364,7 @@ namespace GimnasioCuerpoSano.Controllers
                 miembro.Foto = miembroExistente.Foto;
             }
 
+            // --- Código de barra ---
             miembro.CodigoBarra = miembroExistente.CodigoBarra ?? Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
 
             try
@@ -354,6 +382,23 @@ namespace GimnasioCuerpoSano.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================================
+        // MÉTODOS AJAX PARA VALIDAR UNICIDAD EN TIEMPO REAL
+        // =====================================================
+        [HttpGet]
+        public async Task<JsonResult> CheckDNI(string dni, int id)
+        {
+            var isUnique = !await _context.Miembros.AnyAsync(m => m.DNI == dni && m.Id != id);
+            return Json(new { isUnique });
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> CheckMail(string mail, int id)
+        {
+            var isUnique = !await _context.Miembros.AnyAsync(m => m.Mail == mail && m.Id != id);
+            return Json(new { isUnique });
         }
 
         // =====================================================
@@ -477,16 +522,6 @@ namespace GimnasioCuerpoSano.Controllers
                     });
                 });
             }).GeneratePdf();
-
-            Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
-            return File(pdfBytes, "application/pdf");
-
-
-
-
-
-
-
 
             Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
             return File(pdfBytes, "application/pdf");

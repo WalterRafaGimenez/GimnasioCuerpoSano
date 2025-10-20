@@ -1,18 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using GimnasioCuerpoSano.Data;
-using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using GimnasioCuerpoSano.Data;
+using GimnasioCuerpoSano.Models;
 
 namespace GimnasioCuerpoSano.Controllers
 {
     public class EntrenadoresController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _environment; // Para acceder a wwwroot
+        private readonly IWebHostEnvironment _environment;
 
         public EntrenadoresController(ApplicationDbContext context, IWebHostEnvironment environment)
         {
@@ -20,14 +22,18 @@ namespace GimnasioCuerpoSano.Controllers
             _environment = environment;
         }
 
-        // GET: Entrenadores
+        // =====================================================
+        // INDEX
+        // =====================================================
         public IActionResult Index()
         {
             var entrenadores = _context.Entrenadores.ToList();
             return View(entrenadores);
         }
 
-        // GET: Entrenadores/Details/5
+        // =====================================================
+        // DETAILS
+        // =====================================================
         public IActionResult Details(int id)
         {
             var entrenador = _context.Entrenadores.FirstOrDefault(e => e.Id == id);
@@ -35,59 +41,40 @@ namespace GimnasioCuerpoSano.Controllers
             return View(entrenador);
         }
 
-        // GET: Entrenadores/Create
+        // =====================================================
+        // CREATE (GET)
+        // =====================================================
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Entrenadores/Create
+        // =====================================================
+        // CREATE (POST)
+        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Entrenador entrenador, IFormFile? certificado)
+        public async Task<IActionResult> Create(Entrenador entrenador, IFormFile? certificado)
         {
-            try
+            // --- Validación DNI ---
+            ValidarDNIEmail(entrenador);
+
+            if (!ModelState.IsValid) return View(entrenador);
+
+            // --- Manejo de certificado ---
+            if (certificado != null && certificado.Length > 0)
             {
-                if (!ModelState.IsValid)
-                {
-                    ViewBag.Error = "El modelo no es válido.";
-                    return View(entrenador);
-                }
-
-                // Carpeta destino dentro de wwwroot/certificados2
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "certificados2");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                if (certificado != null && certificado.Length > 0)
-                {
-                    var nombreArchivo = Guid.NewGuid() + Path.GetExtension(certificado.FileName);
-                    var rutaCompleta = Path.Combine(uploadsFolder, nombreArchivo);
-
-                    using (var stream = new FileStream(rutaCompleta, FileMode.Create))
-                    {
-                        certificado.CopyTo(stream);
-                    }
-
-                    // Guardar ruta relativa en la entidad
-                    entrenador.RutaCertificado = "/certificados2/" + nombreArchivo;
-                }
-
-                _context.Entrenadores.Add(entrenador);
-                _context.SaveChanges();
-
-                return RedirectToAction(nameof(Index));
+                entrenador.RutaCertificado = await GuardarCertificado(certificado);
             }
-            catch (Exception ex)
-            {
-                ViewBag.Error = "Error al guardar el entrenador: " + ex.Message;
-                return View(entrenador);
-            }
+
+            _context.Entrenadores.Add(entrenador);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-
-
-        // GET: Entrenadores/Edit/5
+        // =====================================================
+        // EDIT (GET)
+        // =====================================================
         public IActionResult Edit(int id)
         {
             var entrenador = _context.Entrenadores.Find(id);
@@ -95,65 +82,52 @@ namespace GimnasioCuerpoSano.Controllers
             return View(entrenador);
         }
 
-        // POST: Entrenadores/Edit/5
+        // =====================================================
+        // EDIT (POST)
+        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Entrenador entrenador, IFormFile? certificado)
+        public async Task<IActionResult> Edit(int id, Entrenador entrenador, IFormFile? certificado)
         {
             if (id != entrenador.Id) return NotFound();
+
+            ValidarDNIEmail(entrenador, id);
+
             if (!ModelState.IsValid) return View(entrenador);
 
-            var entrenadorExistente = _context.Entrenadores.Find(id);
+            var entrenadorExistente = await _context.Entrenadores.FindAsync(id);
             if (entrenadorExistente == null) return NotFound();
 
-            try
+            // --- Actualizar datos ---
+            entrenadorExistente.Nombre = entrenador.Nombre;
+            entrenadorExistente.Apellido = entrenador.Apellido;
+            entrenadorExistente.Direccion = entrenador.Direccion;
+            entrenadorExistente.Telefono = entrenador.Telefono;
+            entrenadorExistente.Email = entrenador.Email;
+            entrenadorExistente.Especialidad = entrenador.Especialidad;
+            entrenadorExistente.FechaVencimientoCertificado = entrenador.FechaVencimientoCertificado;
+
+            // --- Manejo de certificado ---
+            if (certificado != null && certificado.Length > 0)
             {
-                // Actualizar datos
-                entrenadorExistente.Nombre = entrenador.Nombre;
-                entrenadorExistente.Apellido = entrenador.Apellido;
-                entrenadorExistente.Direccion = entrenador.Direccion;
-                entrenadorExistente.Telefono = entrenador.Telefono;
-                entrenadorExistente.Email = entrenador.Email;
-                entrenadorExistente.Especialidad = entrenador.Especialidad;
-                entrenadorExistente.FechaVencimientoCertificado = entrenador.FechaVencimientoCertificado;
-
-                if (certificado != null && certificado.Length > 0)
+                // Eliminar anterior
+                if (!string.IsNullOrEmpty(entrenadorExistente.RutaCertificado))
                 {
-                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "certificados2");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    var nombreArchivo = Guid.NewGuid() + Path.GetExtension(certificado.FileName);
-                    var rutaCompleta = Path.Combine(uploadsFolder, nombreArchivo);
-
-                    using (var stream = new FileStream(rutaCompleta, FileMode.Create))
-                    {
-                        certificado.CopyTo(stream);
-                    }
-
-                    // Eliminar certificado anterior si existía
-                    if (!string.IsNullOrEmpty(entrenadorExistente.RutaCertificado))
-                    {
-                        var rutaVieja = Path.Combine(_environment.WebRootPath, entrenadorExistente.RutaCertificado.TrimStart('/'));
-                        if (System.IO.File.Exists(rutaVieja))
-                            System.IO.File.Delete(rutaVieja);
-                    }
-
-                    // Guardar la nueva ruta relativa
-                    entrenadorExistente.RutaCertificado = "/certificados2/" + nombreArchivo;
+                    var rutaVieja = Path.Combine(_environment.WebRootPath, entrenadorExistente.RutaCertificado.TrimStart('/'));
+                    if (System.IO.File.Exists(rutaVieja))
+                        System.IO.File.Delete(rutaVieja);
                 }
 
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                entrenadorExistente.RutaCertificado = await GuardarCertificado(certificado);
             }
-            catch (Exception ex)
-            {
-                ViewBag.Error = "Error al editar el entrenador: " + ex.Message;
-                return View(entrenador);
-            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Entrenadores/Delete/5
+        // =====================================================
+        // DELETE (GET)
+        // =====================================================
         public IActionResult Delete(int id)
         {
             var entrenador = _context.Entrenadores.Find(id);
@@ -161,7 +135,9 @@ namespace GimnasioCuerpoSano.Controllers
             return View(entrenador);
         }
 
-        // POST: Entrenadores/Delete/5
+        // =====================================================
+        // DELETE (POST)
+        // =====================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
@@ -190,12 +166,71 @@ namespace GimnasioCuerpoSano.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //prueba para guardar el archivo en c/Temp/certificados
-        [HttpGet]
-        public IActionResult GuardarArchivo()
+        // =====================================================
+        // MÉTODOS PRIVADOS AUXILIARES
+        // =====================================================
+
+        // Validar DNI y Email únicos y formato
+        private void ValidarDNIEmail(Entrenador entrenador, int id = 0)
         {
-            return View();
+            // Validación de DNI
+            if (entrenador.TipoDocumento == "DNI" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 8))
+                ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
+            else if (entrenador.TipoDocumento == "DNI-Extranjero" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 9))
+                ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
+            else if (string.IsNullOrWhiteSpace(entrenador.DNI))
+                ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
+
+            // Validación unicidad DNI
+            if (_context.Entrenadores.Any(e => e.DNI == entrenador.DNI && e.Id != id))
+                ModelState.AddModelError("DNI", "Ya existe otro entrenador con este DNI.");
+
+            // Validación unicidad Email
+            if (!string.IsNullOrWhiteSpace(entrenador.Email) && _context.Entrenadores.Any(e => e.Email == entrenador.Email && e.Id != id))
+                ModelState.AddModelError("Email", "Ya existe otro entrenador con este correo electrónico.");
         }
+
+        // Guardar archivo certificado
+        private async Task<string> GuardarCertificado(IFormFile certificado)
+        {
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "certificados2");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var nombreArchivo = Guid.NewGuid() + Path.GetExtension(certificado.FileName);
+            var rutaCompleta = Path.Combine(uploadsFolder, nombreArchivo);
+
+            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+                await certificado.CopyToAsync(stream);
+
+            return "/certificados2/" + nombreArchivo;
+        }
+
+        // =====================================================
+        // VALIDACIONES AJAX
+        // =====================================================
+        [AcceptVerbs("Get", "Post")]
+        public async Task<IActionResult> VerificarDNI(string dni, int? id)
+        {
+            var existe = await _context.Entrenadores.AnyAsync(e => e.DNI == dni && e.Id != (id ?? 0));
+            return Json(existe ? $"Ya existe otro entrenador con el DNI {dni}." : true);
+        }
+
+        [AcceptVerbs("Get", "Post")]
+        public async Task<IActionResult> VerificarEmail(string email, int? id)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Json(true);
+
+            var existe = await _context.Entrenadores.AnyAsync(e => e.Email == email && e.Id != (id ?? 0));
+            return Json(existe ? $"Ya existe otro entrenador con el correo {email}." : true);
+        }
+
+        // =====================================================
+        // GUARDAR ARCHIVO OPCIONAL
+        // =====================================================
+        [HttpGet]
+        public IActionResult GuardarArchivo() => View();
 
         [HttpPost]
         public async Task<IActionResult> GuardarArchivo(IFormFile archivo)
@@ -208,20 +243,13 @@ namespace GimnasioCuerpoSano.Controllers
 
             try
             {
-                // Guardar dentro del proyecto
                 var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "certificados");
-
                 if (!Directory.Exists(rutaCarpeta))
-                {
                     Directory.CreateDirectory(rutaCarpeta);
-                }
 
                 var rutaArchivo = Path.Combine(rutaCarpeta, archivo.FileName);
-
                 using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-                {
                     await archivo.CopyToAsync(stream);
-                }
 
                 ViewBag.Mensaje = $"Archivo guardado correctamente en {rutaArchivo}";
             }
@@ -232,8 +260,6 @@ namespace GimnasioCuerpoSano.Controllers
 
             return View();
         }
-
-
     }
 }
 
