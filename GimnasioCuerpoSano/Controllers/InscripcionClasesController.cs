@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuestPDF.Helpers;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
+using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,12 @@ namespace GimnasioCuerpoSano.Controllers
             {
                 var fechaVencimiento = miembro.FechaAlta.AddMonths(miembro.Membresia.DuracionEnMeses);
                 membresiaValida = fechaVencimiento > DateTime.Now;
+            }
+            if (!membresiaValida)
+            {
+                ViewBag.Miembro = miembro;
+                ViewBag.MembresiaValida = false;
+                return View(new List<InscripcionClaseViewModel>()); // retorna la vista vacía
             }
 
             // Obtener todas las clases con su horario y entrenador
@@ -106,6 +113,7 @@ namespace GimnasioCuerpoSano.Controllers
         public IActionResult ListadoPDF()
         {
             var inscripciones = _context.HorariosClase
+
                 .Select(h => new InscripcionClaseViewModel
                 {
                     ClaseNombre = h.Clase.Nombre,

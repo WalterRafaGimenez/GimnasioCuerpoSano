@@ -73,6 +73,11 @@ namespace GimnasioCuerpoSano.Data
                 .WithMany()
                 .HasForeignKey(i => i.MiembroId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // -----------------------------
+            // Forzar el nombre de tabla singular
+            // -----------------------------
+            modelBuilder.Entity<HorarioClase>().ToTable("HorarioClase");
         }
 
         public DbSet<Miembro> Miembros { get; set; }
@@ -80,7 +85,7 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
         public DbSet<Sala> Salas { get; set; }
-        public DbSet<Clase> Clases { get; set; }
+        public DbSet<Clase> Clase{ get; set; }
         public DbSet<HorarioClase> HorariosClase { get; set; }
         public DbSet<InscripcionClase> InscripcionesClase { get; set; }
     }
