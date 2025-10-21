@@ -260,7 +260,7 @@ namespace GimnasioCuerpoSano.Controllers
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.ConstantColumn(70);   // Código
+                          //  columns.ConstantColumn(70);   // Código
                             columns.RelativeColumn(2);    // Socio
                             columns.RelativeColumn(2);    // Membresía
                             columns.RelativeColumn(1);    // Método Pago
@@ -272,7 +272,7 @@ namespace GimnasioCuerpoSano.Controllers
                         // Encabezado
                         table.Header(header =>
                         {
-                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Código").Bold();
+                          //  header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Código").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Socio").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Membresía").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Método Pago").Bold();
@@ -284,7 +284,7 @@ namespace GimnasioCuerpoSano.Controllers
                         // Filas de datos
                         foreach (var c in cobros)
                         {
-                            table.Cell().Padding(5).Text(c.Codigo);
+                          //  table.Cell().Padding(5).Text(c.Codigo);
                             table.Cell().Padding(5).Text($"{c.Miembro?.Nombre} {c.Miembro?.Apellido}");
                             table.Cell().Padding(5).Text(c.Membresia?.Nombre);
                             table.Cell().Padding(5).Text(c.MetodoPago);

@@ -1,8 +1,8 @@
-﻿@model IEnumerable<GimnasioCuerpoSano.Models.Entrenador>
+﻿@model GimnasioCuerpoSano.Models.Entrenador
 
 @{
     Layout = null;
-    ViewData["Title"] = "Listado de Entrenadores";
+    ViewData["Title"] = "Detalles del Entrenador";
 }
 
 <!DOCTYPE html>
@@ -15,123 +15,103 @@
     <style>
         body {
             background-color: #f8f9fa;
-            padding: 20px;
+            padding: 2rem;
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Contenedor principal para centrar el listado */
-        .main-content-wrapper {
-            max-width: 1200px; /* Ancho máximo para el contenido (ajusta si es necesario) */
-            margin: 20px auto; /* Centra el contenido principal horizontalmente */
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
             background: white;
-            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .btn {
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Banner Azul Superior */
-        .header-banner {
-            background-color: #0d6efd; /* Azul de Bootstrap */
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.5rem;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            margin: -20px -20px 20px -20px; /* Ajusta los márgenes para que encaje con el wrapper */
+        .info-row {
+            margin-bottom: 0.75rem;
         }
 
-        /* Estilo para la cabecera de la tabla (parte "negra" que quieres cambiar) */
-        .table thead th {
-            background-color: #e9ecef; /* Color gris claro para que se vea el texto negro */
-            color: #212529; /* Color de texto negro/oscuro */
-            text-align: center;
-            vertical-align: middle;
-            border-bottom: 2px solid #dee2e6;
+        .label {
+            font-weight: 600;
+            color: #212529;
         }
 
-        .table td {
-            vertical-align: middle;
-            text-align: center;
-        }
-
-        /* Estilo para los botones de acción */
-        .btn-action-group .btn {
-            display: block; /* Hace que los botones sean bloques para que se apilen */
-            margin-bottom: 5px; /* Espacio entre botones */
-            width: 100%;
-        }
-
-        /* Contenedor de las acciones para mantenerlos alineados a la derecha y centrados */
-        td:last-child {
-            width: 1%;
-            white-space: nowrap; /* Evita que los botones se rompan en varias líneas */
-        }
-
-        /* Botones principales de la parte superior */
-        .top-buttons {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        .value {
+            color: #495057;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="card">
+            <h2 class="text-center">Detalles del Entrenador</h2>
 
-    <div class="main-content-wrapper">
-        <div class="header-banner">
-            @ViewData["Title"]
-        </div>
+            <div class="info-row">
+                <span class="label">Tipo Documento:</span>
+                <span class="value">@Model.TipoDocumento</span>
+            </div>
 
-        <div class="top-buttons">
-            <a asp-action="Create" class="btn btn-success">Alta de Entrenador</a>
-            <a href="/" class="btn btn-secondary">Volver al Menú</a>
-        </div>
+            <div class="info-row">
+                <span class="label">DNI:</span>
+                <span class="value">@Model.DNI</span>
+            </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>Tipo Doc.</th>
-                        <th>DNI</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Especialidad</th>
-                        <th>Teléfono</th>
-                        <th>Email</th>
-                        <th>Venc. Certificado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@Html.DisplayFor(modelItem => item.TipoDocumento)</td>
-                            <td>@Html.DisplayFor(modelItem => item.DNI)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Apellido)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Especialidad)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                            <td>@item.FechaVencimientoCertificado?.ToString("yyyy-MM-dd")</td>
-                            <td>
-                                <div class="btn-action-group">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
-                                    <a asp-action="VerCertificado" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Ver Certificado</a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+            <div class="info-row">
+                <span class="label">Nombre:</span>
+                <span class="value">@Model.Nombre</span>
+            </div>
 
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-primary">Volver al Menú</a>
+            <div class="info-row">
+                <span class="label">Apellido:</span>
+                <span class="value">@Model.Apellido</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Dirección:</span>
+                <span class="value">@Model.Direccion</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Teléfono:</span>
+                <span class="value">@Model.Telefono</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value">@Model.Email</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Especialidad:</span>
+                <span class="value">@Model.Especialidad</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Vencimiento Certificado:</span>
+                <span class="value">@Model.FechaVencimientoCertificado?.ToString("dd/MM/yyyy")</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.RutaCertificado))
+            {
+                <div class="info-row">
+                    <a href="@Model.RutaCertificado" target="_blank" class="btn btn-secondary">Ver Certificado</a>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-action="Index" class="btn btn-primary px-4">Volver al listado</a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4 ms-2">Editar</a>
+            </div>
         </div>
     </div>
 

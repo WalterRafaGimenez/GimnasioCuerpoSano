@@ -10,16 +10,9 @@ using QuestPDF.Infrastructure;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net.Http;
 using ZXing;
 using ZXing.Common;
 using ZXing.ImageSharp;
-using ZXing.ImageSharp.Rendering;
-using ZXing.Rendering;
-
 
 namespace GimnasioCuerpoSano.Controllers
 {
@@ -35,36 +28,41 @@ namespace GimnasioCuerpoSano.Controllers
             _logger = logger;
         }
 
-        // GET: Miembro/CheckDNI
-        public JsonResult CheckDNI(string dni)
+        // =====================================================
+        // AJAX: Validación DNI y Mail en tiempo real
+        // =====================================================
+        [HttpGet]
+        public async Task<JsonResult> CheckDNI(string dni, int? id = null)
         {
-            var exists = _context.Miembros.Any(m => m.DNI == dni);
+            var exists = id.HasValue
+                ? await _context.Miembros.AnyAsync(m => m.DNI == dni && m.Id != id.Value)
+                : await _context.Miembros.AnyAsync(m => m.DNI == dni);
             return Json(new { exists });
         }
 
-        // GET: Miembro/CheckMail
-        public JsonResult CheckMail(string mail)
+        [HttpGet]
+        public async Task<JsonResult> CheckMail(string mail, int? id = null)
         {
-            var exists = _context.Miembros.Any(m => m.Mail == mail);
+            var exists = id.HasValue
+                ? await _context.Miembros.AnyAsync(m => m.Mail == mail && m.Id != id.Value)
+                : await _context.Miembros.AnyAsync(m => m.Mail == mail);
             return Json(new { exists });
         }
-
-
 
         // =====================================================
-        // LISTAR (INDEX)
+        // LISTADO DE MIEMBROS
         // =====================================================
         public IActionResult Index()
         {
             var miembros = _context.Miembros
-                                   .Include(m => m.Membresia)
-                                   .OrderBy(m => m.Apellido)
-                                   .ToList();
+                .Include(m => m.Membresia)
+                .OrderBy(m => m.Apellido)
+                .ToList();
             return View(miembros);
         }
 
         // =====================================================
-        // DETALLES
+        // DETALLES DE MIEMBRO
         // =====================================================
         public async Task<IActionResult> Details(int? id)
         {
@@ -76,27 +74,21 @@ namespace GimnasioCuerpoSano.Controllers
 
             if (miembro == null) return NotFound();
 
-            // Código de barras
+            // Generar Barcode para mostrar
             var writer = new BarcodeWriterPixelData
             {
                 Format = BarcodeFormat.CODE_128,
                 Options = new EncodingOptions { Width = 300, Height = 80, Margin = 1 }
             };
-
             var pixelData = writer.Write(miembro.CodigoBarra);
             using var image = new Image<Rgba32>(pixelData.Width, pixelData.Height);
             for (int y = 0; y < pixelData.Height; y++)
-            {
                 for (int x = 0; x < pixelData.Width; x++)
                 {
                     int idx = (y * pixelData.Width + x) * 4;
-                    image[x, y] = new Rgba32(
-                        pixelData.Pixels[idx],
-                        pixelData.Pixels[idx + 1],
-                        pixelData.Pixels[idx + 2],
-                        pixelData.Pixels[idx + 3]);
+                    image[x, y] = new Rgba32(pixelData.Pixels[idx], pixelData.Pixels[idx + 1], pixelData.Pixels[idx + 2], pixelData.Pixels[idx + 3]);
                 }
-            }
+
             using var ms = new MemoryStream();
             image.Save(ms, new PngEncoder());
             ViewBag.Barcode = ms.ToArray();
@@ -104,230 +96,94 @@ namespace GimnasioCuerpoSano.Controllers
             return View(miembro);
         }
 
-
-
-
         // =====================================================
-        // CREAR (GET)
+        // CREAR MIEMBRO (GET)
         // =====================================================
         public IActionResult Create()
         {
-            // Cargar lista de membresías para el dropdown
             ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-
-            // Crear objeto vacío para la vista
-            var miembro = new Miembro();
-
-            return View(miembro);
+            return View(new Miembro());
         }
 
         // =====================================================
-        // CREAR (POST)
+        // CREAR MIEMBRO (POST)
         // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Miembro miembro, IFormFile? fotoArchivo)
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            Console.WriteLine("Create POST iniciado: " + DateTime.Now.ToString("o"));
-
-            try
+            if (!ModelState.IsValid)
             {
-                // --------------- Validación personalizada DNI ---------------
-                if (miembro.TipoDocumento == "DNI" && (miembro.DNI == null || miembro.DNI.Length != 8))
-                {
-                    ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
-                }
-                else if (miembro.TipoDocumento == "DNI-Extranjero" && (miembro.DNI == null || miembro.DNI.Length != 9))
-                {
-                    ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
-                }
-                else if (string.IsNullOrWhiteSpace(miembro.DNI))
-                {
-                    ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
-                }
-
-                // --------------- Validación de unicidad DNI y Mail ---------------
-                if (await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI))
-                {
-                    ModelState.AddModelError("DNI", "Ya existe un miembro registrado con este DNI.");
-                }
-
-                if (!string.IsNullOrWhiteSpace(miembro.Mail) &&
-                    await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail))
-                {
-                    ModelState.AddModelError("Mail", "Ya existe un miembro registrado con este correo electrónico.");
-                }
-
-                // --------------- Validación ModelState ---------------
-                if (!ModelState.IsValid)
-                {
-                    Console.WriteLine("ModelState inválido al entrar al Create POST.");
-                    foreach (var key in ModelState.Keys)
-                    {
-                        var errors = ModelState[key].Errors;
-                        foreach (var error in errors)
-                        {
-                            Console.WriteLine($"Error en {key}: {error.ErrorMessage}");
-                        }
-                    }
-
-                    ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-                    return View(miembro);
-                }
-
-                Console.WriteLine("ModelState válido. Buscando membresía...");
-                var membresia = await _context.Membresias.FindAsync(miembro.MembresiaId);
-                if (membresia == null)
-                {
-                    ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
-                    ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-                    Console.WriteLine("Membresía no encontrada. Saliendo.");
-                    return View(miembro);
-                }
-
-                // --------------- Calcula valor y fecha ---------------
-                decimal valorBase = membresia.Precio;
-                if (miembro.DescuentoEspecial)
-                    valorBase *= 0.85m;
-                miembro.ValorMembresia = valorBase;
-                miembro.FechaAlta = DateTime.Now;
-
-                // --------------- Manejo de foto (opcional) ---------------
-                if (fotoArchivo != null && fotoArchivo.Length > 0)
-                {
-                    Console.WriteLine("Procesando foto...");
-                    var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
-                    if (!Directory.Exists(rutaCarpeta))
-                        Directory.CreateDirectory(rutaCarpeta);
-
-                    var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(fotoArchivo.FileName);
-                    var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
-
-                    using var stream = new FileStream(rutaArchivo, FileMode.Create);
-                    await fotoArchivo.CopyToAsync(stream);
-
-                    miembro.Foto = "/fotos/" + nombreArchivo;
-                    Console.WriteLine("Foto guardada en: " + miembro.Foto);
-                }
-
-                // --------------- Generar Código de barras y validar unicidad ---------------
-                const int MAX_INTENTOS = 5;
-                bool codigoUnico = false;
-                string codigoGenerado = null;
-
-                for (int intento = 0; intento < MAX_INTENTOS; intento++)
-                {
-                    codigoGenerado = GenerarCodigoBarra();
-                    Console.WriteLine($"Intento {intento + 1}: codigo generado = {codigoGenerado}");
-
-                    // Comprobar si ya existe en la DB
-                    var existe = await _context.Miembros.AnyAsync(m => m.CodigoBarra == codigoGenerado);
-                    if (!existe)
-                    {
-                        codigoUnico = true;
-                        break;
-                    }
-                    Console.WriteLine("Colisión de CodigoBarra detectada. Generando otro...");
-                }
-
-                if (!codigoUnico)
-                {
-                    ModelState.AddModelError("", "No se pudo generar un código de barras único. Intente nuevamente.");
-                    ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
-                    return View(miembro);
-                }
-
-                miembro.CodigoBarra = codigoGenerado;
-                Console.WriteLine("Código de barras final asignado: " + miembro.CodigoBarra);
-
-                // --------------- Agregar y guardar ---------------
-                _context.Miembros.Add(miembro);
-                await _context.SaveChangesAsync();
-
-                TempData["UltimoMiembroId"] = miembro.Id;
-                TempData["Mensaje"] = $"Miembro registrado correctamente. Código de barra: {miembro.CodigoBarra}";
-                Console.WriteLine("Create POST finalizado con éxito. Id miembro: " + miembro.Id);
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Excepción al crear miembro: " + ex.ToString());
-                ModelState.AddModelError("", "Error al guardar el miembro: " + ex.Message);
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
                 return View(miembro);
             }
-        }
 
-
-        // =====================================================
-        // MÉTODOS PRIVADOS AUXILIARES
-        // =====================================================
-        private string GenerarCodigoBarra()
-        {
-            return Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
-        }
-
-        private string CalcularEstado(string tipoMembresia, DateTime fechaPago)
-        {
-            int diasVigencia = tipoMembresia switch
+            // Asignar valores
+            var membresia = await _context.Membresias.FindAsync(miembro.MembresiaId);
+            if (membresia == null)
             {
-                "Mensual" => 30,
-                "Trimestral" => 90,
-                "Anual" => 365,
-                _ => 30
-            };
+                ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
+                return View(miembro);
+            }
 
-            var fechaVencimiento = fechaPago.AddDays(diasVigencia);
-            return DateTime.Now > fechaVencimiento ? "Vencido" : "Vigente";
+            miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
+            miembro.FechaAlta = DateTime.Now;
+
+            // Foto opcional
+            if (fotoArchivo != null && fotoArchivo.Length > 0)
+            {
+                var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
+                if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
+
+                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
+                var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
+
+                using var stream = new FileStream(rutaArchivo, FileMode.Create);
+                await fotoArchivo.CopyToAsync(stream);
+
+                miembro.Foto = "/fotos/" + nombreArchivo;
+            }
+
+            // Código de barras
+            miembro.CodigoBarra = Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
+
+            _context.Miembros.Add(miembro);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' registrado correctamente.";
+            return RedirectToAction(nameof(Index));
         }
 
-
         // =====================================================
-        // EDITAR (GET)
+        // EDITAR MIEMBRO (GET)
         // =====================================================
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var miembro = _context.Miembros.Find(id);
-            if (miembro == null)
-                return NotFound();
+            var miembro = await _context.Miembros.FindAsync(id);
+            if (miembro == null) return NotFound();
 
             ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
             return View(miembro);
         }
 
+        // =====================================================
+        // EDITAR MIEMBRO (POST)
+        // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Miembro miembro, IFormFile? fotoArchivo)
         {
-            if (id != miembro.Id)
-                return NotFound();
-
-            ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
-
-            // --- Validación DNI ---
-            if (miembro.TipoDocumento == "DNI" && (miembro.DNI == null || miembro.DNI.Length != 8))
-                ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
-            else if (miembro.TipoDocumento == "DNI-Extranjero" && (miembro.DNI == null || miembro.DNI.Length != 9))
-                ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
-            else if (string.IsNullOrWhiteSpace(miembro.DNI))
-                ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
-
-            // --- Validación unicidad DNI y Mail ---
-            if (await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI && m.Id != miembro.Id))
-                ModelState.AddModelError("DNI", "Ya existe otro miembro registrado con este DNI.");
-
-            if (!string.IsNullOrWhiteSpace(miembro.Mail) &&
-                await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail && m.Id != miembro.Id))
-                ModelState.AddModelError("Mail", "Ya existe otro miembro registrado con este correo electrónico.");
+            if (id != miembro.Id) return NotFound();
 
             if (!ModelState.IsValid)
+            {
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
+            }
 
             var miembroExistente = await _context.Miembros.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
-            if (miembroExistente == null)
-                return NotFound();
+            if (miembroExistente == null) return NotFound();
 
             var membresia = await _context.Membresias.FindAsync(miembro.MembresiaId);
             if (membresia == null)
@@ -336,26 +192,18 @@ namespace GimnasioCuerpoSano.Controllers
                 return View(miembro);
             }
 
-            decimal valorBase = membresia.Precio;
-            if (miembro.DescuentoEspecial)
-                valorBase *= 0.85m;
+            miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
 
-            miembro.ValorMembresia = valorBase;
-
-            // --- Manejo de foto ---
             if (fotoArchivo != null && fotoArchivo.Length > 0)
             {
                 var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
-                if (!Directory.Exists(rutaCarpeta))
-                    Directory.CreateDirectory(rutaCarpeta);
+                if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
 
-                var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(fotoArchivo.FileName);
+                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
                 var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
 
-                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-                {
-                    await fotoArchivo.CopyToAsync(stream);
-                }
+                using var stream = new FileStream(rutaArchivo, FileMode.Create);
+                await fotoArchivo.CopyToAsync(stream);
 
                 miembro.Foto = "/fotos/" + nombreArchivo;
             }
@@ -364,74 +212,155 @@ namespace GimnasioCuerpoSano.Controllers
                 miembro.Foto = miembroExistente.Foto;
             }
 
-            // --- Código de barra ---
-            miembro.CodigoBarra = miembroExistente.CodigoBarra ?? Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
+            miembro.CodigoBarra = miembroExistente.CodigoBarra;
 
-            try
-            {
-                _context.Update(miembro);
-                await _context.SaveChangesAsync();
-                TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' actualizado correctamente. Valor: ${miembro.ValorMembresia:N2}";
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Miembros.Any(e => e.Id == miembro.Id))
-                    return NotFound();
-                else
-                    throw;
-            }
+            _context.Update(miembro);
+            await _context.SaveChangesAsync();
 
+            TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================================
-        // MÉTODOS AJAX PARA VALIDAR UNICIDAD EN TIEMPO REAL
+        // ELIMINAR MIEMBRO
         // =====================================================
-        [HttpGet]
-        public async Task<JsonResult> CheckDNI(string dni, int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var isUnique = !await _context.Miembros.AnyAsync(m => m.DNI == dni && m.Id != id);
-            return Json(new { isUnique });
+            var miembro = await _context.Miembros.Include(m => m.Membresia).FirstOrDefaultAsync(m => m.Id == id);
+            if (miembro == null) return NotFound();
+            return View(miembro);
         }
 
-        [HttpGet]
-        public async Task<JsonResult> CheckMail(string mail, int id)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var isUnique = !await _context.Miembros.AnyAsync(m => m.Mail == mail && m.Id != id);
-            return Json(new { isUnique });
+            var miembro = await _context.Miembros.FindAsync(id);
+            if (miembro != null)
+            {
+                _context.Miembros.Remove(miembro);
+                await _context.SaveChangesAsync();
+                TempData["Mensaje"] = "Miembro eliminado correctamente.";
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // =====================================================
-        // ELIMINAR (GET)
+        // PERFIL PERSONAL DEL MIEMBRO
         // =====================================================
-        public IActionResult Delete(int id)
+        [Authorize(Roles = "Miembro,Administrador,Empleado")]
+        public async Task<IActionResult> Perfil()
         {
-            var miembro = _context.Miembros
-                                  .Include(m => m.Membresia)
-                                  .FirstOrDefault(m => m.Id == id);
+            var email = User.Identity?.Name;
+            if (email == null) return Unauthorized();
 
-            if (miembro == null)
-                return NotFound();
+            var miembro = await _context.Miembros
+                .Include(m => m.Membresia)
+                .FirstOrDefaultAsync(m => m.Mail == email);
+
+            if (miembro == null) return NotFound();
 
             return View(miembro);
         }
 
-        // =====================================================
-        // ELIMINAR (POST)
-        // =====================================================
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        //IMPRIMIR POR PDF LISTA
+        public async Task<IActionResult> ImprimirListado()
         {
-            var miembro = _context.Miembros.Find(id);
-            if (miembro != null)
-            {
-                _context.Miembros.Remove(miembro);
-                _context.SaveChanges();
-                TempData["Mensaje"] = "Miembro eliminado correctamente.";
-            }
+            var miembros = await _context.Miembros
+                .Include(m => m.Membresia)
+                .OrderBy(m => m.Apellido)
+                .ThenBy(m => m.Nombre)
+                .ToListAsync();
 
-            return RedirectToAction(nameof(Index));
+            // Ruta del logo
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.PageColor(Colors.White);
+
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                        {
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+                        }
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado de Miembros")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // ============= CONTENIDO =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                           // columns.ConstantColumn(30);   // ID
+                            columns.RelativeColumn(2);    // Nombre
+                            columns.RelativeColumn(2);    // Apellido
+                            columns.RelativeColumn(2);    // DNI
+                            columns.RelativeColumn(3);    // Mail
+                            columns.RelativeColumn(2);    // Teléfono
+                            columns.RelativeColumn(2);    // Tipo Membresía
+                           // columns.RelativeColumn(1);    // Valor
+                        });
+
+                        // Encabezado
+                        table.Header(header =>
+                        {
+                           // header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("ID").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Apellido").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("DNI").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Mail").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Teléfono").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Membresía").Bold();
+                           // header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Valor").Bold();
+                        });
+
+                        // Filas
+                        foreach (var m in miembros)
+                        {
+                            //table.Cell().Padding(5).Text(m.Id.ToString());
+                            table.Cell().Padding(5).Text(m.Nombre);
+                            table.Cell().Padding(5).Text(m.Apellido);
+                            table.Cell().Padding(5).Text(m.DNI);
+                            table.Cell().Padding(5).Text(m.Mail);
+                            table.Cell().Padding(5).Text(m.Telefono);
+                            table.Cell().Padding(5).Text(m.Membresia?.Nombre ?? "Sin Membresía");
+                           // table.Cell().Padding(5).Text($"${m.ValorMembresia:F2}");
+                        }
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Generado el ").FontSize(10);
+                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(10).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // Abrir PDF directamente en el navegador
+            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoMiembros.pdf");
+            return File(pdfBytes, "application/pdf");
         }
 
         // =====================================================
@@ -446,17 +375,18 @@ namespace GimnasioCuerpoSano.Controllers
             if (miembro == null)
                 return NotFound();
 
-            // Código de barras
+            // 1. GENERACION DEL CODIGO DE BARRAS
+            // Es recomendable que las opciones de ZXing no sean demasiado grandes 
+            // ya que QuestPDF las escalará en base a su resolución intrínseca.
             byte[] barcodeBytes;
             var writer = new ZXing.ImageSharp.BarcodeWriter<Rgba32>
             {
                 Format = ZXing.BarcodeFormat.CODE_128,
                 Options = new ZXing.Common.EncodingOptions
                 {
-                    Width = 300,
-                    Height = 80,
+                    Width = 250, // Ajustado
+                    Height = 70, // Ajustado
                     Margin = 0,
-                   //PureBarcode = true
                 }
             };
 
@@ -467,7 +397,7 @@ namespace GimnasioCuerpoSano.Controllers
                 barcodeBytes = ms.ToArray();
             }
 
-            // Foto opcional
+            // 2. LECTURA DE LA FOTO
             byte[]? fotoBytes = null;
             if (!string.IsNullOrEmpty(miembro.Foto))
             {
@@ -476,11 +406,13 @@ namespace GimnasioCuerpoSano.Controllers
                     fotoBytes = await System.IO.File.ReadAllBytesAsync(rutaFoto);
             }
 
-            // Generar PDF
-            float mmToPoints(float mm) => mm * 72f / 25.4f; // 1 pulgada = 25.4 mm, 1 pulgada = 72 pt
+            // 3. GENERACION DEL PDF (Ajustado para Carnet)
+            // Helper function to convert millimeters to PDF points (1 inch = 72 points, 1 inch = 25.4 mm)
+            float mmToPoints(float mm) => mm * 72f / 25.4f;
 
-            float width = mmToPoints(85);  // 85 mm
-            float height = mmToPoints(54); // 54 mm
+            // CAMBIO CLAVE: Dimensiones VERTICALES (54mm ancho x 85mm alto)
+            float width = mmToPoints(54);  // Ancho de la tarjeta
+            float height = mmToPoints(85); // Alto de la tarjeta
 
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -488,37 +420,62 @@ namespace GimnasioCuerpoSano.Controllers
             {
                 container.Page(page =>
                 {
-                    page.Size(width, height); // tamaño carnet
-                    page.Margin(5);
+                    page.Size(width, height); // Establece el tamaño de la página a 54x85 mm
+                    page.Margin(mmToPoints(2)); // Márgenes reducidos a 2mm
                     page.Background(QuestPDF.Helpers.Colors.White);
 
-                    page.Content().Padding(5).Column(col =>
+                    page.Content().Padding(mmToPoints(1)).Column(col => // Padding adicional en el contenido
                     {
-                        col.Spacing(2);
-                        col.Item().Text("CARNET DE SOCIO")
-                            .FontSize(10)
-                            .Bold()
-                            .AlignCenter();
+                        // El espaciado de 1.5 a 2 mm es clave para que quepa todo
+                        col.Spacing(mmToPoints(1.5f));
 
-                        col.Item().LineHorizontal(1)
-                            .LineColor(QuestPDF.Helpers.Colors.Grey.Medium);
+                        // A. ENCABEZADO Y TITULO
+                        col.Item().Text("CARNET DE SOCIO").FontSize(7).Bold().AlignCenter();
+                        col.Item().LineHorizontal(0.5f).LineColor(QuestPDF.Helpers.Colors.Grey.Medium);
 
-                        col.Item().Text($"DNI: {miembro.DNI}").FontSize(8).AlignCenter();
-                        col.Item().Text($"{miembro.Nombre} {miembro.Apellido}")
-                            .FontSize(10)
-                            .Bold()
-                            .AlignCenter();
-                        col.Item().Text($"Tipo de Membresía: {miembro.Membresia?.Nombre}")
-                            .FontSize(8)
-                            .AlignCenter();
-                        col.Item().Text($"Fecha de alta: {miembro.FechaAlta:dd/MM/yyyy}")
-                            .FontSize(8)
-                            .AlignCenter();
+                        // C. FOTO Y DETALLES DEL MIEMBRO
+                        col.Item().Column(memberDetailsCol =>
+                        {
+                            // 1. FOTO (Centrada)
+                            if (fotoBytes != null)
+                            {
+                                // Fija el tamaño de la foto a 20x25 mm (tamaño de carnet pequeño)
+                                float photoSize = mmToPoints(22); // Aumentamos un poco la foto
+                                memberDetailsCol.Item().AlignCenter().Width(photoSize).Height(photoSize)
+                                    .Image(fotoBytes, ImageScaling.FitArea);
+                            }
 
-                        if (fotoBytes != null)
-                            col.Item().AlignCenter().Image(fotoBytes, ImageScaling.FitArea);
+                            // 2. COLUMNA DE DETALLES DEL MIEMBRO
+                            memberDetailsCol.Item().PaddingTop(mmToPoints(1)).Column(textCol =>
+                            {
+                                textCol.Spacing(1f); // Espaciado mínimo entre líneas de texto
+                                                     // Centramos el texto
+                                textCol.Item().Text($"{miembro.Nombre} {miembro.Apellido}").FontSize(8).Bold().AlignCenter();
+                                textCol.Item().Text($"DNI: {miembro.DNI}").FontSize(6).AlignCenter();
+                                textCol.Item().Text($"Membresía: {miembro.Membresia?.Nombre}").FontSize(6).AlignCenter();
+                                textCol.Item().Text($"Alta: {miembro.FechaAlta:dd/MM/yyyy}").FontSize(6).AlignCenter();
+                            });
+                        });
 
-                        col.Item().AlignCenter().Image(barcodeBytes, ImageScaling.FitWidth);
+                        // D. ESPACIADOR (Empuja el código de barras al fondo si el contenido es corto)
+                        // CORRECCIÓN CLAVE: Quitamos ExtendVertical() que causaba el desborde a la 2da página.
+                        // Usamos un pequeño Spacer para separar el contenido superior del código de barras.
+                        col.Item().PaddingTop(mmToPoints(3));
+
+                        // E. CODIGO DE BARRAS (Al final de la columna principal)
+                        col.Item().AlignCenter().PaddingBottom(mmToPoints(0)) // Margen inferior nulo
+                            .Column(barcodeCol =>
+                            {
+                                // Imagen del Código de Barras
+                                barcodeCol.Item().AlignCenter()
+                                    .Container().Height(mmToPoints(8)) // Altura estricta para la imagen
+                                    .AlignCenter().Image(barcodeBytes, ImageScaling.FitArea);
+
+                                // Número del Código de Barras
+                                barcodeCol.Item().Text(miembro.CodigoBarra)
+                                    .FontSize(5) // Tamaño de fuente muy pequeño para caber
+                                    .AlignCenter();
+                            });
                     });
                 });
             }).GeneratePdf();
@@ -526,149 +483,22 @@ namespace GimnasioCuerpoSano.Controllers
             Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
             return File(pdfBytes, "application/pdf");
         }
-        //IMPRIMIR LISTADO PDF
-        [HttpGet]
-        public async Task<IActionResult> ImprimirListado()
-        {
-            var miembros = await _context.Miembros
-                .Include(m => m.Membresia)
-                .OrderBy(m => m.Apellido)
-                .ToListAsync();
-
-            if (miembros == null || !miembros.Any())
-            {
-                return Content("No hay miembros registrados para imprimir.");
-            }
-
-            QuestPDF.Settings.License = LicenseType.Community;
-
-            // Ruta del logo (ajustala si tu imagen está en otra carpeta)
-            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "logo.png");
-            var logoBytes = System.IO.File.Exists(logoPath) ? System.IO.File.ReadAllBytes(logoPath) : null;
-
-            var pdfBytes = Document.Create(container =>
-            {
-                container.Page(page =>
-                {
-                    page.Margin(40);
-                    page.Size(PageSizes.A4);
-                    page.PageColor(Colors.White);
-
-                    /// ============= CABECERA =============
-                    
-                    page.Header().Row(header =>
-                    {
-                        // Columna izquierda: logo
-                        if (logoBytes != null)
-                        {
-                            header.RelativeColumn(1)
-                                  .AlignLeft()
-                                  .Container()
-                                  .Width(100)
-                                  .Image(logoBytes);
-                        }
-                        else
-                        {
-                            header.RelativeColumn(1); // espacio vacío si no hay logo
-                        }
-
-                        // Columna derecha: textos alineados a la derecha
-                        header.RelativeColumn(3).AlignRight().Column(col =>
-                        {
-                            col.Item().Text("Gimnasio Cuerpo Sano")
-                                .FontSize(20)
-                                .Bold()
-                                .FontColor(Colors.Blue.Medium)
-                                .AlignRight();
-
-                            col.Item().Text("Listado de Miembros")
-                                .FontSize(16)
-                                .Bold()
-                                .FontColor(Colors.Grey.Darken1)
-                                .AlignRight();
-
-                            col.Item().PaddingTop(5).Text($"Generado: {DateTime.Now:dd/MM/yyyy HH:mm}")
-                                .FontSize(10)
-                                .FontColor(Colors.Grey.Darken2)
-                                .AlignRight();
-                        });
-                    });
 
 
 
-                    // ============= CONTENIDO =============
-                    page.Content().PaddingVertical(15).Table(table =>
-                    {
-                        table.ColumnsDefinition(columns =>
-                        {
-                            columns.ConstantColumn(60); // DNI
-                            columns.RelativeColumn(1);  // Nombre
-                            columns.RelativeColumn(1);  // Apellido
-                            columns.RelativeColumn(1);  // Mail
-                            columns.RelativeColumn(1);  // Membresía
-                            columns.RelativeColumn(1);  // Fecha Alta
-                        });
-
-                        // Encabezado
-                        table.Header(header =>
-                        {
-                            header.Cell().Element(CellStyleHeader).Text("DNI");
-                            header.Cell().Element(CellStyleHeader).Text("Nombre");
-                            header.Cell().Element(CellStyleHeader).Text("Apellido");
-                            header.Cell().Element(CellStyleHeader).Text("Mail");
-                            header.Cell().Element(CellStyleHeader).Text("Membresía");
-                            header.Cell().Element(CellStyleHeader).Text("Fecha Alta");
-
-                            static IContainer CellStyleHeader(IContainer container) =>
-                                container.DefaultTextStyle(x => x.Bold().FontColor(Colors.White))
-                                         .Background(Colors.Blue.Medium)
-                                         .PaddingVertical(5)
-                                         .PaddingHorizontal(3)
-                                         .BorderBottom(1)
-                                         .BorderColor(Colors.Grey.Lighten1);
-                        });
-
-                        // Filas
-                        bool alternar = false;
-                        foreach (var m in miembros)
-                        {
-                            var fondo = alternar ? Colors.Grey.Lighten4 : Colors.White;
-                            alternar = !alternar;
-
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.DNI);
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Nombre);
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Apellido);
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Mail ?? "-");
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.Membresia?.Nombre ?? "-");
-                            table.Cell().Element(c => CellStyle(c, fondo)).Text(m.FechaAlta.ToString("dd/MM/yyyy"));
-                        }
-
-                        static IContainer CellStyle(IContainer container, string background) =>
-                            container.Background(background)
-                                     .PaddingVertical(4)
-                                     .PaddingHorizontal(3)
-                                     .BorderBottom(0.5f)
-                                     .BorderColor(Colors.Grey.Lighten2);
-                    });
-
-                    // ============= PIE DE PÁGINA =============
-                    page.Footer().AlignCenter().Text(txt =>
-                    {
-                        txt.Span("Generado el ").FontSize(9);
-                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(9).Bold();
-                    });
-                });
-            })
-            .GeneratePdf();
-
-            // Mostramos el PDF directamente en el navegador
-            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoMiembros.pdf");
-            return File(pdfBytes, "application/pdf");
-        }
 
 
+
+
+
+
+        // =====================================================
+        // FUTURO: Acciones para Actividades (anotarse, baja)
+        // =====================================================
+        // Aquí se podrán agregar acciones que filtren por miembro y por rol de entrenador
 
 
 
     }
 }
+

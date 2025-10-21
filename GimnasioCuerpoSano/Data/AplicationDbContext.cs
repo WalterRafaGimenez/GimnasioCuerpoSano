@@ -35,7 +35,7 @@ namespace GimnasioCuerpoSano.Data
             // -----------------------------
             modelBuilder.Entity<Cobro>()
                 .Property(c => c.Monto)
-                .HasPrecision(18, 2); // 18 dígitos, 2 decimales
+                .HasPrecision(18, 2);
 
             modelBuilder.Entity<Membresia>()
                 .Property(m => m.Precio)
@@ -51,6 +51,28 @@ namespace GimnasioCuerpoSano.Data
             modelBuilder.Entity<Miembro>()
                 .Property(m => m.CodigoBarra)
                 .IsRequired();
+
+            // -----------------------------
+            // Relaciones nuevas entidades
+            // -----------------------------
+
+            modelBuilder.Entity<Clase>()
+                .HasMany(c => c.Horarios)
+                .WithOne(h => h.Clase)
+                .HasForeignKey(h => h.ClaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<HorarioClase>()
+                .HasMany(h => h.Inscripciones)
+                .WithOne(i => i.HorarioClase)
+                .HasForeignKey(i => i.HorarioClaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<InscripcionClase>()
+                .HasOne(i => i.Miembro)
+                .WithMany()
+                .HasForeignKey(i => i.MiembroId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Miembro> Miembros { get; set; }
@@ -58,6 +80,9 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
         public DbSet<Sala> Salas { get; set; }
+        public DbSet<Clase> Clases { get; set; }
+        public DbSet<HorarioClase> HorariosClase { get; set; }
+        public DbSet<InscripcionClase> InscripcionesClase { get; set; }
     }
 }
 

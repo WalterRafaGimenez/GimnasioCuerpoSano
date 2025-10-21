@@ -1,0 +1,143 @@
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.ViewModels.InscripcionClaseViewModel>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Listado de Clases Disponibles";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+
+    <style>
+        .wide-container {
+            max-width: 1300px;
+            margin: auto;
+            padding: 0 15px;
+        }
+
+        .table-light th {
+            color: #212529 !important;
+            vertical-align: middle;
+        }
+
+        .table td.actions {
+            white-space: nowrap;
+            width: 1%;
+        }
+
+        /* Logo centrado */
+        .logo-container img {
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wide-container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <div class="logo-container mb-2">
+                    <img src="~/img/Logo.png" alt="Logo Gimnasio" />
+                </div>
+                <h4>@ViewData["Title"]</h4>
+                <h6>@ViewBag.Miembro?.Nombre @ViewBag.Miembro?.Apellido</h6>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3 text-center">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver al Menú
+                    </a>
+
+                    <a asp-action="ListadoPDF" class="btn btn-primary me-2" target="_blank">
+                        <i class="bi bi-file-earmark-pdf"></i> Imprimir Listado PDF
+                    </a>
+                </div>
+
+                <div class="mb-3 text-center">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver al Menú
+                    </a>
+                </div>
+
+                @if (ViewBag.MembresiaValida == false)
+                {
+                    <div class="alert alert-danger text-center">
+                        Tu membresía no está activa. No puedes inscribirte a clases.
+                    </div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clase</th>
+                                <th>Entrenador</th>
+                                <th>Hora Inicio</th>
+                                <th>Hora Fin</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var clase in Model)
+                            {
+                                <tr>
+                                    <td>@clase.ClaseNombre</td>
+                                    <td>@clase.EntrenadorNombre</td>
+                                    <td>@clase.HoraInicio.ToString(@"hh\:mm")</td>
+                                    <td>@clase.HoraFin.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        @if (clase.Estado == "Inscripto")
+                                        {
+                                            <span class="badge bg-success">Inscripto</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No Inscripto</span>
+                                        }
+                                    </td>
+                                    <td class="actions">
+                                        @if (clase.Estado == "Inscripto")
+                                        {
+                                            <a asp-action="Desinscribirse"
+                                               asp-route-id="@clase.Id"
+                                               class="btn btn-danger btn-sm">
+                                                <i class="bi bi-x-circle"></i> Cancelar
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Inscribirse"
+                                               asp-route-id="@clase.Id"
+                                               class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle"></i> Inscribirse
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-house-door"></i> Volver al Menú
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -15,6 +15,9 @@ namespace GimnasioCuerpoSano.Models
         [Range(0, double.MaxValue)]
         public decimal Precio { get; set; }
 
+        [Required(ErrorMessage = "La duración en meses es obligatoria")]
+        public int DuracionEnMeses { get; set; }
+
         // Relación: una membresía puede tener muchos miembros
         public ICollection<Miembro>? Miembros { get; set; }
     }
