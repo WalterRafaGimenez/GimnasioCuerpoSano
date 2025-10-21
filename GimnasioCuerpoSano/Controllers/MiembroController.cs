@@ -526,7 +526,7 @@ namespace GimnasioCuerpoSano.Controllers
             Response.Headers["Content-Disposition"] = $"inline; filename=Carnet_{miembro.CodigoBarra}.pdf";
             return File(pdfBytes, "application/pdf");
         }
-
+        //IMPRIMIR LISTADO PDF
         [HttpGet]
         public async Task<IActionResult> ImprimirListado()
         {
