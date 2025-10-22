@@ -113,10 +113,11 @@
                     <div class="info-text">El DNI debe ser único para cada miembro.</div>
                 </div>
 
-                <!-- FOTO OPCIONAL -->
+                <!-- FOTO OBLIGATORIA -->
                 <div class="mb-3">
-                    <label for="fotoArchivo" class="form-label">Foto (opcional)</label>
-                    <input type="file" name="fotoArchivo" class="form-control" accept="image/*" />
+                    <label class="form-label">Foto <span class="text-danger">*</span></label>
+                    <input type="file" name="fotoArchivo" class="form-control" accept="image/*" required />
+                    <span asp-validation-for="Foto" class="text-danger"></span>
                 </div>
 
                 <!-- CÓDIGO DE BARRA OCULTO -->

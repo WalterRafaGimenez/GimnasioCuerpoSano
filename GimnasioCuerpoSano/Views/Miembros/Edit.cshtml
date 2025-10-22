@@ -4,6 +4,10 @@
     Layout = null;
     ViewData["Title"] = "Editar Miembro";
 }
+@{
+    var requiredAttr = string.IsNullOrEmpty(Model.Foto) ? "required" : null;
+}
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -114,15 +118,41 @@
                     <label asp-for="DescuentoEspecial" class="form-check-label"></label>
                 </div>
 
-                <!-- FOTO OPCIONAL -->
+                <!-- FOTO OPCIONAL/OBLIGATORIA SEGÚN EXISTENCIA -->
                 <div class="mb-3">
-                    <label for="fotoArchivo" class="form-label">Foto (opcional)</label>
-                    <input type="file" name="fotoArchivo" class="form-control" accept="image/*" />
+                    <label class="form-label">
+                        Foto
+                        @if (string.IsNullOrEmpty(Model.Foto))
+                        {
+                            <span class="text-danger">*</span>
+                        }
+                    </label>
+
+                    @* Mostrar foto actual si existe *@
                     @if (!string.IsNullOrEmpty(Model.Foto))
                     {
-                        <img src="@Model.Foto" alt="Foto actual" class="img-thumbnail mt-2" style="max-width:150px;" />
+                        <div class="mb-2">
+                            <img src="@Model.Foto" alt="Foto actual" style="max-width:150px; max-height:150px; border-radius:5px;" />
+                        </div>
+                    }
+
+                    <input type="file"
+                           id="Foto"
+                           name="fotoArchivo"
+                           class="form-control"
+                           accept="image/*" />
+
+                    <span asp-validation-for="Foto" class="text-danger"></span>
+
+                    @* Mensaje de aviso si no tiene foto y quiere guardar sin subir *@
+                    @if (string.IsNullOrEmpty(Model.Foto))
+                    {
+                        <div class="form-text text-muted">Debe subir una foto si el miembro no tiene.</div>
                     }
                 </div>
+
+
+
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary px-4">Guardar cambios</button>

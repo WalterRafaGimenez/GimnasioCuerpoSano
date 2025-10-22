@@ -130,7 +130,17 @@ namespace GimnasioCuerpoSano.Controllers
             miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
             miembro.FechaAlta = DateTime.Now;
 
-            // Foto opcional
+            // =====================================================
+            // FOTO OBLIGATORIA (solo en creación)
+            // =====================================================
+            if (fotoArchivo == null || fotoArchivo.Length == 0)
+            {
+                ModelState.AddModelError("Foto", "Debe subir una foto obligatoriamente.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                return View(miembro);
+            }
+
+            // Guardar foto si se adjunta
             if (fotoArchivo != null && fotoArchivo.Length > 0)
             {
                 var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
@@ -145,7 +155,9 @@ namespace GimnasioCuerpoSano.Controllers
                 miembro.Foto = "/fotos/" + nombreArchivo;
             }
 
-            // Código de barras
+            // =====================================================
+            // Generar código de barras único
+            // =====================================================
             miembro.CodigoBarra = Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
 
             _context.Miembros.Add(miembro);
@@ -154,6 +166,7 @@ namespace GimnasioCuerpoSano.Controllers
             TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' registrado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // =====================================================
         // EDITAR MIEMBRO (GET)
@@ -168,7 +181,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // EDITAR MIEMBRO (POST)
+        // EDITAR MIEMBRO (POST) - FOTO OBLIGATORIA
         // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -189,29 +202,32 @@ namespace GimnasioCuerpoSano.Controllers
             if (membresia == null)
             {
                 ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
             }
 
             miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
 
-            if (fotoArchivo != null && fotoArchivo.Length > 0)
+            // FOTO OBLIGATORIA
+            if ((fotoArchivo == null || fotoArchivo.Length == 0) && string.IsNullOrEmpty(miembro.Foto))
             {
-                var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
-                if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
-
-                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
-                var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
-
-                using var stream = new FileStream(rutaArchivo, FileMode.Create);
-                await fotoArchivo.CopyToAsync(stream);
-
-                miembro.Foto = "/fotos/" + nombreArchivo;
-            }
-            else
-            {
-                miembro.Foto = miembroExistente.Foto;
+                ModelState.AddModelError("Foto", "La foto es obligatoria");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                return View(miembro);
             }
 
+            var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
+            if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
+
+            var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
+            var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
+
+            using var stream = new FileStream(rutaArchivo, FileMode.Create);
+            await fotoArchivo.CopyToAsync(stream);
+
+            miembro.Foto = "/fotos/" + nombreArchivo;
+
+            // Mantener código de barras existente
             miembro.CodigoBarra = miembroExistente.CodigoBarra;
 
             _context.Update(miembro);
@@ -220,6 +236,7 @@ namespace GimnasioCuerpoSano.Controllers
             TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // =====================================================
         // ELIMINAR MIEMBRO

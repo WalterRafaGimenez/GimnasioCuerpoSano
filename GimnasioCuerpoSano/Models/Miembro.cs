@@ -45,7 +45,8 @@ namespace GimnasioCuerpoSano.Models
         [Display(Name = "Fecha y hora de alta")]
         public DateTime FechaAlta { get; set; } = DateTime.Now;
 
-        [Display(Name = "Foto (opcional)")]
+       
+        [Display(Name = "Foto")]
         public string? Foto { get; set; } = string.Empty;
 
         [Display(Name = "Código de barras")]
