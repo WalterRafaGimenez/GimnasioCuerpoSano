@@ -87,7 +87,7 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Sala> Salas { get; set; }
         public DbSet<Clase> Clase{ get; set; }
         public DbSet<HorarioClase> HorariosClase { get; set; }
-        public DbSet<InscripcionClase> InscripcionesClase { get; set; }
+        public DbSet<InscripcionClase> InscripcionClase { get; set; }
     }
 }
 
