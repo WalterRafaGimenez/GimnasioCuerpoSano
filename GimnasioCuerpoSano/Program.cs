@@ -1,6 +1,7 @@
 using GimnasioCuerpoSano.Data;
-using Microsoft.EntityFrameworkCore;
+using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QuestPDF.Infrastructure;
 
@@ -34,6 +35,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>()
+.AddErrorDescriber<SpanishIdentityErrorDescriber>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // -----------------------------------------------------

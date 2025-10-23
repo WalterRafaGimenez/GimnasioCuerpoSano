@@ -181,7 +181,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // EDITAR MIEMBRO (POST) - FOTO OBLIGATORIA
+        // EDITAR MIEMBRO (POST) - FOTO OPCIONAL SI YA EXISTE
         // =====================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -189,48 +189,87 @@ namespace GimnasioCuerpoSano.Controllers
         {
             if (id != miembro.Id) return NotFound();
 
+            // 1. Obtener el miembro existente
+            var miembroExistente = await _context.Miembros
+                .AsNoTracking()
+                .Include(m => m.Membresia) // para tener duración
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (miembroExistente == null) return NotFound();
+
+            // Mantener datos originales
+            miembro.Foto = miembroExistente.Foto;
+            miembro.CodigoBarra = miembroExistente.CodigoBarra;
+            miembro.FechaAlta = miembroExistente.FechaAlta;
+
+            // 2. Validación del modelo
             if (!ModelState.IsValid)
             {
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
             }
 
-            var miembroExistente = await _context.Miembros.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
-            if (miembroExistente == null) return NotFound();
-
-            var membresia = await _context.Membresias.FindAsync(miembro.MembresiaId);
-            if (membresia == null)
+            // 3. Validación y cálculo de membresía
+            var membresiaNueva = await _context.Membresias.FindAsync(miembro.MembresiaId);
+            if (membresiaNueva == null)
             {
                 ModelState.AddModelError("MembresiaId", "Debe seleccionar una membresía válida.");
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
             }
 
-            miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
-
-            // FOTO OBLIGATORIA
-            if ((fotoArchivo == null || fotoArchivo.Length == 0) && string.IsNullOrEmpty(miembro.Foto))
+            // 4. Validar vigencia de la membresía actual
+            DateTime fechaVencimiento = miembroExistente.FechaAlta.AddMonths(miembroExistente.Membresia.DuracionEnMeses);
+            if (fechaVencimiento < DateTime.Now && miembro.MembresiaId != miembroExistente.MembresiaId)
             {
-                ModelState.AddModelError("Foto", "La foto es obligatoria");
+                ModelState.AddModelError("MembresiaId", "No puede cambiar la membresía porque la actual está vencida. Renueve primero.");
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
             }
 
-            var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
-            if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
+            // 5. Cálculo del precio
+            miembro.ValorMembresia = miembro.DescuentoEspecial
+                ? membresiaNueva.Precio * 0.85m
+                : membresiaNueva.Precio;
 
-            var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
-            var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
+            // 6. Lógica de FOTO
+            if (fotoArchivo != null && fotoArchivo.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(miembroExistente.Foto))
+                {
+                    var rutaAnterior = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", miembroExistente.Foto.TrimStart('/'));
+                    if (System.IO.File.Exists(rutaAnterior))
+                        System.IO.File.Delete(rutaAnterior);
+                }
 
-            using var stream = new FileStream(rutaArchivo, FileMode.Create);
-            await fotoArchivo.CopyToAsync(stream);
+                var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
+                if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
 
-            miembro.Foto = "/fotos/" + nombreArchivo;
+                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
+                var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
 
-            // Mantener código de barras existente
-            miembro.CodigoBarra = miembroExistente.CodigoBarra;
+                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await fotoArchivo.CopyToAsync(stream);
+                }
 
-            _context.Update(miembro);
+                miembro.Foto = "/fotos/" + nombreArchivo;
+            }
+
+            // 7. Validar foto obligatoria
+            if (string.IsNullOrEmpty(miembro.Foto))
+            {
+                ModelState.AddModelError("Foto", "La foto es obligatoria para este miembro.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                return View(miembro);
+            }
+
+            // 8. Guardar cambios
+            _context.Entry(miembro).State = EntityState.Modified;
+
+            // No permitir modificar la fecha de alta
+            _context.Entry(miembro).Property(m => m.FechaAlta).IsModified = false;
+
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' actualizado correctamente.";
