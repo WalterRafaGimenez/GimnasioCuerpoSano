@@ -130,6 +130,11 @@ namespace GimnasioCuerpoSano.Controllers
             miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
             miembro.FechaAlta = DateTime.Now;
 
+            //Nuevo: calcular FechaVencimiento
+            miembro.FechaVencimiento = DateTime.Now.AddMonths(membresia.DuracionEnMeses);
+
+
+
             // =====================================================
             // FOTO OBLIGATORIA (solo en creación)
             // =====================================================
@@ -218,13 +223,17 @@ namespace GimnasioCuerpoSano.Controllers
                 return View(miembro);
             }
 
-            // 4. Validar vigencia de la membresía actual
-            DateTime fechaVencimiento = miembroExistente.FechaAlta.AddMonths(miembroExistente.Membresia.DuracionEnMeses);
-            if (fechaVencimiento < DateTime.Now && miembro.MembresiaId != miembroExistente.MembresiaId)
+           
+            // 4. Actualizar FechaVencimiento si cambia la membresía
+            if (miembro.MembresiaId != miembroExistente.MembresiaId)
             {
-                ModelState.AddModelError("MembresiaId", "No puede cambiar la membresía porque la actual está vencida. Renueve primero.");
-                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
-                return View(miembro);
+                // La nueva fecha de vencimiento se calcula desde hoy
+                miembro.FechaVencimiento = DateTime.Now.AddMonths(membresiaNueva.DuracionEnMeses);
+            }
+            else
+            {
+                // Mantener la fecha de vencimiento actual
+                miembro.FechaVencimiento = miembroExistente.FechaVencimiento;
             }
 
             // 5. Cálculo del precio

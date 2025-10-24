@@ -45,7 +45,9 @@ namespace GimnasioCuerpoSano.Models
         [Display(Name = "Fecha y hora de alta")]
         public DateTime FechaAlta { get; set; } = DateTime.Now;
 
-       
+        [Display(Name = "Fecha de Vencimiento")]
+        public DateTime FechaVencimiento { get; set; }
+
         [Display(Name = "Foto")]
         public string? Foto { get; set; } = string.Empty;
 

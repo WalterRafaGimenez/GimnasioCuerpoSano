@@ -44,12 +44,31 @@
                 <dd class="col-sm-8">@Model.FechaAlta.ToString("dd/MM/yyyy")</dd>
 
                 <dt class="col-sm-4">Membresía</dt>
-                <dd class="col-sm-8">@Model.Membresia?.Nombre ?? "Sin membresía activa"</dd>
+                <dd class="col-sm-8">
+                    @if (Model.Membresia != null)
+                    {
+                        if (Model.FechaVencimiento >= DateTime.Now)
+                        {
+                            <b>@Model.Membresia.Nombre</b>
+                            <b><span>-Activa</span></b>
+                                        }
+                        else
+                        {
+                            <span>Sin membresía activa</span>
+                                        }
+                    }
+                    else
+                    {
+                            <span>Sin membresía activa</span>
+                                        }
+                </dd>
+
+
             </dl>
 
             <div class="text-center mt-4">
                 <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left-circle"></i> Volver al Inicio
+                     Volver al Inicio
                 </a>
             </div>
         </div>
