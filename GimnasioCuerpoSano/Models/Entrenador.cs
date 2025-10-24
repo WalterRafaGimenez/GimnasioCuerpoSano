@@ -17,7 +17,8 @@ namespace GimnasioCuerpoSano.Models
         public string Direccion { get; set; } = null!;
 
         [Required(ErrorMessage = "El teléfono es obligatorio")]
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "El teléfono debe tener 10 dígitos")]
+        [RegularExpression(@"^\d{8,10}$", ErrorMessage = "El teléfono debe tener entre 8 y 10 dígitos")]
+
         public string Telefono { get; set; } = null!;
 
         [Required(ErrorMessage = "El email es obligatorio")]

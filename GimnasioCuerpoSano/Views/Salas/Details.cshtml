@@ -1,7 +1,8 @@
 ﻿@model GimnasioCuerpoSano.Models.Sala
+
 @{
     Layout = null;
-    ViewData["Title"] = "Detalles de Sala";
+    ViewData["Title"] = "Detalles de la Sala";
 }
 
 <!DOCTYPE html>
@@ -10,6 +11,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <!-- Ícono del navegador -->
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
         body {
@@ -36,6 +39,8 @@
         .form-label {
             font-weight: bold;
             color: #495057;
+            display: block;
+            text-align: center;
         }
 
         .value-box {
@@ -43,6 +48,9 @@
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
         }
 
         .btn {
@@ -52,43 +60,53 @@
 </head>
 <body>
 
+    <div class="container">
+        <div class="card">
+            <h2>Detalles de la Sala</h2>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        <div class="card-header bg-info text-white text-center">
-            <h4>@ViewData["Title"]</h4>
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <!--</><dt class="col-sm-3">ID Sala</dt>
-                    <dd class="col-sm-9">@Model.ID_Sala</dd>-->
+            <!-- Número -->
+            <div class="mb-3">
+                <label class="form-label">Número</label>
+                <div class="value-box">@Model.Numero</div>
+            </div>
 
-                <dt class="col-sm-3">Número</dt>
-                <dd class="col-sm-9">@Model.Numero</dd>
+            <!-- Nombre -->
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <div class="value-box">@Model.Nombre</div>
+            </div>
 
-                <dt class="col-sm-3">Nombre</dt>
-                <dd class="col-sm-9">@Model.Nombre</dd>
+            <!-- Capacidad Máxima -->
+            <div class="mb-3">
+                <label class="form-label">Capacidad Máxima</label>
+                <div class="value-box">@Model.CapacidadMaxima</div>
+            </div>
 
-                <dt class="col-sm-3">Capacidad Máxima</dt>
-                <dd class="col-sm-9">@Model.CapacidadMaxima</dd>
+            <!-- Ubicación -->
+            <div class="mb-3">
+                <label class="form-label">Ubicación</label>
+                <div class="value-box">@Model.Ubicacion</div>
+            </div>
 
-                <dt class="col-sm-3">Ubicación</dt>
-                <dd class="col-sm-9">@Model.Ubicacion</dd>
+            <!-- Tipo de Sala -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Sala</label>
+                <div class="value-box">@Model.TipoSala</div>
+            </div>
 
-                <dt class="col-sm-3">Tipo de Sala</dt>
-                <dd class="col-sm-9">@Model.TipoSala</dd>
+            <!-- Disponible -->
+            <div class="mb-3">
+                <label class="form-label">Disponible</label>
+                <div class="value-box">@((Model.Disponible) ? "Sí" : "No")</div>
+            </div>
 
-                <dt class="col-sm-3">Disponible</dt>
-                <dd class="col-sm-9">@((Model.Disponible) ? "Sí" : "No")</dd>
-            </dl>
-
-            <div class="text-center mt-3">
-                <a asp-action="Edit" asp-route-id="@Model.ID_Sala" class="btn btn-warning me-2">Editar</a>
-                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            <div class="text-center mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.ID_Sala" class="btn btn-primary px-4">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
             </div>
         </div>
     </div>
-</div>
-    <!--<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
