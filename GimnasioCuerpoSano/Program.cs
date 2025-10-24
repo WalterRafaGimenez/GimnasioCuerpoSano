@@ -1,3 +1,4 @@
+using System.Globalization;
 using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 // -----------------------------------------------------
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
-
 // -----------------------------------------------------
 // Logging detallado para debug
 // -----------------------------------------------------
@@ -20,10 +20,22 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+    options.SlidingExpiration = false;
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
 // -----------------------------------------------------
 // Servicios principales
 // -----------------------------------------------------
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddDataAnnotationsLocalization(); // <-- habilita la localización de DataAnnotations
 
 // Configuración de EF Core
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -35,13 +47,25 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>()
-.AddErrorDescriber<SpanishIdentityErrorDescriber>()
+.AddErrorDescriber<SpanishIdentityErrorDescriber>() // <-- tu clase de errores en español
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// -----------------------------------------------------
 var app = builder.Build();
 
-// Configuración del pipeline HTTP
+// -----------------------------------------------------
+// Configuración de la cultura por defecto
+// -----------------------------------------------------
+var supportedCultures = new[] { new CultureInfo("es-AR") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("es-AR"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
+// -----------------------------------------------------
+// Pipeline HTTP
+// -----------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -52,38 +76,31 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Habilitar autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages(); // Login/Register
 
-// Rutas por defecto
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // -----------------------------------------------------
-// Inicialización de datos (DB + Roles base)
+// Inicialización de datos
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Inicializa datos de ejemplo solo si no existen
     DbInitializer.Initialize(context);
 
-    // Crear roles base
     string[] roles = new[] { "Administrador", "Empleado", "Miembro" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
-        {
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
     }
 
-    // Crear usuario administrador inicial si no existe
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     string adminEmail = "admin@gimnasio.com";
     string adminPass = "Admin123$";
@@ -97,24 +114,13 @@ using (var scope = app.Services.CreateScope())
             Email = adminEmail,
             EmailConfirmed = true
         };
-
         var result = await userManager.CreateAsync(newAdmin, adminPass);
         if (result.Succeeded)
-        {
             await userManager.AddToRoleAsync(newAdmin, "Administrador");
-        }
         else
-        {
-            // Loguea errores si no se pudo crear el admin
             foreach (var error in result.Errors)
-            {
                 Console.WriteLine($"Error creando admin: {error.Description}");
-            }
-        }
     }
 }
 
-// -----------------------------------------------------
 await app.RunAsync();
-
-
