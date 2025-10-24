@@ -39,6 +39,7 @@
 
             <div class="text-center mt-4 d-grid gap-3 d-md-flex justify-content-center flex-wrap">
 
+           
                 @* Botones visibles para Administrador y Empleado *@
                 @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
                 {
@@ -66,9 +67,10 @@
                 }
 
                 @* Botones visibles solo para Miembros, si corresponde *@
+
                 @if (User.IsInRole("Miembro"))
                 {
-                    <a asp-controller="Miembros" asp-action="Details" asp-route-id="@User.Identity?.Name" class="btn btn-primary btn-lg me-2">
+                    <a asp-controller="Perfil" asp-action="Index" class="btn btn-primary btn-lg me-2">
                         <i class="bi bi-person"></i> Mi Perfil
                     </a>
                 }

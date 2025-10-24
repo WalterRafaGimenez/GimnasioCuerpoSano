@@ -28,6 +28,7 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -35,7 +36,8 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +46,7 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _context = context;
+            _roleManager = roleManager;
         }
 
         [BindProperty]
@@ -201,6 +204,14 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("Usuario creado correctamente con membresía activa.");
+
+                //Verificar si el rol existe
+                var roleManager = HttpContext.RequestServices.GetRequiredService<RoleManager<IdentityRole>>();
+                if (!await roleManager.RoleExistsAsync("Miembro"))
+                    await roleManager.CreateAsync(new IdentityRole("Miembro"));
+
+                //Asignar el rol “Miembro” al usuario registrado
+                await _userManager.AddToRoleAsync(user, "Miembro");
 
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
