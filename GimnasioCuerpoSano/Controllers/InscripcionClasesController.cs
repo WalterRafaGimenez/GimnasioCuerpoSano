@@ -136,7 +136,7 @@ namespace GimnasioCuerpoSano.Controllers
                     page.Margin(30);
                     page.Size(PageSizes.A4);
 
-   
+
                     // =================== HEADER ===================
                     page.Header().Row(row =>
                     {
@@ -253,4 +253,3 @@ namespace GimnasioCuerpoSano.Controllers
 
     }
 }
-

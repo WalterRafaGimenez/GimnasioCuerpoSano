@@ -16,7 +16,7 @@ namespace GimnasioCuerpoSano.Data
             base.OnModelCreating(modelBuilder);
 
             // -----------------------------
-            // Evita el borrado en cascada
+            // Evita el borrado en cascada para Cobros
             // -----------------------------
             modelBuilder.Entity<Cobro>()
                 .HasOne(c => c.Miembro)
@@ -53,16 +53,36 @@ namespace GimnasioCuerpoSano.Data
                 .IsRequired();
 
             // -----------------------------
-            // Relaciones nuevas entidades
+            // Relaciones Clase con EntrenadorId y SalaId
             // -----------------------------
+            modelBuilder.Entity<Clase>()
+                .ToTable("Clase")
+                .HasOne(c => c.Entrenador)
+                .WithMany()
+                .HasForeignKey(c => c.EntrenadorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Clase>()
+                .HasOne(c => c.Sala)
+                .WithMany()
+                .HasForeignKey(c => c.SalaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // -----------------------------
+            // Relación Clase → Horarios
+            // -----------------------------
             modelBuilder.Entity<Clase>()
                 .HasMany(c => c.Horarios)
                 .WithOne(h => h.Clase)
                 .HasForeignKey(h => h.ClaseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // -----------------------------
+            // Relaciones HorarioClase e InscripcionClase
+            // -----------------------------
             modelBuilder.Entity<HorarioClase>()
+                .ToTable("HorarioClase")
                 .HasMany(h => h.Inscripciones)
                 .WithOne(i => i.HorarioClase)
                 .HasForeignKey(i => i.HorarioClaseId)
@@ -73,19 +93,17 @@ namespace GimnasioCuerpoSano.Data
                 .WithMany()
                 .HasForeignKey(i => i.MiembroId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // -----------------------------
-            // Forzar el nombre de tabla singular
-            // -----------------------------
-            modelBuilder.Entity<HorarioClase>().ToTable("HorarioClase");
         }
 
+        // -----------------------------
+        // DbSets
+        // -----------------------------
         public DbSet<Miembro> Miembros { get; set; }
         public DbSet<Membresia> Membresias { get; set; }
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
         public DbSet<Sala> Salas { get; set; }
-        public DbSet<Clase> Clase{ get; set; }
+        public DbSet<Clase> Clase { get; set; }
         public DbSet<HorarioClase> HorariosClase { get; set; }
         public DbSet<InscripcionClase> InscripcionClase { get; set; }
     }
