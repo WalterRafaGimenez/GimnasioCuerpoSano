@@ -2,38 +2,40 @@
 
 @{
     Layout = null;
-    ViewData["Title"] = "Registrar Clase";
+    ViewData["Title"] = "Editar Clase";
 }
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Registrar Clase - Gimnasio Cuerpo Sano</title>
+    <title>Editar Clase - Gimnasio Cuerpo Sano</title>
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
     <div class="container">
-        <h1>Registrar Clase</h1>
+        <h1>Editar Clase</h1>
 
-        <form asp-action="Create" method="post">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <div class="form-group">
                 <label>Nombre de la Clase</label>
-                <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre de la clase" />
+                <input asp-for="Nombre" class="form-control" />
                 <span asp-validation-for="Nombre" class="text-danger"></span>
             </div>
 
             <div class="form-group">
                 <label>Precio</label>
-                <input asp-for="Precio" type="number" step="0.01" class="form-control" placeholder="Ingrese el precio" />
+                <input asp-for="Precio" type="number" step="0.01" class="form-control" />
                 <span asp-validation-for="Precio" class="text-danger"></span>
             </div>
 
             <div class="form-group">
                 <label>Duración (en minutos)</label>
-                <input asp-for="DuracionMinutos" type="number" class="form-control" placeholder="Ingrese duración en minutos" />
+                <input asp-for="DuracionMinutos" type="number" class="form-control" />
                 <span asp-validation-for="DuracionMinutos" class="text-danger"></span>
             </div>
 
@@ -43,7 +45,9 @@
                     <option value="">-- Seleccione un entrenador --</option>
                     @foreach (var entrenador in ViewBag.Entrenadores)
                     {
-                        <option value="@entrenador.Id">@($"{entrenador.Nombre} {entrenador.Apellido}")</option>
+                        <option value="@entrenador.Id" selected="@(entrenador.Id == Model.EntrenadorId)">
+                            @($"{entrenador.Nombre} {entrenador.Apellido}")
+                        </option>
                     }
                 </select>
                 <span asp-validation-for="EntrenadorId" class="text-danger"></span>
@@ -55,14 +59,16 @@
                     <option value="">-- Seleccione una sala --</option>
                     @foreach (var sala in ViewBag.Salas)
                     {
-                        <option value="@sala.ID_Sala">@sala.Nombre</option>
+                        <option value="@sala.ID_Sala" selected="@(sala.ID_Sala == Model.SalaId)">
+                            @sala.Nombre
+                        </option>
                     }
                 </select>
                 <span asp-validation-for="SalaId" class="text-danger"></span>
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success px-4">Registrar</button>
+                <button type="submit" class="btn btn-success px-4">Guardar Cambios</button>
                 <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
             </div>
         </form>

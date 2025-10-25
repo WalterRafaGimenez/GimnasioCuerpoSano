@@ -103,7 +103,7 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Cobro> Cobros { get; set; }
         public DbSet<Entrenador> Entrenadores { get; set; }
         public DbSet<Sala> Salas { get; set; }
-        public DbSet<Clase> Clase { get; set; }
+        public DbSet<Clase> Clases { get; set; }
         public DbSet<HorarioClase> HorariosClase { get; set; }
         public DbSet<InscripcionClase> InscripcionClase { get; set; }
     }

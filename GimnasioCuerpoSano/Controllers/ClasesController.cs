@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -27,7 +26,9 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public async Task<IActionResult> Index()
         {
-            var clases = _context.Clase.Include(c => c.Entrenador);
+            var clases = _context.Clases
+                .Include(c => c.Entrenador)
+                .Include(c => c.Sala);
             return View(await clases.ToListAsync());
         }
 
@@ -36,8 +37,9 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public async Task<IActionResult> Details(int id)
         {
-            var clase = await _context.Clase
+            var clase = await _context.Clases
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clase == null) return NotFound();
@@ -49,7 +51,8 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public IActionResult Create()
         {
-            ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido");
+            ViewBag.Entrenadores = _context.Entrenadores.ToList();
+            ViewBag.Salas = _context.Salas.ToList();
             return View();
         }
 
@@ -60,13 +63,19 @@ namespace GimnasioCuerpoSano.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Clase clase)
         {
+            if (clase.Precio <= 0 || clase.DuracionMinutos <= 0)
+            {
+                ModelState.AddModelError("", "El precio y la duración deben ser mayores a cero.");
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+                ViewBag.Entrenadores = _context.Entrenadores.ToList();
+                ViewBag.Salas = _context.Salas.ToList();
                 return View(clase);
             }
 
-            _context.Clase.Add(clase);
+            _context.Clases.Add(clase);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -76,10 +85,12 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public async Task<IActionResult> Edit(int id)
         {
-            var clase = await _context.Clase.FindAsync(id);
+            var clase = await _context.Clases.FindAsync(id);
             if (clase == null) return NotFound();
 
-            ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+            ViewBag.Entrenadores = _context.Entrenadores.ToList();
+            ViewBag.Salas = _context.Salas.ToList();
+
             return View(clase);
         }
 
@@ -92,9 +103,15 @@ namespace GimnasioCuerpoSano.Controllers
         {
             if (id != clase.Id) return NotFound();
 
+            if (clase.Precio <= 0 || clase.DuracionMinutos <= 0)
+            {
+                ModelState.AddModelError("", "El precio y la duración deben ser mayores a cero.");
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+                ViewBag.Entrenadores = _context.Entrenadores.ToList();
+                ViewBag.Salas = _context.Salas.ToList();
                 return View(clase);
             }
 
@@ -105,7 +122,7 @@ namespace GimnasioCuerpoSano.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Clase.Any(c => c.Id == id))
+                if (!_context.Clases.Any(c => c.Id == id))
                     return NotFound();
                 else
                     throw;
@@ -119,8 +136,9 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public async Task<IActionResult> Delete(int id)
         {
-            var clase = await _context.Clase
+            var clase = await _context.Clases
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clase == null) return NotFound();
@@ -134,10 +152,10 @@ namespace GimnasioCuerpoSano.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var clase = await _context.Clase.FindAsync(id);
+            var clase = await _context.Clases.FirstOrDefaultAsync(c => c.Id == id);
             if (clase != null)
             {
-                _context.Clase.Remove(clase);
+                _context.Clases.Remove(clase);
                 await _context.SaveChangesAsync();
             }
 
@@ -145,17 +163,21 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // GENERAR PDF LISTADO DE CLASES - ABRIR EN NAVEGADOR
+        // GENERAR PDF LISTADO DE CLASES ESTILIZADO - ABRIR EN NAVEGADOR
         // =====================================================
         public async Task<IActionResult> GenerarListadoPdf()
         {
-            var clases = await _context.Clase
+            var clases = await _context.Clases
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .OrderBy(c => c.Nombre)
                 .ToListAsync();
 
+            // Ruta del logo
             var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
-            byte[]? logoBytes = System.IO.File.Exists(logoPath) ? System.IO.File.ReadAllBytes(logoPath) : null;
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
 
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -168,52 +190,61 @@ namespace GimnasioCuerpoSano.Controllers
                     page.DefaultTextStyle(x => x.FontSize(11));
                     page.PageColor(Colors.White);
 
-                    // CABECERA
+                    // ============= CABECERA ESTILIZADA =============
                     page.Header().Column(header =>
                     {
                         if (logoBytes != null)
-                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+                            header.Item().AlignCenter().Container().Width(120).Image(logoBytes);
 
                         header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
-                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .FontSize(22).Bold().FontColor(Colors.Blue.Medium)
                             .AlignCenter();
 
-                        header.Item().PaddingTop(5).Text("Listado de Clases")
+                        header.Item().PaddingTop(2).Text("Listado de Clases")
                             .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
                             .AlignCenter();
+
+                        header.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                     });
 
-                    // CONTENIDO
+                    // ============= CONTENIDO CON TABLA ESTILIZADA =============
                     page.Content().PaddingVertical(15).Table(table =>
                     {
+                        // Columnas
                         table.ColumnsDefinition(columns =>
                         {
                             columns.RelativeColumn(2);   // Nombre
                             columns.ConstantColumn(80);  // Precio
                             columns.ConstantColumn(80);  // Duración
                             columns.RelativeColumn(2);   // Entrenador
+                            columns.RelativeColumn(2);   // Sala
                         });
 
                         // Encabezado
                         table.Header(headerRow =>
                         {
-                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
-                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Precio").Bold();
-                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Duración (min)").Bold();
-                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Entrenador").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(6).Text("Nombre").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(6).Text("Precio").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(6).Text("Duración (min)").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(6).Text("Entrenador").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(6).Text("Sala").Bold();
                         });
 
-                        // Filas
+                        // Filas alternadas para mejor legibilidad
+                        bool alternar = false;
                         foreach (var c in clases)
                         {
-                            table.Cell().Padding(5).Text(c.Nombre);
-                            table.Cell().Padding(5).Text(c.Precio.ToString("C2"));
-                            table.Cell().Padding(5).Text(c.DuracionMinutos.ToString());
-                            table.Cell().Padding(5).Text(c.Entrenador != null ? $"{c.Entrenador.Apellido}, {c.Entrenador.Nombre}" : "");
+                            var bgColor = alternar ? Colors.Grey.Lighten4 : Colors.White;
+                            table.Cell().Background(bgColor).Padding(5).Text(c.Nombre);
+                            table.Cell().Background(bgColor).Padding(5).Text("$" + c.Precio.ToString("N2"));
+                            table.Cell().Background(bgColor).Padding(5).Text(c.DuracionMinutos.ToString());
+                            table.Cell().Background(bgColor).Padding(5).Text(c.Entrenador != null ? $"{c.Entrenador.Apellido}, {c.Entrenador.Nombre}" : "");
+                            table.Cell().Background(bgColor).Padding(5).Text(c.Sala != null ? c.Sala.Nombre : "");
+                            alternar = !alternar;
                         }
                     });
 
-                    // PIE DE PÁGINA
+                    // ============= PIE DE PÁGINA ESTILIZADO =============
                     page.Footer().AlignCenter().Text(x =>
                     {
                         x.Line("© Gimnasio Cuerpo Sano " + DateTime.Now.Year);
@@ -223,8 +254,10 @@ namespace GimnasioCuerpoSano.Controllers
             })
             .GeneratePdf();
 
+            // Abrir PDF directamente en nueva pestaña
             Response.Headers["Content-Disposition"] = "inline; filename=Listado_Clases.pdf";
             return File(pdfBytes, "application/pdf");
         }
+
     }
 }

@@ -1,0 +1,107 @@
+﻿@model GimnasioCuerpoSano.Models.Clase
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Detalles de la Clase";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: white;
+            padding: 2rem;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #495057;
+            display: block;
+            text-align: center;
+        }
+
+        .value-box {
+            background-color: #f1f3f5;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Detalles de la Clase</h2>
+
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <div class="value-box">@Model.Nombre</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Precio</label>
+                <div class="value-box">$@Model.Precio</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Duración (minutos)</label>
+                <div class="value-box">@Model.DuracionMinutos</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Entrenador</label>
+                <div class="value-box">
+                    @(Model.Entrenador != null
+                                        ? $"{Model.Entrenador.Nombre} {Model.Entrenador.Apellido}"
+                                        : "—")
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Sala</label>
+                <div class="value-box">
+                    @(Model.Sala != null
+                                        ? Model.Sala.Nombre
+                                        : "—")
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
