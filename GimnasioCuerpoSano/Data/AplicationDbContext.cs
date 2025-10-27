@@ -1,6 +1,7 @@
 ﻿using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion; // Necesario para el Enum
 
 namespace GimnasioCuerpoSano.Data
 {
@@ -14,6 +15,15 @@ namespace GimnasioCuerpoSano.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // ----------------------------------------------------
+            // SOLUCIÓN 1: Mapeo del Enum a String (Arregla InvalidCastException)
+            // ----------------------------------------------------
+            modelBuilder.Entity<HorarioClase>()
+                .Property(h => h.DiaSemana)
+                // Usamos EnumToStringConverter para que EF Core lea y escriba el nombre del enum 
+                // ("Lunes", "Martes") en la columna nvarchar.
+                .HasConversion(new EnumToStringConverter<DiaSemana>());
 
             // -----------------------------
             // Evita el borrado en cascada para Cobros
@@ -53,24 +63,36 @@ namespace GimnasioCuerpoSano.Data
                 .IsRequired();
 
             // -----------------------------
-            // Relaciones Clase con EntrenadorId y SalaId
+            // Configuración de decimales para Clase
             // -----------------------------
             modelBuilder.Entity<Clase>()
-                .ToTable("Clase")
+                .Property(c => c.Precio)
+                .HasPrecision(18, 2); // O la precisión que necesites, (18 dígitos en total, 2 después del punto)
+
+            // -----------------------------
+            // ❌ SOLUCIÓN 2: Relaciones de Clase (Eliminamos mapeos redundantes que causaban el conflicto SalaId)
+            // -----------------------------
+            modelBuilder.Entity<Clase>()
+                .ToTable("Clase"); // Mantenemos la convención de nombre de tabla si es necesaria
+
+            // ❌ BLOQUE ELIMINADO: La configuración explícita para EntrenadorId y SalaId fue REMOVIDA.
+            // EF Core manejará estas relaciones por convención (gracias a las propiedades FK en el modelo).
+            /*
+            modelBuilder.Entity<Clase>()
                 .HasOne(c => c.Entrenador)
                 .WithMany()
                 .HasForeignKey(c => c.EntrenadorId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+            
             modelBuilder.Entity<Clase>()
                 .HasOne(c => c.Sala)
                 .WithMany()
-                .HasForeignKey(c => c.SalaId)
+                .HasForeignKey(c => c.SalaId) // ESTA LÍNEA CAUSABA CONFLICTOS
                 .OnDelete(DeleteBehavior.Restrict);
-
+            */
 
             // -----------------------------
-            // Relación Clase → Horarios
+            // Relación Clase → Horarios (Mantenemos, ya que es la relación "padre-hijo" con CASCADE)
             // -----------------------------
             modelBuilder.Entity<Clase>()
                 .HasMany(c => c.Horarios)
@@ -108,4 +130,3 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<InscripcionClase> InscripcionClase { get; set; }
     }
 }
-

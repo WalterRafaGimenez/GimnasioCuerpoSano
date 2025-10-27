@@ -27,7 +27,11 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public async Task<IActionResult> Index()
         {
-            var clases = _context.Clase.Include(c => c.Entrenador);
+            var clases = _context.Clase
+                .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
+                .OrderBy(c => c.Nombre);
+
             return View(await clases.ToListAsync());
         }
 
@@ -38,6 +42,7 @@ namespace GimnasioCuerpoSano.Controllers
         {
             var clase = await _context.Clase
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clase == null) return NotFound();
@@ -49,7 +54,8 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         public IActionResult Create()
         {
-            ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido");
+            ViewBag.Entrenadores = new SelectList(_context.Entrenadores.OrderBy(e => e.Apellido), "Id", "Apellido");
+            ViewBag.Salas = new SelectList(_context.Salas.OrderBy(s => s.Numero), "ID_Sala", "Numero");
             return View();
         }
 
@@ -63,6 +69,7 @@ namespace GimnasioCuerpoSano.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+                ViewBag.Salas = new SelectList(_context.Salas, "ID_Sala", "Numero", clase.SalaId);
                 return View(clase);
             }
 
@@ -80,6 +87,7 @@ namespace GimnasioCuerpoSano.Controllers
             if (clase == null) return NotFound();
 
             ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+            ViewBag.Salas = new SelectList(_context.Salas, "ID_Sala", "Numero", clase.SalaId);
             return View(clase);
         }
 
@@ -95,6 +103,7 @@ namespace GimnasioCuerpoSano.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
+                ViewBag.Salas = new SelectList(_context.Salas, "ID_Sala", "Numero", clase.SalaId);
                 return View(clase);
             }
 
@@ -121,6 +130,7 @@ namespace GimnasioCuerpoSano.Controllers
         {
             var clase = await _context.Clase
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clase == null) return NotFound();
@@ -145,12 +155,13 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // GENERAR PDF LISTADO DE CLASES - ABRIR EN NAVEGADOR
+        // GENERAR PDF LISTADO DE CLASES
         // =====================================================
         public async Task<IActionResult> GenerarListadoPdf()
         {
             var clases = await _context.Clase
                 .Include(c => c.Entrenador)
+                .Include(c => c.Sala)
                 .OrderBy(c => c.Nombre)
                 .ToListAsync();
 
@@ -192,6 +203,7 @@ namespace GimnasioCuerpoSano.Controllers
                             columns.ConstantColumn(80);  // Precio
                             columns.ConstantColumn(80);  // Duración
                             columns.RelativeColumn(2);   // Entrenador
+                            columns.RelativeColumn(1);   // Sala
                         });
 
                         // Encabezado
@@ -201,6 +213,7 @@ namespace GimnasioCuerpoSano.Controllers
                             headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Precio").Bold();
                             headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Duración (min)").Bold();
                             headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Entrenador").Bold();
+                            headerRow.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Sala").Bold();
                         });
 
                         // Filas
@@ -210,6 +223,7 @@ namespace GimnasioCuerpoSano.Controllers
                             table.Cell().Padding(5).Text(c.Precio.ToString("C2"));
                             table.Cell().Padding(5).Text(c.DuracionMinutos.ToString());
                             table.Cell().Padding(5).Text(c.Entrenador != null ? $"{c.Entrenador.Apellido}, {c.Entrenador.Nombre}" : "");
+                            table.Cell().Padding(5).Text(c.Sala != null ? c.Sala.Numero : "");
                         }
                     });
 
@@ -228,3 +242,4 @@ namespace GimnasioCuerpoSano.Controllers
         }
     }
 }
+

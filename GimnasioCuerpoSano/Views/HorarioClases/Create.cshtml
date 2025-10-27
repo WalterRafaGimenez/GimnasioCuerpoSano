@@ -1,0 +1,221 @@
+﻿@model GimnasioCuerpoSano.Models.HorarioClase
+@{
+    Layout = null;
+    ViewData["Title"] = "Crear Horario";
+
+    var clasesJson = ViewBag.ClasesJsonString;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .wide-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            text-align: center;
+            background-color: #0d6efd;
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 15px;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+        let ClasesDuracionMap = {};
+
+        window.onload = function () {
+            const clasesData = JSON.parse('@Html.Raw(clasesJson)');
+            clasesData.forEach(clase => {
+                ClasesDuracionMap[clase.Id] = clase.DuracionMinutos;
+            });
+
+            const claseSelect = document.getElementById("ClaseId");
+            const horaInicioInput = document.getElementById("HoraInicio");
+
+            calcularHoraFin();
+
+            claseSelect.addEventListener("change", calcularHoraFin);
+            horaInicioInput.addEventListener("input", calcularHoraFin);
+        };
+
+        function calcularHoraFin() {
+            const horaInicioInput = document.getElementById("HoraInicio");
+            const claseSelect = document.getElementById("ClaseId");
+            const horaFinInput = document.getElementById("HoraFin");
+
+            const horaInicio = horaInicioInput.value;
+            const claseId = claseSelect.value;
+
+            const duracion = ClasesDuracionMap[claseId] || 0;
+
+            if (horaInicio && duracion > 0) {
+                const [hh, mm] = horaInicio.split(":").map(Number);
+                let fecha = new Date();
+                fecha.setHours(hh);
+                fecha.setMinutes(mm + duracion);
+
+                const hhFin = fecha.getHours().toString().padStart(2, "0");
+                const mmFin = fecha.getMinutes().toString().padStart(2, "0");
+                horaFinInput.value = `${hhFin}:${mmFin}`;
+            } else {
+                horaFinInput.value = "";
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+
+                @* === BLOQUE DE DEPURACIÓN DE ERRORES === *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <strong>Se encontraron errores en el formulario:</strong>
+                        <ul>
+                            @foreach (var key in ViewData.ModelState.Keys)
+                            {
+                                var state = ViewData.ModelState[key];
+                                if (state.Errors.Count > 0)
+                                {
+                                    <li><strong>@key:</strong> @string.Join(", ", state.Errors.Select(e => e.ErrorMessage))</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <form asp-action="Create" method="post" id="formHorario">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    @* === HIDDEN INPUTS PARA DEBUG Y BINDING CORRECTO === *@
+                    <input type="hidden" id="ClaseIdHidden" name="ClaseId" />
+                    <input type="hidden" id="SalaIdHidden" name="SalaId" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ClaseId" class="form-label">Clase</label>
+                            <select asp-for="ClaseId" class="form-select" id="ClaseId" asp-items="ViewBag.Clases">
+                                <option value="0">-- Seleccione Clase --</option>
+                            </select>
+                            <span asp-validation-for="ClaseId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SalaId" class="form-label">Sala</label>
+                            <select asp-for="SalaId" class="form-select" id="SalaId" asp-items="ViewBag.Salas">
+                                <option value="0">-- Seleccione Sala --</option>
+                            </select>
+                            <span asp-validation-for="SalaId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DiaSemana" class="form-label">Día de la Semana</label>
+                            <select asp-for="DiaSemana" class="form-select" asp-items="ViewBag.DiasSemana">
+                                <option value="0">-- Seleccione Día --</option>
+                            </select>
+                            <span asp-validation-for="DiaSemana" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CapacidadMaxima" class="form-label">Capacidad Máxima (Clase)</label>
+                            <input asp-for="CapacidadMaxima" type="number" min="1" class="form-control" />
+                            <span asp-validation-for="CapacidadMaxima" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="HoraInicio" class="form-label">Hora Inicio</label>
+                            <input asp-for="HoraInicio" type="time" class="form-control" id="HoraInicio" />
+                            <span asp-validation-for="HoraInicio" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="HoraFin" class="form-label">Hora Fin (calculada)</label>
+                            <input asp-for="HoraFin" type="time" class="form-control" id="HoraFin" readonly />
+                            <span asp-validation-for="HoraFin" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="SePuedeInscribir" class="form-check-input" type="checkbox" />
+                        <label asp-for="SePuedeInscribir" class="form-check-label">Se Puede Inscribir</label>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+
+                <script>
+                    const form = document.getElementById('formHorario');
+                    form.addEventListener('submit', function () {
+                        const claseSelect = document.getElementById('ClaseId');
+                        const salaSelect = document.getElementById('SalaId');
+
+                        // Copiar valores a los hidden inputs antes del submit
+                        document.getElementById('ClaseIdHidden').value = claseSelect.value;
+                        document.getElementById('SalaIdHidden').value = salaSelect.value;
+
+                        console.log("Valor Clase enviado:", claseSelect.value);
+                        console.log("Valor Sala enviado:", salaSelect.value);
+                    });
+                </script>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

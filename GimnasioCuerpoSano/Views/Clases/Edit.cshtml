@@ -2,7 +2,7 @@
 
 @{
     Layout = null;
-    ViewData["Title"] = "Registrar Clase";
+    ViewData["Title"] = "Editar Clase";
 }
 
 <!DOCTYPE html>
@@ -64,7 +64,9 @@
                 <div class="alert alert-warning">@ViewBag.Advertencia</div>
             }
 
-            <form asp-action="Create" method="post">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+
                 <div class="mb-3">
                     <label asp-for="Nombre" class="form-label"></label>
                     <input asp-for="Nombre" class="form-control" />
@@ -120,3 +122,4 @@
     </script>
 </body>
 </html>
+

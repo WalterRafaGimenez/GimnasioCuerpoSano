@@ -1,0 +1,158 @@
+﻿@model GimnasioCuerpoSano.Models.HorarioClase
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Editar Horario de Clase";
+
+    // Si ClasesJsonString es null, esto podría fallar. Se usa el operador null-coalescing '??'
+    var clasesJson = (string)ViewBag.ClasesJsonString ?? "[]";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    @* (Tus estilos CSS aquí) *@
+
+    <script>
+        let ClasesDuracionMap = {};
+
+        window.onload = function() {
+            // Aseguramos que el string JSON esté correctamente sanitizado para JS
+            const clasesData = JSON.parse('@Html.Raw(clasesJson)');
+
+            clasesData.forEach(clase => {
+                ClasesDuracionMap[clase.Id] = clase.DuracionMinutos;
+            });
+
+            // Refs
+            const claseSelect = document.getElementById("ClaseId");
+            const horaInicioInput = document.getElementById("HoraInicio");
+
+            // Calcular HoraFin al cargar (usa el valor inicial del modelo)
+            calcularHoraFin();
+
+            // Recalcular HoraFin al cambiar Clase o HoraInicio
+            claseSelect.addEventListener("change", calcularHoraFin);
+            horaInicioInput.addEventListener("input", calcularHoraFin);
+        };
+
+        function calcularHoraFin() {
+            const horaInicioInput = document.getElementById("HoraInicio");
+            const claseSelect = document.getElementById("ClaseId");
+            const horaFinInput = document.getElementById("HoraFin");
+
+            const horaInicio = horaInicioInput.value;
+            const claseId = claseSelect.value;
+            const duracion = ClasesDuracionMap[claseId] || 0;
+
+            if (horaInicio && duracion > 0) {
+                const [hh, mm] = horaInicio.split(":").map(Number);
+                let fecha = new Date();
+                fecha.setHours(hh);
+                fecha.setMinutes(mm + duracion);
+
+                const hhFin = fecha.getHours().toString().padStart(2, "0");
+                const mmFin = fecha.getMinutes().toString().padStart(2, "0");
+                horaFinInput.value = `${hhFin}:${mmFin}`;
+            } else {
+                horaFinInput.value = '';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ClaseId" class="form-label">Clase</label>
+                            <select asp-for="ClaseId" class="form-select" asp-items="ViewBag.Clases" id="ClaseId">
+                                <option value="">-- Seleccione Clase --</option>
+                            </select>
+                            <span asp-validation-for="ClaseId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SalaId" class="form-label">Sala</label>
+                            <select asp-for="SalaId" class="form-select" asp-items="ViewBag.Salas">
+                                <option value="">-- Seleccione Sala --</option>
+                            </select>
+                            <span asp-validation-for="SalaId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DiaSemana" class="form-label">Día de la Semana</label>
+                            <select asp-for="DiaSemana" class="form-select" asp-items="ViewBag.DiasSemana">
+                                <option value="">-- Seleccione Día --</option>
+                            </select>
+                            <span asp-validation-for="DiaSemana" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CapacidadMaxima" class="form-label">Capacidad Máxima (Clase)</label>
+                            <input asp-for="CapacidadMaxima" type="number" min="1" class="form-control" />
+                            <span asp-validation-for="CapacidadMaxima" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="HoraInicio" class="form-label">Hora Inicio</label>
+                            <input asp-for="HoraInicio" type="time" class="form-control" id="HoraInicio" />
+                            <span asp-validation-for="HoraInicio" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="HoraFin" class="form-label">Hora Fin (calculada)</label>
+                            <input asp-for="HoraFin" type="time" class="form-control" id="HoraFin" readonly />
+                            <span asp-validation-for="HoraFin" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="form-check mb-3">
+                        <input asp-for="SePuedeInscribir" class="form-check-input" type="checkbox" />
+                        <label asp-for="SePuedeInscribir" class="form-check-label">Se Puede Inscribir</label>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar Cambios
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* CORRECCIÓN 1: Agregar JQUERY. Es la base de la validación. *@
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+
+    @* CORRECCIÓN 2: Mover el Parcial de Validación para que se cargue DESPUÉS de jQuery. *@
+    <partial name="_ValidationScriptsPartial" />
+
+    @* Los scripts de Bootstrap pueden ir al final *@
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @* NOTA: Si la consola sigue mostrando el 404 para bootstrap-icons.css,
+                        debes verificar la ruta en tu proyecto (wwwroot/lib/bootstrap-icons/font/). *@
+</body>
+</html>

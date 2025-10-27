@@ -1,0 +1,64 @@
+﻿@model GimnasioCuerpoSano.Models.HorarioClase
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Detalles Horario de Clase";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Clase</dt>
+                    <dd class="col-sm-8">@Model.Clase?.Nombre</dd>
+
+                    <dt class="col-sm-4">Sala</dt>
+                    <dd class="col-sm-8">@Model.Sala?.Nombre</dd>
+
+                    <dt class="col-sm-4">Día de la Semana</dt>
+                    <dd class="col-sm-8">@Model.DiaSemana</dd>
+
+                    <dt class="col-sm-4">Capacidad Máxima</dt>
+                    <dd class="col-sm-8">@Model.CapacidadMaxima</dd>
+
+                    <dt class="col-sm-4">Hora Inicio</dt>
+                    <dd class="col-sm-8">@Model.HoraInicio.ToString(@"hh\:mm")</dd>
+
+                    <dt class="col-sm-4">Hora Fin</dt>
+                    <dd class="col-sm-8">@Model.HoraFin.ToString(@"hh\:mm")</dd>
+
+                    <dt class="col-sm-4">Habilitado para inscripción</dt>
+                    <dd class="col-sm-8">@((Model.SePuedeInscribir) ? "Sí" : "No")</dd>
+                </dl>
+
+                <div class="text-center mt-3">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver al Listado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.HorarioClase>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Horarios de Clases";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .wide-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            text-align: center;
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+        }
+
+        .table-light th {
+            color: #212529 !important;
+            vertical-align: middle;
+        }
+
+        .table td.actions {
+            white-space: nowrap;
+        }
+
+        .top-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <div class="top-buttons">
+                    <a asp-action="Create" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Nuevo Horario
+                    </a>
+                    <a href="/" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver al Menú
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clase / Sala</th>
+                                <th>Día</th>
+                                <th>Horario</th>
+                                <th>Capacidad Máxima</th>
+                                <th>Inscripciones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var h in Model)
+                                {
+                                    <tr>
+                                       
+                                        <td>
+                                            @h.Clase?.Nombre<br />
+                                            Sala: @h.Sala?.Nombre
+                                        </td>
+
+                                        
+                                        <td>@h.DiaSemana</td>
+
+                                        
+                                        <td>
+                                            @h.HoraInicio.ToString(@"hh\:mm") - @h.HoraFin.ToString(@"hh\:mm")
+                                            <br />
+                                            (@h.Clase?.DuracionMinutos min)
+                                        </td>
+
+                                        
+                                        <td>
+                                            @h.CapacidadMaxima
+                                        </td>
+
+                                        
+                                        <td>
+                                            <form asp-action="ToggleInscripciones" method="post" style="display:inline;">
+                                                <input type="hidden" name="id" value="@h.Id" />
+                                                <button type="submit" class="btn btn-sm @(h.SePuedeInscribir ? "btn-success" : "btn-secondary")">
+                                                    @(h.SePuedeInscribir ? "Sí" : "No")
+                                                </button>
+                                                @Html.AntiForgeryToken()
+                                            </form>
+                                        </td>
+
+
+                                        <td class="actions">
+                                                                                       
+                                            <a asp-action="Edit" asp-route-id="@h.Id" class="btn btn-warning btn-sm me-1">Editar</a>
+                                            <a asp-action="Details" asp-route-id="@h.Id" class="btn btn-info btn-sm me-1">Ver</a>
+                                            <a asp-action="Delete" asp-route-id="@h.Id" class="btn btn-danger btn-sm me-1">Eliminar</a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No hay horarios cargados.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
