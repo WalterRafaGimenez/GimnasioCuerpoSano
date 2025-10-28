@@ -69,10 +69,15 @@
                 <div class="alert alert-success">@TempData["Mensaje"]</div>
             }
 
-            <a asp-action="Create" class="btn btn-success mb-3">Agregar nuevo miembro</a>
-            <a asp-action="ImprimirListado" class="btn btn-primary mb-3 ms-2" target="_blank">
-                Imprimir Listado PDF
-            </a>
+            <div class="d-flex justify-content-center align-items-center">
+                <a asp-action="Create" class="btn btn-success me-2">Agregar nuevo miembro</a>
+
+                <a asp-action="ImprimirListado" class="btn btn-primary me-2" target="_blank">
+                    Imprimir Listado PDF
+                </a>
+
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">Volver al Menú</a>
+            </div>
         </div>
 
         @if (Model != null && Model.Any())
@@ -133,10 +138,10 @@
         }
 
         <!-- También centramos los botones inferiores en el listado -->
-        <div class="text-center mt-4">
+        <!--<div class="text-center mt-4">
             <a asp-action="Create" class="btn btn-success px-4">Nueva Membresía</a>
             <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
-        </div>
+        </div>-->
     </div> <!-- Cierre de .list-container -->
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,66 @@
+﻿@model GimnasioCuerpoSano.Models.Cobro
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Eliminar Cobro";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Eliminar Cobro - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Eliminar Cobro</h1>
+
+        <div class="alert alert-warning">
+            <strong>Atención:</strong> Estás por eliminar el siguiente cobro. Esta acción no se puede deshacer.
+        </div>
+
+        <div class="mb-3">
+            <label>Socio / Miembro:</label>
+            <p>@Model.Miembro?.Nombre @Model.Miembro?.Apellido</p>
+        </div>
+
+        <div class="mb-3">
+            <label>Membresía:</label>
+            <p>@Model.Membresia?.Nombre</p>
+        </div>
+
+        <div class="mb-3">
+            <label>Monto:</label>
+            <p>@Model.Monto.ToString("C")</p>
+        </div>
+
+        <div class="mb-3">
+            <label>Fecha de Pago:</label>
+            <p>@Model.FechaPago.ToString("dd/MM/yyyy")</p>
+        </div>
+
+        <div class="mb-3">
+            <label>Estado:</label>
+            <p>
+                <span class="badge @(Model.Estado == "Vencido" ? "bg-danger" : "bg-success")">
+                    @Model.Estado
+                </span>
+            </p>
+        </div>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-danger px-4">Confirmar Eliminación</button>
+                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>
+

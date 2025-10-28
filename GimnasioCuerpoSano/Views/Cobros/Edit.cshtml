@@ -1,0 +1,162 @@
+﻿@model GimnasioCuerpoSano.Models.Cobro
+@{
+    Layout = null;
+    ViewData["Title"] = "Editar Cobro";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Editar Cobro - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Cobro</h1>
+
+        <form asp-action="Edit" method="post">
+            @* Id oculto para identificar el cobro *@
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- SOCIO / MIEMBRO -->
+            <div class="form-group">
+                <label>Socio / Miembro</label>
+                <select asp-for="MiembroId" class="form-control" id="MiembroId">
+                    <option value="">-- Seleccione un miembro --</option>
+                    @foreach (var miembro in ViewBag.Miembros)
+                    {
+                        if (miembro.Id == Model.MiembroId)
+                        {
+                            <option value="@miembro.Id" selected="selected">
+                                @($"{miembro.Nombre} {miembro.Apellido}")
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@miembro.Id">
+                                @($"{miembro.Nombre} {miembro.Apellido}")
+                            </option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="MiembroId" class="text-danger"></span>
+            </div>
+
+            <!-- MEMBRESÍA (solo lectura) -->
+            <div class="form-group">
+                <label>Tipo de Membresía</label>
+                <input type="text" id="NombreMembresia" class="form-control" readonly
+                       value="@(Model.Membresia?.Nombre ?? "")" placeholder="Se mostrará automáticamente" />
+                <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
+                <span asp-validation-for="MembresiaId" class="text-danger"></span>
+            </div>
+
+            <!-- MÉTODO DE PAGO -->
+            <div class="form-group">
+                <label>Método de Pago</label>
+                <select asp-for="MetodoPago" class="form-control">
+                    <option value="">-- Seleccione método --</option>
+
+                    @* Usamos if/else para evitar la expresión C# en atributos *@
+                    @if (Model.MetodoPago == "Efectivo")
+                    {
+                        <option value="Efectivo" selected="selected">Efectivo</option>
+                    }
+                    else
+                    {
+                        <option value="Efectivo">Efectivo</option>
+                    }
+
+                    @if (Model.MetodoPago == "Transferencia")
+                    {
+                        <option value="Transferencia" selected="selected">Transferencia Bancaria</option>
+                    }
+                    else
+                    {
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                    }
+
+                    @if (Model.MetodoPago == "Mercado Pago")
+                    {
+                        <option value="Mercado Pago" selected="selected">Mercado Pago</option>
+                    }
+                    else
+                    {
+                        <option value="Mercado Pago">Mercado Pago</option>
+                    }
+
+                    @if (Model.MetodoPago == "Tarjeta Crédito")
+                    {
+                        <option value="Tarjeta Crédito" selected="selected">Tarjeta de Crédito</option>
+                    }
+                    else
+                    {
+                        <option value="Tarjeta Crédito">Tarjeta de Crédito</option>
+                    }
+
+                    @if (Model.MetodoPago == "Tarjeta Débito")
+                    {
+                        <option value="Tarjeta Débito" selected="selected">Tarjeta de Débito</option>
+                    }
+                    else
+                    {
+                        <option value="Tarjeta Débito">Tarjeta de Débito</option>
+                    }
+                </select>
+                <span asp-validation-for="MetodoPago" class="text-danger"></span>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
+                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        document.getElementById("MiembroId").addEventListener("change", function () {
+            var miembroId = this.value;
+            var membresiaIdInput = document.getElementById("MembresiaId");
+            var nombreMembresiaInput = document.getElementById("NombreMembresia");
+
+            membresiaIdInput.value = "";
+            nombreMembresiaInput.value = "";
+
+            if (miembroId) {
+                var url = '@Url.Action("ObtenerMembresiaPorMiembro", "Cobros")?miembroId=' + miembroId;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.membresiaId > 0) {
+                            membresiaIdInput.value = data.membresiaId;
+                            nombreMembresiaInput.value = data.nombreMembresia || "Sin membresía";
+                        } else {
+                            nombreMembresiaInput.value = "Sin membresía asignada";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener membresía:', error);
+                        nombreMembresiaInput.value = "Error al cargar";
+                    });
+            }
+        });
+
+        // Si ya hay un miembro seleccionado, actualiza la membresía al cargar la página
+        // (útil cuando se abre Edit con datos ya cargados)
+        document.getElementById("MiembroId").dispatchEvent(new Event('change'));
+    </script>
+</body>
+</html>
+

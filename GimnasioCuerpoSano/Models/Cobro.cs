@@ -39,7 +39,7 @@ namespace GimnasioCuerpoSano.Models
         [ForeignKey("MiembroId")]
         public Miembro? Miembro { get; set; }
 
-        [Required]
+        
         [Display(Name = "Membresía")]
         public int MembresiaId { get; set; }
 

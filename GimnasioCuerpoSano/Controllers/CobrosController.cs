@@ -19,6 +19,22 @@ namespace GimnasioCuerpoSano.Controllers
             _context = context;
         }
 
+        // obtener memebria automatica par cobro
+        [HttpGet]
+        public JsonResult ObtenerMembresiaPorMiembro(int miembroId)
+        {
+            var membresia = _context.Miembros
+                .Include(m => m.Membresia) //importante: incluye la relación
+                .Where(m => m.Id == miembroId)
+                .Select(m => new
+                {
+                    membresiaId = m.MembresiaId,
+                    nombreMembresia = m.Membresia != null ? m.Membresia.Nombre : ""
+                })
+                .FirstOrDefault();
+
+            return Json(membresia);
+        }
         // =====================================================
         // LISTAR (INDEX)
         // =====================================================
@@ -78,6 +94,77 @@ namespace GimnasioCuerpoSano.Controllers
             ViewBag.Membresias = _context.Membresias.ToList();
             return View(cobro);
         }
+
+
+        // GET: Cobros/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var cobro = await _context.Cobros
+                .Include(c => c.Miembro)
+                .Include(c => c.Membresia)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cobro == null)
+                return NotFound();
+
+            ViewBag.Miembros = _context.Miembros.ToList();
+            return View(cobro);
+        }
+
+        //POST edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Cobro cobro)
+        {
+            if (id != cobro.Id)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                // Traemos la membresía para recalcular el monto
+                var membresia = await _context.Membresias.FindAsync(cobro.MembresiaId);
+                if (membresia != null)
+                {
+                    cobro.Monto = membresia.Precio; // recalcular
+                }
+
+                try
+                {
+                    _context.Update(cobro);
+                    await _context.SaveChangesAsync();
+                    TempData["Mensaje"] = "Cobro actualizado correctamente.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["Error"] = "Error al actualizar el cobro.";
+                }
+            }
+
+            ViewBag.Miembros = _context.Miembros.ToList();
+            return View(cobro);
+        }
+
+
+
+        [HttpGet]
+        public IActionResult ObtenerNombreMembresia(int idMiembro)
+        {
+            var miembro = _context.Miembros
+                .Include(m => m.Membresia)
+                .FirstOrDefault(m => m.Id == idMiembro);
+
+            if (miembro == null || miembro.Membresia == null)
+            {
+                return Json(new { nombreMembresia = "Sin membresía" });
+            }
+
+            // Devuelve el nombre real
+            return Json(new { nombreMembresia = miembro.Membresia.Nombre });
+        }
+
+
+
 
         // =====================================================
         // DETALLES

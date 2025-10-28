@@ -30,8 +30,8 @@
             <p><strong>Membresía:</strong> @Model.Membresia?.Nombre</p>
 
             <div class="text-center mt-4">
-                <a asp-action="Index" class="btn btn-secondary">↩️ Volver</a>
-                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success">📄 Generar PDF</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
+                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success" target="_blank">Generar PDF</a>
             </div>
         </div>
     </div>

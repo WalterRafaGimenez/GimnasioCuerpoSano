@@ -18,9 +18,10 @@
         <form asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+            <!-- SELECCIÓN DE MIEMBRO -->
             <div class="form-group">
                 <label>Socio / Miembro</label>
-                <select asp-for="MiembroId" class="form-control">
+                <select asp-for="MiembroId" class="form-control" id="MiembroId">
                     <option value="">-- Seleccione un miembro --</option>
                     @foreach (var miembro in ViewBag.Miembros)
                     {
@@ -30,22 +31,19 @@
                 <span asp-validation-for="MiembroId" class="text-danger"></span>
             </div>
 
+            <!-- MEMBRESÍA (solo lectura) -->
             <div class="form-group">
                 <label>Tipo de Membresía</label>
-                <select asp-for="MembresiaId" class="form-control">
-                    <option value="">-- Seleccione una membresía --</option>
-                    @foreach (var mem in ViewBag.Membresias)
-                    {
-                        <option value="@mem.Id">@mem.Nombre</option>
-                    }
-                </select>
+                <input type="text" id="NombreMembresia" class="form-control" readonly placeholder="Se mostrará automáticamente" />
+                <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
                 <span asp-validation-for="MembresiaId" class="text-danger"></span>
             </div>
 
+            <!-- MÉTODO DE PAGO -->
             <div class="form-group">
                 <label>Método de Pago</label>
                 <select asp-for="MetodoPago" class="form-control">
-                    <option value="">-- Seleccione método --</option>
+                    <option value="Efectivo">-- Seleccione método --</option>
                     <option value="Efectivo">Efectivo</option>
                     <option value="Transferencia">Transferencia Bancaria</option>
                     <option value="Mercado Pago">Mercado Pago</option>
@@ -61,6 +59,52 @@
             </div>
         </form>
     </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        document.getElementById("MiembroId").addEventListener("change", function () {
+            var miembroId = this.value;
+            var membresiaIdInput = document.getElementById("MembresiaId");
+            var nombreMembresiaInput = document.getElementById("NombreMembresia");
+
+            // Limpiar campos mientras se carga
+            membresiaIdInput.value = "";
+            nombreMembresiaInput.value = "";
+
+            if (miembroId) {
+                // USAMOS RAZOR PARA CONSTRUIR LA URL DE FORMA SEGURA
+                var url = '@Url.Action("ObtenerMembresiaPorMiembro", "Cobros")?miembroId=' + miembroId;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.membresiaId > 0) { // Validar que se recibió un ID válido
+                            // Asignamos los valores devueltos por el JSON del Controller
+                            membresiaIdInput.value = data.membresiaId;
+                            nombreMembresiaInput.value = data.nombreMembresia || "Sin membresía";
+                        } else {
+                            nombreMembresiaInput.value = "Sin membresía asignada";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener membresía:', error);
+                        nombreMembresiaInput.value = "Error al cargar";
+                    });
+            }
+        });
+
+        // Disparamos el evento 'change' al cargar la página si ya hay un MiembroId seleccionado
+        // (útil si el formulario regresa con error de postback)
+        document.getElementById("MiembroId").dispatchEvent(new Event('change'));
+
+    </script>
+    }
+    
 </body>
 </html>
 
