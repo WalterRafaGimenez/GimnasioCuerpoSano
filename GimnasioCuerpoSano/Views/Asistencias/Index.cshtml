@@ -1,0 +1,121 @@
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.Asistencia>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Listado de Asistencias";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 2rem;
+        }
+
+        .list-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        h2 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #0d6efd;
+            color: white;
+            text-align: center;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        .card {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="list-container">
+
+        <h2>Listado de Asistencias</h2>
+
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success text-center">@TempData["Mensaje"]</div>
+        }
+
+        <div class="text-center mb-3">
+            <a asp-action="Create" class="btn btn-success me-2">
+                Registrar Nueva Asistencia
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                Volver al Menú
+            </a>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive card">
+                <table class="table table-striped table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>DNI</th>
+                            <th>Fecha y Hora</th>
+                            <th>Estado Membresía</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Miembro.Nombre</td>
+                                <td>@item.Miembro.Apellido</td>
+                                <td>@item.Miembro.DNI</td>
+                                <td>@item.FechaHora.ToString("g")</td>
+                                <td>@item.EstadoMembresia</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">No hay asistencias registradas.</div>
+        }
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

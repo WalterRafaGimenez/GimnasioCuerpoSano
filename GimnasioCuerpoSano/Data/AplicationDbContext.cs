@@ -115,7 +115,10 @@ namespace GimnasioCuerpoSano.Data
                 .WithMany()
                 .HasForeignKey(i => i.MiembroId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Asistencia>().ToTable("Asistencia");
         }
+
 
         // -----------------------------
         // DbSets
@@ -128,5 +131,6 @@ namespace GimnasioCuerpoSano.Data
         public DbSet<Clase> Clase { get; set; }
         public DbSet<HorarioClase> HorariosClase { get; set; }
         public DbSet<InscripcionClase> InscripcionClase { get; set; }
+        public DbSet<Asistencia> Asistencias { get; set; }
     }
 }
