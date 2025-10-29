@@ -1,0 +1,92 @@
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.ViewModels.ClaseDisponibleViewModel>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Clases Disponibles";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center">@ViewData["Title"]</h2>
+
+        <div class="d-flex justify-content-center mb-3">
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-house-door"></i> Volver al Menú
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Clase / Sala</th>
+                        <th>Día</th>
+                        <th>Horario</th>
+                        <th>Duración (min)</th>
+                        <th>Precio</th>
+                        <th>Entrenador</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.NombreClase</strong> / @item.SalaNombre
+                                </td>
+                                <td>@item.DiaSemana</td>
+                                <td>@item.HoraInicio.ToString(@"hh\:mm")</td>
+                                <td>@item.DuracionMinutos</td>
+                                <td>@item.Precio.ToString("C")</td>
+                                <td>@item.EntrenadorNombre?.Split(' ').Last()</td> @* Toma solo el apellido *@
+                                <td>
+                                    @if (item.EstaInscripto)
+                                    {
+                                        <a asp-controller="Inscripciones" asp-action="Desinscribirse"
+                                           asp-route-horarioClaseId="@item.HorarioClaseId"
+                                           class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x-circle"></i> Desinscribirse
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Inscripciones" asp-action="Inscribirse"
+                                           asp-route-horarioClaseId="@item.HorarioClaseId"
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-check-circle"></i> Inscribirse
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-muted text-center">
+                                No hay clases disponibles por el momento.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
