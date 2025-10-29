@@ -1,13 +1,14 @@
 ﻿using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
-using GimnasioCuerpoSano.Models.ViewModels;
+using GimnasioCuerpoSano;
 using Microsoft.AspNetCore.Mvc;
-using QuestPDF.Helpers;
+using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
+using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace GimnasioCuerpoSano.Controllers
@@ -21,15 +22,33 @@ namespace GimnasioCuerpoSano.Controllers
             _context = context;
         }
 
+        //CREATE
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(InscripcionClase inscripcion)
+        {
+            if (!ModelState.IsValid) return View(inscripcion);
+
+            _context.InscripcionClase.Add(inscripcion);
+            _context.SaveChanges();
+            TempData["Mensaje"] = "Inscripción creada correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+    
         // GET: InscripcionClases
         public IActionResult Index(string dni)
         {
             if (string.IsNullOrEmpty(dni))
             {
-                return View(); // Mostramos formulario para ingresar DNI
+                // Si no se ingresó DNI, mostramos solo el formulario
+                return View();
             }
 
+            // Buscamos el miembro con su membresía incluida
             var miembro = _context.Miembros
+                .Include(m => m.Membresia)
                 .FirstOrDefault(m => m.DNI == dni);
 
             if (miembro == null)
@@ -38,41 +57,107 @@ namespace GimnasioCuerpoSano.Controllers
                 return View();
             }
 
-            // Validar membresía vigente
+            // Validamos membresía vigente
             bool membresiaValida = false;
             if (miembro.Membresia != null)
             {
                 var fechaVencimiento = miembro.FechaAlta.AddMonths(miembro.Membresia.DuracionEnMeses);
                 membresiaValida = fechaVencimiento > DateTime.Now;
             }
+
             if (!membresiaValida)
             {
                 ViewBag.Miembro = miembro;
                 ViewBag.MembresiaValida = false;
-                return View(new List<InscripcionClaseViewModel>()); // retorna la vista vacía
+                return View(new List<InscripcionClaseViewModel>());
             }
 
-            // Obtener todas las clases con su horario y entrenador
-            var horarios = _context.HorariosClase
-                .Select(h => new InscripcionClaseViewModel
-                {
-                    Id = h.Id,
-                    ClaseNombre = h.Clase.Nombre,
-                    EntrenadorNombre = h.Clase.Entrenador.Nombre + " " + h.Clase.Entrenador.Apellido,
-                    HoraInicio = h.HoraInicio,
-                    HoraFin = h.HoraFin,
-                    FechaInscripcion = DateTime.Now,
-                    Estado = _context.InscripcionClase
-                        .Any(i => i.HorarioClaseId == h.Id && i.MiembroId == miembro.Id && i.Estado)
-                        ? "Inscripto"
-                        : "No Inscripto"
-                }).ToList();
+            // Traemos horarios a memoria para evitar errores de EF con TimeSpan y DataReader
+            var horariosDb = _context.HorariosClase
+                .Include(h => h.Clase)
+                    .ThenInclude(c => c.Entrenador)
+                .Include(h => h.Sala)
+                .Where(h => h.SePuedeInscribir)
+                .ToList(); // Trae todos los registros a memoria
 
+            // Convertimos a ViewModel y agregamos InscripcionId
+            var horarios = horariosDb.Select(h =>
+            {
+                var inscripcion = _context.InscripcionClase
+                    .FirstOrDefault(i => i.HorarioClaseId == h.Id && i.MiembroId == miembro.Id);
+
+                return new InscripcionClaseViewModel
+                {
+                    Id = h.Id, // HorarioClaseId
+                    InscripcionId = inscripcion?.Id, // null si no está inscripto
+                    NombreClase = h.Clase.Nombre,
+                    NombreEntrenador = h.Clase.Entrenador != null
+                        ? h.Clase.Entrenador.Nombre + " " + h.Clase.Entrenador.Apellido
+                        : "Sin entrenador",
+                    HoraInicio = h.HoraInicio.ToString(@"hh\:mm"),
+                    HoraFin = h.HoraFin.ToString(@"hh\:mm"),
+                    DiaSemana = h.DiaSemana.ToString(),
+                    FechaInscripcion = inscripcion?.FechaInscripcion ?? DateTime.Now,
+                    Estado = (inscripcion != null && inscripcion.Estado) ? "Inscripto" : "No Inscripto"
+                };
+            })
+            .OrderBy(h => h.NombreClase)
+            .ThenBy(h => h.HoraInicio)
+            .ToList();
+
+            // Pasamos información al View
             ViewBag.Miembro = miembro;
             ViewBag.MembresiaValida = membresiaValida;
 
             return View(horarios);
         }
+
+
+        // GET: InscripcionClases/Details/5
+        public async Task<IActionResult> Details(int? id, string? dni)
+        {
+            if (id == null) return NotFound();
+
+            var inscripcion = await _context.InscripcionClase
+                .Include(i => i.Miembro)
+                .Include(i => i.HorarioClase)
+                    .ThenInclude(h => h.Clase)
+                .Include(i => i.HorarioClase)
+                    .ThenInclude(h => h.Sala)
+                .Include(i => i.HorarioClase)
+                    .ThenInclude(h => h.Clase.Entrenador)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (inscripcion == null) return NotFound();
+
+            var viewModel = new InscripcionClaseViewModel
+            {
+                Id = inscripcion.Id,
+                NombreMiembro = inscripcion.Miembro?.Nombre,
+                ApellidoMiembro = inscripcion.Miembro?.Apellido,
+                DNI = inscripcion.Miembro?.DNI,
+                NombreClase = inscripcion.HorarioClase?.Clase?.Nombre,
+                DiaSemana = inscripcion.HorarioClase?.DiaSemana.ToString(),
+                HoraInicio = inscripcion.HorarioClase?.HoraInicio.ToString(@"hh\:mm"),
+                HoraFin = inscripcion.HorarioClase?.HoraFin.ToString(@"hh\:mm"),
+                NumeroSala = inscripcion.HorarioClase?.Sala?.Numero,
+                NombreEntrenador = inscripcion.HorarioClase?.Clase?.Entrenador != null
+                    ? inscripcion.HorarioClase.Clase.Entrenador.Nombre + " " + inscripcion.HorarioClase.Clase.Entrenador.Apellido
+                    : "Sin entrenador",
+                FechaInscripcion = inscripcion.FechaInscripcion,
+                Estado = inscripcion.Estado ? "Inscripto" : "No Inscripto"
+            };
+
+            ViewBag.Dni = dni; // 🔹 Guardamos el DNI para volver al listado
+
+            return View(viewModel);
+        }
+
+
+
+
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -212,6 +297,96 @@ namespace GimnasioCuerpoSano.Controllers
             document.GeneratePdf(stream);
             return stream.ToArray();
         }
+
+        public IActionResult Inscribirse(int id, string dni)
+        {
+            var miembro = _context.Miembros.FirstOrDefault(m => m.DNI == dni);
+            if (miembro == null) return NotFound();
+
+            var inscripcion = _context.InscripcionClase
+                .FirstOrDefault(i => i.HorarioClaseId == id && i.MiembroId == miembro.Id);
+
+            if (inscripcion == null)
+            {
+                _context.InscripcionClase.Add(new InscripcionClase
+                {
+                    HorarioClaseId = id,
+                    MiembroId = miembro.Id,
+                    Estado = true,
+                    FechaInscripcion = DateTime.Now
+                });
+                _context.SaveChanges();
+                TempData["Mensaje"] = "Inscripto correctamente.";
+            }
+
+            return RedirectToAction(nameof(Index), new { dni = dni });
+        }
+
+        public IActionResult Desinscribirse(int id, string dni)
+        {
+            var miembro = _context.Miembros.FirstOrDefault(m => m.DNI == dni);
+            if (miembro == null) return NotFound();
+
+            var inscripcion = _context.InscripcionClase
+                .FirstOrDefault(i => i.HorarioClaseId == id && i.MiembroId == miembro.Id);
+
+            if (inscripcion != null)
+            {
+                _context.InscripcionClase.Remove(inscripcion);
+                _context.SaveChanges();
+                TempData["Mensaje"] = "Inscripción cancelada.";
+            }
+
+            return RedirectToAction(nameof(Index), new { dni = dni });
+        }
+
+
+        // =====================================================
+        // GET: InscripcionClases/Delete/5
+        // =====================================================
+        public IActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var inscripcion = _context.InscripcionClase
+                .Include(i => i.Miembro)
+                .Include(i => i.HorarioClase)
+                    .ThenInclude(h => h.Clase)
+                .FirstOrDefault(i => i.Id == id);
+
+            if (inscripcion == null)
+            {
+                return NotFound();
+            }
+
+            return View(inscripcion);
+        }
+
+        // =====================================================
+        // POST: InscripcionClases/DeleteConfirmed/5
+        // =====================================================
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var inscripcion = _context.InscripcionClase.Find(id);
+            if (inscripcion == null)
+            {
+                return NotFound();
+            }
+
+            _context.InscripcionClase.Remove(inscripcion);
+            _context.SaveChanges();
+
+            TempData["Success"] = "La inscripción fue eliminada correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
         // =============================================
         // ACCIÓN PÚBLICA -> Genera el PDF por DNI
         // =============================================

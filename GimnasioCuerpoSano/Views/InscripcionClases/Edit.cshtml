@@ -1,0 +1,73 @@
+﻿@model GimnasioCuerpoSano.Models.InscripcionClase
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Editar Inscripción";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <div class="logo-container">
+                    <img src="~/img/Logo.png" alt="Logo Gimnasio" />
+                </div>
+                <h4>@ViewData["Title"]</h4>
+            </div>
+
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="MiembroId" class="form-label">Miembro</label>
+                        <select asp-for="MiembroId" asp-items="@(new SelectList(ViewBag.Miembros, "Id", "NombreApellido", Model.MiembroId))" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="HorarioClaseId" class="form-label">Clase</label>
+                        <select asp-for="HorarioClaseId" asp-items="@(new SelectList(ViewBag.Horarios, "Id", "ClaseNombre", Model.HorarioClaseId))" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Estado" class="form-label">Estado</label>
+                        <select asp-for="Estado" class="form-control">
+                            @if (Model.Estado)
+                            {
+                                <option value="true" selected>Inscripto</option>
+                                <option value="false">No inscripto</option>
+                            }
+                            else
+                            {
+                                <option value="true">Inscripto</option>
+                                <option value="false" selected>No inscripto</option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="btn-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-pencil-square"></i> Actualizar
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left-circle"></i> Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

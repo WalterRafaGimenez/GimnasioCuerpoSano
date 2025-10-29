@@ -1,0 +1,48 @@
+﻿@model GimnasioCuerpoSano.Models.InscripcionClase
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Eliminar Inscripción";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-danger">Eliminar Inscripción</h2>
+        <hr />
+        <h4>¿Estás seguro de que querés eliminar esta inscripción?</h4>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Miembro</dt>
+                    <dd class="col-sm-9">@Model.Miembro?.Nombre @Model.Miembro?.Apellido</dd>
+
+                    <dt class="col-sm-3">Clase</dt>
+                    <dd class="col-sm-9">@Model.HorarioClase?.Clase?.Nombre</dd>
+
+                    <dt class="col-sm-3">Horario</dt>
+                    <dd class="col-sm-9">@Model.HorarioClase?.HoraInicio.ToString("HH:mm") - @Model.HorarioClase?.HoraFin.ToString("HH:mm")</dd>
+
+                    <dt class="col-sm-3">Fecha de Inscripción</dt>
+                    <dd class="col-sm-9">@Model.FechaInscripcion.ToString("dd/MM/yyyy")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <form asp-action="DeleteConfirmed" method="post" class="mt-3">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>
+

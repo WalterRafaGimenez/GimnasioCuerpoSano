@@ -1,4 +1,4 @@
-﻿@model IEnumerable<GimnasioCuerpoSano.Models.ViewModels.InscripcionClaseViewModel>
+﻿@model IEnumerable<GimnasioCuerpoSano.Models.InscripcionClaseViewModel>
 
 @{
     Layout = null;
@@ -14,162 +14,95 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .wide-container {
-            max-width: 1300px;
-            margin: 30px auto;
-            padding: 15px;
-        }
-
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .card-header {
-            text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            padding: 15px;
-        }
-
-        .logo-container img {
-            height: 80px;
-            margin-bottom: 10px;
-        }
-
-        .table-light th {
-            color: #212529 !important;
-            vertical-align: middle;
-        }
-
-        .table td.actions {
-            white-space: nowrap;
-            width: 1%;
-        }
-
-        .top-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .badge {
-            font-size: 0.9rem;
-        }
-    </style>
 </head>
 <body>
-    <div class="wide-container">
-        <div class="card shadow-lg">
-            <div class="card-header">
-                <div class="logo-container">
-                    <img src="~/img/Logo.png" alt="Logo Gimnasio" />
-                </div>
-                <h4>@ViewData["Title"]</h4>
-                <h6>@ViewBag.Miembro?.Nombre @ViewBag.Miembro?.Apellido</h6>
+    <div class="container mt-4">
+        <h2 class="text-center">@ViewData["Title"]</h2>
+        <h5 class="text-center">@ViewBag.Miembro?.Nombre @ViewBag.Miembro?.Apellido</h5>
+
+        <form asp-action="Index" method="get" class="d-flex justify-content-center mb-3">
+            <input type="text" name="dni" class="form-control" placeholder="Ingrese DNI" required
+                   value="@(ViewContext.HttpContext.Request.Query["dni"])" style="max-width: 180px;" />
+            <button type="submit" class="btn btn-primary ms-2">Buscar clases disponibles</button>
+        </form>
+        <div class="d-flex justify-content-center mb-3">
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-house-door"></i> Volver al Menú
+            </a>
+        </div>
+
+        @if (ViewBag.MembresiaValida == false)
+        {
+            <div class="alert alert-danger text-center">
+                Tu membresía no está activa. No puedes inscribirte a clases.
             </div>
+        }
 
-            <div class="card-body">
-                <div class="top-buttons">
-                   
-                    <form asp-controller="InscripcionClases" asp-action="GenerarPdfPorMiembro" method="get" target="_blank" class="d-flex gap-2">
-                        <input type="text" name="dni" class="form-control" placeholder="Ingrese DNI" required style="max-width: 180px;" />
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-file-earmark-pdf"></i> Imprimir PDF por DNI
-                        </button>
-                    </form>>
-                    <a href="/" class="btn btn-secondary">
-                        <i class="bi bi-house-door"></i> Volver al Menú
-                    </a>
-                </div>
-
-                @if (ViewBag.MembresiaValida == false)
-                {
-                    <div class="alert alert-danger text-center">
-                        Tu membresía no está activa. No puedes inscribirte a clases.
-                    </div>
-                }
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle text-center">
-                        <thead class="table-light">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Clase</th>
+                        <th>Entrenador</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var clase in Model)
+                        {
                             <tr>
-                                <th>Clase</th>
-                                <th>Entrenador</th>
-                                <th>Hora Inicio</th>
-                                <th>Hora Fin</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <td>@clase.NombreClase</td>
+                                <td>@clase.NombreEntrenador</td>
+                                <td>@clase.HoraInicio</td>
+                                <td>@clase.HoraFin</td>
+                                <td>
+                                    <span class="badge @(clase.Estado == "Inscripto" ? "bg-success" : "bg-secondary")">
+                                        @clase.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-action="Inscribirse"
+                                       asp-route-id="@clase.Id"
+                                       asp-route-dni="@(ViewContext.HttpContext.Request.Query["dni"])"
+                                       class="btn btn-success btn-sm me-1">
+                                        <i class="bi bi-check-circle"></i> Inscribirse
+                                    </a>
+                                    <a asp-action="Desinscribirse"
+                                       asp-route-id="@clase.Id"
+                                       asp-route-dni="@(ViewContext.HttpContext.Request.Query["dni"])"
+                                       class="btn btn-warning btn-sm me-1">
+                                        <i class="bi bi-x-circle"></i> Desinscribirse
+                                    </a>
+                                    @if (clase.Estado == "Inscripto")
+                                    {
+                                        <a asp-action="Details"
+                                           asp-route-id="@clase.InscripcionId"
+                                           asp-route-dni="@(ViewContext.HttpContext.Request.Query["dni"])"
+                                           class="btn btn-info btn-sm">Ver</a>
+                                    }
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model != null && Model.Any())
-                            {
-                                foreach (var clase in Model)
-                                {
-                                    <tr>
-                                        <td>@clase.ClaseNombre</td>
-                                        <td>@clase.EntrenadorNombre</td>
-                                        <td>@clase.HoraInicio.ToString(@"hh\:mm")</td>
-                                        <td>@clase.HoraFin.ToString(@"hh\:mm")</td>
-                                        <td>
-                                            @if (clase.Estado == "Inscripto")
-                                            {
-                                                <span class="badge bg-success">Inscripto</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">No Inscripto</span>
-                                            }
-                                        </td>
-                                        <td class="actions">
-                                            @if (clase.Estado == "Inscripto")
-                                            {
-                                                <a asp-action="Desinscribirse"
-                                                   asp-route-id="@clase.Id"
-                                                   class="btn btn-danger btn-sm">
-                                                    <i class="bi bi-x-circle"></i> Cancelar
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a asp-action="Inscribirse"
-                                                   asp-route-id="@clase.Id"
-                                                   class="btn btn-success btn-sm">
-                                                    <i class="bi bi-check-circle"></i> Inscribirse
-                                                </a>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">
-                                        No hay clases disponibles por el momento.
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-           
-            </div>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-muted text-center">
+                                No hay clases disponibles por el momento.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
