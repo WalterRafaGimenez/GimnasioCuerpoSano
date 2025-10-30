@@ -74,8 +74,16 @@
                         <i class="bi bi-person-check"></i> Asistencia Miembro
                     </a>
 
-
                 }
+
+                @if (User.IsInRole("Administrador"))
+                {
+                    
+                    <a class="btn btn-warning btn-lg me-2" asp-controller="RoleManagement" asp-action="Index">Gestión de Roles</a>
+                   
+                    
+                }
+
 
                 @* Botones visibles solo para Miembros, si corresponde *@
 
