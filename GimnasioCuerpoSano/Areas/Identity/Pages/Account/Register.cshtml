@@ -77,12 +77,11 @@
                     text-decoration: underline;
                 }
 
-        /* 2. ESTILO ADICIONAL PARA ALINEAR BOTÓN DE OJO */
         .input-group .btn-outline-secondary {
             border-color: #dee2e6;
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
-            height: 58px; /* Ajustar a la altura de form-floating */
+            height: 58px;
             padding-top: 1rem;
         }
 
@@ -106,6 +105,14 @@
                         <li>@error.ErrorMessage</li>
                     }
                 </ul>
+            </div>
+        }
+
+        @* Mensaje opcional según tipo de usuario *@
+        @if (ViewData["UserTypeMessage"] != null)
+        {
+            <div class="alert alert-info text-center">
+                @ViewData["UserTypeMessage"]
             </div>
         }
 
@@ -153,15 +160,12 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
     <partial name="_ValidationScriptsPartial" />
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            // Función genérica para alternar la visibilidad
             function togglePasswordVisibility(buttonId, inputId, iconId) {
                 const toggleButton = document.getElementById(buttonId);
                 const passwordInput = document.getElementById(inputId);
@@ -169,11 +173,8 @@
 
                 if (toggleButton && passwordInput && toggleIcon) {
                     toggleButton.addEventListener('click', function () {
-                        // Alternar el atributo type: password <-> text
                         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                         passwordInput.setAttribute('type', type);
-
-                        // Alternar el ícono (ojo cerrado <-> ojo abierto)
                         if (type === 'text') {
                             toggleIcon.classList.remove('bi-eye-slash');
                             toggleIcon.classList.add('bi-eye');
@@ -185,7 +186,6 @@
                 }
             }
 
-            // Aplicar la función a ambos campos de contraseña
             togglePasswordVisibility('togglePassword', 'passwordInput', 'toggleIcon');
             togglePasswordVisibility('toggleConfirmPassword', 'confirmPasswordInput', 'toggleConfirmIcon');
         });

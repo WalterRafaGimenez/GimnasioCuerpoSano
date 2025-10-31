@@ -1,0 +1,91 @@
+﻿@model GimnasioCuerpoSano.Models.ViewModels.MisClasesEntrenadorViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Mis Clases";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h2 class="text-center text-primary mb-3">Mis Clases</h2>
+
+        <div class="text-center mb-3">
+            <p>
+                Certificado Vto:
+                @if (Model.FechaVencimientoCertificado.HasValue)
+                {
+                    var vencido = Model.FechaVencimientoCertificado.Value.Date < DateTime.Today;
+                    <span class="fw-bold @(vencido ? "text-danger" : "")">
+                        @Model.FechaVencimientoCertificado.Value.ToString("dd/MM/yyyy")
+                        @(vencido ? " (VENCIDO)" : "")
+                    </span>
+                }
+                else
+                {
+                    <span class="text-muted">No registrado</span>
+                }
+            </p>
+        </div>
+
+        <div class="d-flex justify-content-center mb-3">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-house-door"></i> Volver al Menú
+            </a>
+        </div>
+
+        <div class="card shadow-sm p-3 rounded-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Clase</th>
+                            <th>Sala</th>
+                            <th>Día</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
+                            <th>Duración (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Clases != null && Model.Clases.Any())
+                        {
+                            foreach (var clase in Model.Clases)
+                            {
+                                <tr>
+                                    <td><strong>@clase.NombreClase</strong></td>
+                                    <td>@clase.SalaNombre</td>
+                                    <td>@clase.DiaSemana</td>
+                                    <td>@clase.HoraInicio.ToString(@"hh\:mm")</td>
+                                    <td>@clase.HoraFin.ToString(@"hh\:mm")</td>
+                                    <td>@clase.DuracionMinutos</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-muted text-center py-3">
+                                    No tienes clases asignadas actualmente.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

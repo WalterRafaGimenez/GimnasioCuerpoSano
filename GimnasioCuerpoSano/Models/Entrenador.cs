@@ -42,6 +42,8 @@ namespace GimnasioCuerpoSano.Models
         [Display(Name = "Tipo de Documento")]
         public string TipoDocumento { get; set; } = "DNI"; // valores: "DNI" o "DNI-Extranjero"
 
+        public ICollection<Clase>? Clases { get; set; }
+
     }
 }
 

@@ -75,21 +75,6 @@ namespace GimnasioCuerpoSano.Data
             modelBuilder.Entity<Clase>()
                 .ToTable("Clase"); // Mantenemos la convención de nombre de tabla si es necesaria
 
-            // ❌ BLOQUE ELIMINADO: La configuración explícita para EntrenadorId y SalaId fue REMOVIDA.
-            // EF Core manejará estas relaciones por convención (gracias a las propiedades FK en el modelo).
-            /*
-            modelBuilder.Entity<Clase>()
-                .HasOne(c => c.Entrenador)
-                .WithMany()
-                .HasForeignKey(c => c.EntrenadorId)
-                .OnDelete(DeleteBehavior.Restrict);
-            
-            modelBuilder.Entity<Clase>()
-                .HasOne(c => c.Sala)
-                .WithMany()
-                .HasForeignKey(c => c.SalaId) // ESTA LÍNEA CAUSABA CONFLICTOS
-                .OnDelete(DeleteBehavior.Restrict);
-            */
 
             // -----------------------------
             // Relación Clase → Horarios (Mantenemos, ya que es la relación "padre-hijo" con CASCADE)

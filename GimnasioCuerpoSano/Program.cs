@@ -94,7 +94,7 @@ using (var scope = app.Services.CreateScope())
 
     DbInitializer.Initialize(context);
 
-    string[] roles = new[] { "Administrador", "Empleado", "Miembro" };
+    string[] roles = new[] { "Administrador", "Empleado", "Miembro", "Entrenador" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

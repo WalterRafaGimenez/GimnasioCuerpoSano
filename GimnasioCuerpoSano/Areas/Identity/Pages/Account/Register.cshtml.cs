@@ -146,94 +146,74 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
             if (!ModelState.IsValid)
                 return Page();
 
+            IdentityUser user = CreateUser();
+            string rolAsignado = "";
+
             // =====================================
-            // VALIDACIÓN PERSONALIZADA (DNI Y MAIL)
+            // 1. Intentamos validar como Miembro
             // =====================================
-
-            // 1.1 Buscar al miembro solo por DNI (para validar si existe)
-            var miembroPorDni = await _context.Miembros
-                .AsNoTracking() // No necesitamos seguimiento aún
-                .FirstOrDefaultAsync(m => m.DNI == Input.DNI);
-
-            if (miembroPorDni == null)
-            {
-                // El DNI NO existe en la base de datos
-                ModelState.AddModelError("Input.DNI", "El DNI ingresado no corresponde a un miembro registrado.");
-                return Page();
-            }
-
-            // 1.2 Buscar al miembro por DNI y Email (para validar la combinación)
             var miembro = await _context.Miembros
                 .Include(m => m.Membresia)
                 .FirstOrDefaultAsync(m => m.DNI == Input.DNI && m.Mail == Input.Email);
 
-            if (miembro == null)
+            if (miembro != null)
             {
-                // El DNI es correcto (pasó la 1.1), pero el Mail asociado a ese DNI es incorrecto.
-                ModelState.AddModelError("Input.Email", $"El correo electrónico no coincide con el registrado para el DNI {Input.DNI}.");
+                // Validación membresía vigente
+                DateTime fechaVencimiento = miembro.FechaAlta.AddMonths(miembro.Membresia?.DuracionEnMeses ?? 0);
+                if (fechaVencimiento < DateTime.Now)
+                {
+                    ModelState.AddModelError(string.Empty, "Su membresía no está vigente. No puede registrarse.");
+                    return Page();
+                }
+                rolAsignado = "Miembro";
+            }
+            else
+            {
+                // =====================================
+                // 2. Intentamos validar como Entrenador
+                // =====================================
+                var entrenador = await _context.Entrenadores
+                    .FirstOrDefaultAsync(e => e.DNI == Input.DNI && e.Email == Input.Email);
+
+                if (entrenador != null)
+                {
+                    if (entrenador.FechaVencimientoCertificado.HasValue && entrenador.FechaVencimientoCertificado.Value.Date < DateTime.Now.Date)
+                    {
+                        ModelState.AddModelError(string.Empty, "Su certificado está vencido. Contacte a la administración.");
+                        return Page();
+                    }
+                    rolAsignado = "Entrenador";
+                }
+            }
+
+            // =====================================
+            // 3. Si no se encontró ni Miembro ni Entrenador
+            // =====================================
+            if (string.IsNullOrEmpty(rolAsignado))
+            {
+                ModelState.AddModelError(string.Empty, "No se encontró un Miembro o Entrenador registrado con ese DNI y Email.");
                 return Page();
             }
 
-
             // =====================================
-            // 2. VALIDACIÓN DE MEMBRESÍA
+            // 4. Crear usuario Identity
             // =====================================
-
-            if (miembro.Membresia == null)
-            {
-                ModelState.AddModelError(string.Empty, "El miembro no tiene una membresía asignada.");
-                return Page();
-            }
-
-            DateTime fechaVencimiento = miembro.FechaAlta.AddMonths(miembro.Membresia.DuracionEnMeses);
-
-            if (fechaVencimiento < DateTime.Now)
-            {
-                ModelState.AddModelError(string.Empty, "Su membresía no está vigente. No puede registrarse.");
-                return Page();
-            }
-            // =====================================
-            // CREAR USUARIO EN IDENTITY
-            // =====================================
-            var user = CreateUser();
-
             await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
             await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
             var result = await _userManager.CreateAsync(user, Input.Password);
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("Usuario creado correctamente con membresía activa.");
+                // Crear rol si no existe
+                if (!await _roleManager.RoleExistsAsync(rolAsignado))
+                    await _roleManager.CreateAsync(new IdentityRole(rolAsignado));
 
-                //Verificar si el rol existe
-                var roleManager = HttpContext.RequestServices.GetRequiredService<RoleManager<IdentityRole>>();
-                if (!await roleManager.RoleExistsAsync("Miembro"))
-                    await roleManager.CreateAsync(new IdentityRole("Miembro"));
+                await _userManager.AddToRoleAsync(user, rolAsignado);
 
-                //Asignar el rol “Miembro” al usuario registrado
-                await _userManager.AddToRoleAsync(user, "Miembro");
+                _logger.LogInformation($"Usuario creado correctamente como {rolAsignado}.");
 
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                var callbackUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    protocol: Request.Scheme);
-
-                await _emailSender.SendEmailAsync(Input.Email, "Confirmar cuenta",
-                    $"Por favor confirme su cuenta haciendo clic en <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>este enlace</a>.");
-
-                if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                {
-                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                }
-                else
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
-                }
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl);
             }
 
             foreach (var error in result.Errors)
@@ -241,6 +221,7 @@ namespace GimnasioCuerpoSano.Areas.Identity.Pages.Account
 
             return Page();
         }
+
 
         private IdentityUser CreateUser()
         {

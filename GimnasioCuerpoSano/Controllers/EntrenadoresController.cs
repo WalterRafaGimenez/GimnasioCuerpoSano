@@ -1,19 +1,26 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using GimnasioCuerpoSano.Data;
+﻿using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
+using GimnasioCuerpoSano.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GimnasioCuerpoSano.Controllers
 {
+    // Nota: las autorizaciones por rol se siguen respetando. El login aquí crea una cookie
+    // con rol "Entrenador" para que [Authorize(Roles = "Entrenador")] funcione.
     public class EntrenadoresController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,9 +32,52 @@ namespace GimnasioCuerpoSano.Controllers
             _environment = environment;
         }
 
+        [Authorize(Roles = "Entrenador")]
+        public async Task<IActionResult> MisClases()
+        {
+            var userEmail = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userEmail))
+                return RedirectToAction("Login", "Account");
+
+            var entrenador = await _context.Entrenadores
+                .FirstOrDefaultAsync(e => e.Email == userEmail);
+
+            if (entrenador == null)
+                return NotFound("Entrenador no encontrado");
+
+            // Traemos las clases del entrenador con horarios y sala
+            var clases = await _context.HorariosClase
+                .Include(h => h.Clase)
+                .Include(h => h.Sala)
+                .Where(h => h.Clase.EntrenadorId == entrenador.Id)
+                .Select(h => new ClaseEntrenadorViewModel
+                {
+                    NombreClase = h.Clase.Nombre!,
+                    SalaNombre = h.Sala!.Nombre ?? h.Sala.Numero,
+                    DiaSemana = h.DiaSemana.ToString(), // luego podemos formatear con Display(Name="")
+                    HoraInicio = h.HoraInicio,
+                    HoraFin = h.HoraFin,
+                    DuracionMinutos = h.Clase.DuracionMinutos
+                })
+                .ToListAsync();
+
+            // Creamos el ViewModel completo que la vista espera
+            var model = new MisClasesEntrenadorViewModel
+            {
+                FechaVencimientoCertificado = entrenador.FechaVencimientoCertificado,
+                Clases = clases
+            };
+
+            return View(model);
+        }
+
+
+
+
         // =====================================================
         // INDEX
         // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Index()
         {
             var entrenadores = _context.Entrenadores.ToList();
@@ -37,6 +87,7 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         // DETAILS
         // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Details(int id)
         {
             var entrenador = _context.Entrenadores.FirstOrDefault(e => e.Id == id);
@@ -47,6 +98,7 @@ namespace GimnasioCuerpoSano.Controllers
         // =====================================================
         // CREATE (GET)
         // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Create()
         {
             return View();
@@ -56,28 +108,29 @@ namespace GimnasioCuerpoSano.Controllers
         // CREATE (POST)
         // =====================================================
         [HttpPost]
+        [Authorize(Roles = "Administrador,Empleado")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Entrenador entrenador, IFormFile? certificado)
         {
-            // --- Validación DNI ---
+            // Validaciones
             ValidarDNIEmail(entrenador);
-
             if (!ModelState.IsValid) return View(entrenador);
 
-            // --- Manejo de certificado ---
+            // Guardar certificado
             if (certificado != null && certificado.Length > 0)
-            {
                 entrenador.RutaCertificado = await GuardarCertificado(certificado);
-            }
 
             _context.Entrenadores.Add(entrenador);
             await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"Entrenador '{entrenador.Nombre} {entrenador.Apellido}' creado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================================
         // EDIT (GET)
         // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id)
         {
             var entrenador = _context.Entrenadores.Find(id);
@@ -89,19 +142,19 @@ namespace GimnasioCuerpoSano.Controllers
         // EDIT (POST)
         // =====================================================
         [HttpPost]
+        [Authorize(Roles = "Administrador,Empleado")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Entrenador entrenador, IFormFile? certificado)
         {
             if (id != entrenador.Id) return NotFound();
 
             ValidarDNIEmail(entrenador, id);
-
             if (!ModelState.IsValid) return View(entrenador);
 
             var entrenadorExistente = await _context.Entrenadores.FindAsync(id);
             if (entrenadorExistente == null) return NotFound();
 
-            // --- Actualizar datos ---
+            // Actualizar campos
             entrenadorExistente.Nombre = entrenador.Nombre;
             entrenadorExistente.Apellido = entrenador.Apellido;
             entrenadorExistente.Direccion = entrenador.Direccion;
@@ -110,27 +163,28 @@ namespace GimnasioCuerpoSano.Controllers
             entrenadorExistente.Especialidad = entrenador.Especialidad;
             entrenadorExistente.FechaVencimientoCertificado = entrenador.FechaVencimientoCertificado;
 
-            // --- Manejo de certificado ---
+            // Manejo de certificado (reemplazo)
             if (certificado != null && certificado.Length > 0)
             {
-                // Eliminar anterior
                 if (!string.IsNullOrEmpty(entrenadorExistente.RutaCertificado))
                 {
                     var rutaVieja = Path.Combine(_environment.WebRootPath, entrenadorExistente.RutaCertificado.TrimStart('/'));
                     if (System.IO.File.Exists(rutaVieja))
                         System.IO.File.Delete(rutaVieja);
                 }
-
                 entrenadorExistente.RutaCertificado = await GuardarCertificado(certificado);
             }
 
             await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"Entrenador '{entrenadorExistente.Nombre} {entrenadorExistente.Apellido}' actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
         // =====================================================
         // DELETE (GET)
         // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Delete(int id)
         {
             var entrenador = _context.Entrenadores.Find(id);
@@ -142,10 +196,11 @@ namespace GimnasioCuerpoSano.Controllers
         // DELETE (POST)
         // =====================================================
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Administrador,Empleado")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var entrenador = _context.Entrenadores.Find(id);
+            var entrenador = await _context.Entrenadores.FindAsync(id);
             if (entrenador != null)
             {
                 try
@@ -158,7 +213,8 @@ namespace GimnasioCuerpoSano.Controllers
                     }
 
                     _context.Entrenadores.Remove(entrenador);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
+                    TempData["Mensaje"] = "Entrenador eliminado correctamente.";
                 }
                 catch (Exception ex)
                 {
@@ -170,30 +226,117 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // MÉTODOS PRIVADOS AUXILIARES
+        // PERFIL DEL ENTRENADOR (requiere rol Entrenador)
         // =====================================================
-
-        // Validar DNI y Email únicos y formato
-        private void ValidarDNIEmail(Entrenador entrenador, int id = 0)
+        [Authorize(Roles = "Entrenador")]
+        public async Task<IActionResult> Perfil()
         {
-            // Validación de DNI
-            if (entrenador.TipoDocumento == "DNI" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 8))
-                ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
-            else if (entrenador.TipoDocumento == "DNI-Extranjero" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 9))
-                ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
-            else if (string.IsNullOrWhiteSpace(entrenador.DNI))
-                ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
+            // Usamos User.Identity.Name (email) para buscar al entrenador
+            var email = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(email)) return Unauthorized();
 
-            // Validación unicidad DNI
-            if (_context.Entrenadores.Any(e => e.DNI == entrenador.DNI && e.Id != id))
-                ModelState.AddModelError("DNI", "Ya existe otro entrenador con este DNI.");
+            var entrenador = await _context.Entrenadores
+                .Include(e => e.Clases) // si agregaste la navegación Clases
+                    .ThenInclude(c => c.Sala)
+                .FirstOrDefaultAsync(e => e.Email == email);
 
-            // Validación unicidad Email
-            if (!string.IsNullOrWhiteSpace(entrenador.Email) && _context.Entrenadores.Any(e => e.Email == entrenador.Email && e.Id != id))
-                ModelState.AddModelError("Email", "Ya existe otro entrenador con este correo electrónico.");
+            if (entrenador == null) return NotFound();
+
+            // Podés enviar un ViewModel si querés clases filtradas por horarios, etc.
+            return View(entrenador);
         }
 
-        // Guardar archivo certificado
+        // =====================================================
+        // LOGIN ENTRENADOR (DNI + Email) - AllowAnonymous
+        // =====================================================
+        [AllowAnonymous]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(string dni, string email, string returnUrl = null)
+        {
+            // Validaciones básicas
+            if (string.IsNullOrWhiteSpace(dni) || string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Error = "DNI y Email son obligatorios.";
+                return View();
+            }
+
+            var entrenador = await _context.Entrenadores.FirstOrDefaultAsync(e => e.DNI == dni && e.Email == email);
+            if (entrenador == null)
+            {
+                ViewBag.Error = "Entrenador no encontrado en la base de datos.";
+                return View();
+            }
+
+            // Validar certificado vigente
+            if (entrenador.FechaVencimientoCertificado.HasValue && entrenador.FechaVencimientoCertificado.Value < DateTime.Now.Date)
+            {
+                ViewBag.Error = "El certificado del entrenador está vencido.";
+                return View();
+            }
+
+            // Si pasó validaciones, creamos claims y firmamos cookie con rol Entrenador
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, entrenador.Email ?? ""),
+                new Claim(ClaimTypes.Email, entrenador.Email ?? ""),
+                new Claim(ClaimTypes.Role, "Entrenador"),
+                new Claim("EntrenadorId", entrenador.Id.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal, new AuthenticationProperties
+            {
+                IsPersistent = false,
+                AllowRefresh = false
+            });
+
+            // Redirigir al perfil o a returnUrl
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            return RedirectToAction(nameof(Perfil));
+        }
+
+        // =====================================================
+        // LOGOUT (para entrenadores logueados con esta cookie)
+        // =====================================================
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            return RedirectToAction("Index", "Home");
+        }
+
+        // =====================================================
+        // VALIDACIONES AJAX (mantengo las tuyas)
+        // =====================================================
+        [AcceptVerbs("Get", "Post")]
+        public async Task<IActionResult> VerificarDNI(string dni, int? id)
+        {
+            var existe = await _context.Entrenadores.AnyAsync(e => e.DNI == dni && e.Id != (id ?? 0));
+            return Json(existe ? $"Ya existe otro entrenador con el DNI {dni}." : true);
+        }
+
+        [AcceptVerbs("Get", "Post")]
+        public async Task<IActionResult> VerificarEmail(string email, int? id)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return Json(true);
+            var existe = await _context.Entrenadores.AnyAsync(e => e.Email == email && e.Id != (id ?? 0));
+            return Json(existe ? $"Ya existe otro entrenador con el correo {email}." : true);
+        }
+
+        // =====================================================
+        // GUARDAR CERTIFICADO (archivo)
+        // =====================================================
         private async Task<string> GuardarCertificado(IFormFile certificado)
         {
             var uploadsFolder = Path.Combine(_environment.WebRootPath, "certificados2");
@@ -210,63 +353,9 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // VALIDACIONES AJAX
+        // GENERAR PDF LISTADO DE ENTRENADORES
         // =====================================================
-        [AcceptVerbs("Get", "Post")]
-        public async Task<IActionResult> VerificarDNI(string dni, int? id)
-        {
-            var existe = await _context.Entrenadores.AnyAsync(e => e.DNI == dni && e.Id != (id ?? 0));
-            return Json(existe ? $"Ya existe otro entrenador con el DNI {dni}." : true);
-        }
-
-        [AcceptVerbs("Get", "Post")]
-        public async Task<IActionResult> VerificarEmail(string email, int? id)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return Json(true);
-
-            var existe = await _context.Entrenadores.AnyAsync(e => e.Email == email && e.Id != (id ?? 0));
-            return Json(existe ? $"Ya existe otro entrenador con el correo {email}." : true);
-        }
-
-        // =====================================================
-        // GUARDAR ARCHIVO OPCIONAL
-        // =====================================================
-        [HttpGet]
-        public IActionResult GuardarArchivo() => View();
-
-        [HttpPost]
-        public async Task<IActionResult> GuardarArchivo(IFormFile archivo)
-        {
-            if (archivo == null || archivo.Length == 0)
-            {
-                ViewBag.Mensaje = "No se seleccionó ningún archivo.";
-                return View();
-            }
-
-            try
-            {
-                var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "certificados");
-                if (!Directory.Exists(rutaCarpeta))
-                    Directory.CreateDirectory(rutaCarpeta);
-
-                var rutaArchivo = Path.Combine(rutaCarpeta, archivo.FileName);
-                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-                    await archivo.CopyToAsync(stream);
-
-                ViewBag.Mensaje = $"Archivo guardado correctamente en {rutaArchivo}";
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Mensaje = $"Error al guardar el archivo: {ex.Message}";
-            }
-
-            return View();
-        }
-
-        // =====================================================
-        // GENERAR PDF LISTADO DE ENTRENADORES - ABRIR EN NAVEGADOR
-        // =====================================================
+        [Authorize(Roles = "Administrador,Empleado")]
         public async Task<IActionResult> GenerarListadoPdf()
         {
             var entrenadores = await _context.Entrenadores
@@ -274,11 +363,8 @@ namespace GimnasioCuerpoSano.Controllers
                 .ThenBy(e => e.Nombre)
                 .ToListAsync();
 
-            // Ruta del logo
             var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
-            byte[]? logoBytes = System.IO.File.Exists(logoPath)
-                ? System.IO.File.ReadAllBytes(logoPath)
-                : null;
+            byte[]? logoBytes = System.IO.File.Exists(logoPath) ? System.IO.File.ReadAllBytes(logoPath) : null;
 
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -291,7 +377,7 @@ namespace GimnasioCuerpoSano.Controllers
                     page.DefaultTextStyle(x => x.FontSize(11));
                     page.PageColor(Colors.White);
 
-                    // ============= CABECERA =============
+                    // CABECERA
                     page.Header().Column(header =>
                     {
                         if (logoBytes != null)
@@ -306,10 +392,9 @@ namespace GimnasioCuerpoSano.Controllers
                             .AlignCenter();
                     });
 
-                    // ============= CONTENIDO =============
+                    // CONTENIDO
                     page.Content().PaddingVertical(15).Table(table =>
                     {
-                        // Columnas
                         table.ColumnsDefinition(columns =>
                         {
                             columns.ConstantColumn(60);  // Tipo Doc
@@ -349,24 +434,37 @@ namespace GimnasioCuerpoSano.Controllers
                         }
                     });
 
-                    // ============= PIE DE PÁGINA =============
+                    // PIE DE PÁGINA
                     page.Footer().AlignCenter().Text(x =>
                     {
                         x.Line("© Gimnasio Cuerpo Sano " + DateTime.Now.Year);
                         x.Line("Generado el " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
                     });
                 });
-            })
-            .GeneratePdf();
+            }).GeneratePdf();
 
-            // Abrir PDF directamente en nueva pestaña
             Response.Headers["Content-Disposition"] = "inline; filename=Listado_Entrenadores.pdf";
             return File(pdfBytes, "application/pdf");
         }
 
+        // =====================================================
+        // MÉTODOS PRIVADOS AUXILIARES (validaciones)
+        // =====================================================
+        private void ValidarDNIEmail(Entrenador entrenador, int id = 0)
+        {
+            if (entrenador.TipoDocumento == "DNI" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 8))
+                ModelState.AddModelError("DNI", "El DNI nacional debe tener exactamente 8 dígitos.");
+            else if (entrenador.TipoDocumento == "DNI-Extranjero" && (string.IsNullOrWhiteSpace(entrenador.DNI) || entrenador.DNI.Length != 9))
+                ModelState.AddModelError("DNI", "El DNI extranjero debe tener exactamente 9 dígitos.");
+            else if (string.IsNullOrWhiteSpace(entrenador.DNI))
+                ModelState.AddModelError("DNI", "El campo DNI es obligatorio.");
+
+            if (_context.Entrenadores.Any(e => e.DNI == entrenador.DNI && e.Id != id))
+                ModelState.AddModelError("DNI", "Ya existe otro entrenador con este DNI.");
+
+            if (!string.IsNullOrWhiteSpace(entrenador.Email) && _context.Entrenadores.Any(e => e.Email == entrenador.Email && e.Id != id))
+                ModelState.AddModelError("Email", "Ya existe otro entrenador con este correo electrónico.");
+        }
     }
 }
-
-
-
 

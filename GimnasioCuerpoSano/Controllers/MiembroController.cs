@@ -551,19 +551,6 @@ namespace GimnasioCuerpoSano.Controllers
 
 
 
-
-
-
-
-
-
-        // =====================================================
-        // FUTURO: Acciones para Actividades (anotarse, baja)
-        // =====================================================
-        // Aquí se podrán agregar acciones que filtren por miembro y por rol de entrenador
-
-
-
     }
 }
 

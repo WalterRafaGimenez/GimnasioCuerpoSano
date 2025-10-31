@@ -1,0 +1,63 @@
+﻿@model GimnasioCuerpoSano.Models.Entrenador
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="card shadow-lg p-4 rounded-4 mx-auto" style="max-width: 800px;">
+            <h2 class="text-center text-primary mb-4">
+                <i class="bi bi-person-circle"></i> Mi Perfil
+            </h2>
+
+            @if (Model != null)
+            {
+                <dl class="row">
+                    <dt class="col-sm-4">Nombre:</dt>
+                    <dd class="col-sm-8">@Model.Nombre</dd>
+
+                    <dt class="col-sm-4">Apellido:</dt>
+                    <dd class="col-sm-8">@Model.Apellido</dd>
+
+                    <dt class="col-sm-4">Correo Electrónico:</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4">Teléfono:</dt>
+                    <dd class="col-sm-8">@Model.Telefono</dd>
+
+                    <dt class="col-sm-4">Certificado Vto:</dt>
+                    <dd class="col-sm-8">
+                        @Model.FechaVencimientoCertificado.Value.ToString("dd/MM/yyyy")
+                    </dd>
+                </dl>
+            }
+            else
+            {
+                <p class="text-danger text-center">Error: No se encontró la información del entrenador.</p>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-house-door"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
