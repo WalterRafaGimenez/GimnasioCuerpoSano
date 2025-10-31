@@ -12,11 +12,13 @@ namespace GimnasioCuerpoSano.Models
         [Required(ErrorMessage = "El número de sala es obligatorio.")]
         public string Numero { get; set; } = string.Empty; // ej. Sala 1, Sala 2
 
+        [Required(ErrorMessage = "El número o nombre de la sala es obligatorio.")]
+        [StringLength(50, ErrorMessage = "El nombre de la sala no puede superar los 50 caracteres.")]
         public string? Nombre { get; set; } // opcional
 
         [Required(ErrorMessage = "La capacidad máxima es obligatoria.")]
-        [Range(1, 1000, ErrorMessage = "La capacidad debe ser mayor a 0.")]
-        public int CapacidadMaxima { get; set; }
+        [Range(1, 200, ErrorMessage = "La capacidad debe ser mayor a 0.")]
+        public int? CapacidadMaxima { get; set; }
 
         [Required(ErrorMessage = "La ubicación es obligatoria.")]
         public string Ubicacion { get; set; } = string.Empty;
