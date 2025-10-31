@@ -13,9 +13,12 @@
         [ForeignKey("Miembro")]
         public int ID_Miembro { get; set; }
 
-        public Miembro Miembro { get; set; }
+        public Miembro? Miembro { get; set; }
 
         public DateTime FechaHora { get; set; }
+
+        public DateTime? HoraSalida { get; set; }
+
 
         public string EstadoMembresia { get; set; }
     }

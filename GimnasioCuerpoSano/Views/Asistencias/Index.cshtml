@@ -75,6 +75,16 @@
             <a asp-action="Create" class="btn btn-success me-2">
                 Registrar Nueva Asistencia
             </a>
+
+            <a asp-action="Registrar" class="btn btn-primary">Tomar Asistencia</a>
+
+            <div class="text-center mb-3">
+                <a asp-action="ImprimirListado" target="_blank" class="btn btn-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> Imprimir Asistencias PDF
+                </a>
+            </div>
+
+
             <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
                 Volver al Menú
             </a>
