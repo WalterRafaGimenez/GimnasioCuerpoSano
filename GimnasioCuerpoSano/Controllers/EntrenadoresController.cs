@@ -104,28 +104,65 @@ namespace GimnasioCuerpoSano.Controllers
             return View();
         }
 
-        // =====================================================
-        // CREATE (POST)
-        // =====================================================
+        //CREATE POST
         [HttpPost]
         [Authorize(Roles = "Administrador,Empleado")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Entrenador entrenador, IFormFile? certificado)
+        public async Task<IActionResult> Create(Entrenador entrenador, IFormFile? certificadoArchivo)
         {
-            // Validaciones
-            ValidarDNIEmail(entrenador);
-            if (!ModelState.IsValid) return View(entrenador);
+            // 1. Validación de fecha mínima de vencimiento
+            if (entrenador.FechaVencimientoCertificado.HasValue)
+            {
+                DateTime fechaLimite = DateTime.Now.AddDays(30).Date;
+                if (entrenador.FechaVencimientoCertificado.Value.Date < fechaLimite)
+                {
+                    ModelState.AddModelError("FechaVencimientoCertificado", "La fecha de vencimiento del certificado debe ser al menos 30 días a partir de hoy.");
+                }
+            }
 
-            // Guardar certificado
-            if (certificado != null && certificado.Length > 0)
-                entrenador.RutaCertificado = await GuardarCertificado(certificado);
+            // 2. Validación de archivo obligatorio
+            if (certificadoArchivo == null || certificadoArchivo.Length == 0)
+            {
+                ModelState.AddModelError("RutaCertificado", "Debe adjuntar el certificado del entrenador.");
+            }
 
-            _context.Entrenadores.Add(entrenador);
-            await _context.SaveChangesAsync();
+            // 3. Validar el modelo completo
+            if (!ModelState.IsValid)
+            {
+                return View(entrenador);
+            }
 
-            TempData["Mensaje"] = $"Entrenador '{entrenador.Nombre} {entrenador.Apellido}' creado correctamente.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                // 4. Guardar el certificado
+                var carpetaCertificados = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "certificados2");
+                if (!Directory.Exists(carpetaCertificados))
+                    Directory.CreateDirectory(carpetaCertificados);
+
+                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(certificadoArchivo.FileName);
+                var rutaArchivo = Path.Combine(carpetaCertificados, nombreArchivo);
+
+                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await certificadoArchivo.CopyToAsync(stream);
+                }
+
+                entrenador.RutaCertificado = "/certificados2/" + nombreArchivo;
+
+                // 5. Guardar en la base de datos
+                _context.Add(entrenador);
+                await _context.SaveChangesAsync();
+
+                TempData["Mensaje"] = $"Entrenador '{entrenador.Nombre} {entrenador.Apellido}' creado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Ocurrió un error inesperado al guardar los datos o el archivo. Por favor, inténtelo de nuevo.");
+                return View(entrenador);
+            }
         }
+
 
         // =====================================================
         // EDIT (GET)

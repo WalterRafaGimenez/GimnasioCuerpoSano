@@ -9,14 +9,7 @@
 <div class="container mt-4">
     <h2>@ViewData["Title"]</h2>
 
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger">@ViewBag.Error</div>
-    }
-    @if (ViewBag.Advertencia != null)
-    {
-        <div class="alert alert-warning">@ViewBag.Advertencia</div>
-    }
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
     <form asp-action="Create" enctype="multipart/form-data">
         <div class="mb-3">
@@ -83,12 +76,22 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Certificado (PDF o imagen)</label>
-            <input type="file" name="certificado" class="form-control" />
+            <label for="certificadoArchivo" class="form-label">Certificado (PDF o imagen)</label>
+            <input type="file"
+                   id="certificadoArchivo"
+                   name="certificadoArchivo"
+                   class="form-control"
+                   required
+                   accept="image/jpeg, image/png, application/pdf" />
+            <span asp-validation-for="RutaCertificado" class="text-danger"></span>
         </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-success me-2">Guardar</button>
+        <div class="alert alert-warning text-center">
+            <strong>Atención:</strong> Debe adjuntar un archivo de certificado válido (PDF o imagen).
+        </div>
+
+        <div class="mt-4 text-center">
+            <button type="submit" class="btn btn-success me-2 px-4">Guardar</button>
             <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
         </div>
     </form>
@@ -98,30 +101,18 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script>
-        // Ajuste de maxlength según TipoDocumento
         const tipoDocumento = document.getElementById('tipoDocumento');
         const dniInput = document.getElementById('dniInput');
 
         function ajustarMaxLength() {
-            if (tipoDocumento.value === 'DNI') {
-                dniInput.maxLength = 8;
-            } else {
-                dniInput.maxLength = 9;
-            }
+            dniInput.maxLength = tipoDocumento.value === 'DNI' ? 8 : 9;
         }
 
-        // Solo números
         dniInput.addEventListener('input', () => {
             dniInput.value = dniInput.value.replace(/\D/g, '');
         });
 
         tipoDocumento.addEventListener('change', ajustarMaxLength);
-        ajustarMaxLength(); // inicial al cargar
+        ajustarMaxLength();
     </script>
 }
-
-
-
-
-
-

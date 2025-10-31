@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GimnasioCuerpoSano.Models
@@ -27,10 +28,12 @@ namespace GimnasioCuerpoSano.Models
 
         public string Especialidad { get; set; } = null!;
 
+        // Usar el atributo [Remote]
+        [Remote("VerificarFechaVencimiento", "Entrenadores", ErrorMessage = "La fecha debe ser al menos 30 días a partir de hoy.")]
         [DataType(DataType.Date)]
         public DateTime? FechaVencimientoCertificado { get; set; }
 
-        // Nueva propiedad para guardar la ruta del archivo subido
+       
         public string? RutaCertificado { get; set; }
 
         [Required(ErrorMessage = "El DNI es obligatorio")]

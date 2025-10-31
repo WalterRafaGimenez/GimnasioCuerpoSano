@@ -118,6 +118,25 @@ namespace GimnasioCuerpoSano.Controllers
                 return View(miembro);
             }
 
+            // --- Validación única de DNI y Mail ---
+            bool dniExistente = await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI);
+            if (dniExistente)
+            {
+                ModelState.AddModelError("DNI", "Este DNI ya está registrado.");
+            }
+
+            bool mailExistente = await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail);
+            if (mailExistente)
+            {
+                ModelState.AddModelError("Mail", "Este correo ya está registrado.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre");
+                return View(miembro);
+            }
+
             // Asignar valores
             var membresia = await _context.Membresias.FindAsync(miembro.MembresiaId);
             if (membresia == null)
@@ -129,15 +148,9 @@ namespace GimnasioCuerpoSano.Controllers
 
             miembro.ValorMembresia = miembro.DescuentoEspecial ? membresia.Precio * 0.85m : membresia.Precio;
             miembro.FechaAlta = DateTime.Now;
-
-            //Nuevo: calcular FechaVencimiento
             miembro.FechaVencimiento = DateTime.Now.AddMonths(membresia.DuracionEnMeses);
 
-
-
-            // =====================================================
-            // FOTO OBLIGATORIA (solo en creación)
-            // =====================================================
+            // Foto obligatoria
             if (fotoArchivo == null || fotoArchivo.Length == 0)
             {
                 ModelState.AddModelError("Foto", "Debe subir una foto obligatoriamente.");
@@ -145,32 +158,30 @@ namespace GimnasioCuerpoSano.Controllers
                 return View(miembro);
             }
 
-            // Guardar foto si se adjunta
-            if (fotoArchivo != null && fotoArchivo.Length > 0)
+            // Guardar foto
+            var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
+            if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
+
+            var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
+            var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
+
+            using (var stream = new FileStream(rutaArchivo, FileMode.Create))
             {
-                var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fotos");
-                if (!Directory.Exists(rutaCarpeta)) Directory.CreateDirectory(rutaCarpeta);
-
-                var nombreArchivo = Guid.NewGuid() + Path.GetExtension(fotoArchivo.FileName);
-                var rutaArchivo = Path.Combine(rutaCarpeta, nombreArchivo);
-
-                using var stream = new FileStream(rutaArchivo, FileMode.Create);
                 await fotoArchivo.CopyToAsync(stream);
-
-                miembro.Foto = "/fotos/" + nombreArchivo;
             }
+            miembro.Foto = "/fotos/" + nombreArchivo;
 
-            // =====================================================
             // Generar código de barras único
-            // =====================================================
             miembro.CodigoBarra = Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
 
+            // Guardar en DB
             _context.Miembros.Add(miembro);
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' registrado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
 
 
         // =====================================================
@@ -194,10 +205,9 @@ namespace GimnasioCuerpoSano.Controllers
         {
             if (id != miembro.Id) return NotFound();
 
-            // 1. Obtener el miembro existente
             var miembroExistente = await _context.Miembros
                 .AsNoTracking()
-                .Include(m => m.Membresia) // para tener duración
+                .Include(m => m.Membresia)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (miembroExistente == null) return NotFound();
@@ -207,14 +217,14 @@ namespace GimnasioCuerpoSano.Controllers
             miembro.CodigoBarra = miembroExistente.CodigoBarra;
             miembro.FechaAlta = miembroExistente.FechaAlta;
 
-            // 2. Validación del modelo
+            // 1. Validar modelo
             if (!ModelState.IsValid)
             {
                 ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
                 return View(miembro);
             }
 
-            // 3. Validación y cálculo de membresía
+            // 2. Validar membresía
             var membresiaNueva = await _context.Membresias.FindAsync(miembro.MembresiaId);
             if (membresiaNueva == null)
             {
@@ -223,25 +233,34 @@ namespace GimnasioCuerpoSano.Controllers
                 return View(miembro);
             }
 
-           
-            // 4. Actualizar FechaVencimiento si cambia la membresía
+            // 3. Validar DNI único
+            bool dniDuplicado = await _context.Miembros.AnyAsync(m => m.DNI == miembro.DNI && m.Id != id);
+            if (dniDuplicado)
+            {
+                ModelState.AddModelError("DNI", "Este DNI ya está registrado para otro miembro.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                return View(miembro);
+            }
+
+            // 4. Validar Mail único
+            bool mailDuplicado = await _context.Miembros.AnyAsync(m => m.Mail == miembro.Mail && m.Id != id);
+            if (mailDuplicado)
+            {
+                ModelState.AddModelError("Mail", "Este correo ya está registrado para otro miembro.");
+                ViewBag.Membresias = new SelectList(_context.Membresias, "Id", "Nombre", miembro.MembresiaId);
+                return View(miembro);
+            }
+
+            // 5. Actualizar FechaVencimiento si cambia la membresía
             if (miembro.MembresiaId != miembroExistente.MembresiaId)
-            {
-                // La nueva fecha de vencimiento se calcula desde hoy
                 miembro.FechaVencimiento = DateTime.Now.AddMonths(membresiaNueva.DuracionEnMeses);
-            }
             else
-            {
-                // Mantener la fecha de vencimiento actual
                 miembro.FechaVencimiento = miembroExistente.FechaVencimiento;
-            }
 
-            // 5. Cálculo del precio
-            miembro.ValorMembresia = miembro.DescuentoEspecial
-                ? membresiaNueva.Precio * 0.85m
-                : membresiaNueva.Precio;
+            // 6. Cálculo del precio
+            miembro.ValorMembresia = miembro.DescuentoEspecial ? membresiaNueva.Precio * 0.85m : membresiaNueva.Precio;
 
-            // 6. Lógica de FOTO
+            // 7. Manejo de foto
             if (fotoArchivo != null && fotoArchivo.Length > 0)
             {
                 if (!string.IsNullOrEmpty(miembroExistente.Foto))
@@ -265,7 +284,6 @@ namespace GimnasioCuerpoSano.Controllers
                 miembro.Foto = "/fotos/" + nombreArchivo;
             }
 
-            // 7. Validar foto obligatoria
             if (string.IsNullOrEmpty(miembro.Foto))
             {
                 ModelState.AddModelError("Foto", "La foto es obligatoria para este miembro.");
@@ -275,8 +293,6 @@ namespace GimnasioCuerpoSano.Controllers
 
             // 8. Guardar cambios
             _context.Entry(miembro).State = EntityState.Modified;
-
-            // No permitir modificar la fecha de alta
             _context.Entry(miembro).Property(m => m.FechaAlta).IsModified = false;
 
             await _context.SaveChangesAsync();
@@ -284,6 +300,7 @@ namespace GimnasioCuerpoSano.Controllers
             TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
 
 
         // =====================================================
