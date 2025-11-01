@@ -1,11 +1,13 @@
-﻿using GimnasioCuerpoSano.Data;
+﻿using QuestPDF.Fluent; // Necesario
+using QuestPDF.Helpers; // Necesario
+using QuestPDF.Infrastructure;
+using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
 using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-
 using System; // Necesario para TimeSpan
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -420,6 +422,116 @@ namespace GimnasioCuerpoSano.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================================
+        // GET: HorarioClases/ImprimirListado
+        // =====================================================
+        public async Task<IActionResult> ImprimirListado()
+        {
+            // 1. Obtener los datos (sin el ordenamiento problemático para el SQL Server)
+            var horarios = await _context.HorariosClase
+                .Include(h => h.Clase)
+                .Include(h => h.Sala)
+                .ToListAsync(); // <--- La consulta SQL se ejecuta aquí
+
+            // 2. Ordenar los datos en memoria (C#) donde el Enum es entendido
+            horarios = horarios
+                .OrderBy(h => (int)h.DiaSemana) // Ordena por el valor INT del Enum
+                .ThenBy(h => h.HoraInicio)      // Luego por hora de inicio
+                .ToList();
+
+            // 3. Configuración del Logo (usa la misma lógica de Miembros)
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            // 4. Generación del PDF con QuestPDF
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(10));
+                    page.PageColor(Colors.White);
+
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                        {
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+                        }
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(18).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado de Horarios de Clases")
+                            .FontSize(14).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // ============= CONTENIDO: TABLA =============
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        // Definición de Columnas (ajustar el RelativeColumn para el ancho)
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(2); // Clase / Sala
+                            columns.RelativeColumn(1.2f); // Día
+                            columns.RelativeColumn(1.8f); // Horario (Hora Inicio - Hora Fin)
+                            columns.RelativeColumn(1.2f); // Capacidad
+                            columns.RelativeColumn(1.5f); // Inscripciones
+                        });
+
+                        // Encabezado de la Tabla
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Clase / Sala").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Día").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Horario").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Capacidad Máxima").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Inscripciones").Bold();
+                        });
+
+                        // Filas de Datos
+                        foreach (var h in horarios)
+                        {
+                            // Clase / Sala
+                            table.Cell().Padding(5).Text($"{h.Clase?.Nombre ?? "N/A"}\nSala: {h.Sala?.Nombre ?? "N/A"}").LineHeight(1.5f);
+
+                            // Día
+                            table.Cell().Padding(5).Text(h.DiaSemana.ToString()); // Usará el nombre del Enum (Lunes, Martes, etc.)
+
+                            // Horario
+                            table.Cell().Padding(5).Text($"{h.HoraInicio.ToString(@"hh\:mm")} - {h.HoraFin.ToString(@"hh\:mm")}\n({h.Clase?.DuracionMinutos ?? 0} min)").LineHeight(1.5f);
+
+                            // Capacidad Máxima
+                            table.Cell().Padding(5).Text(h.CapacidadMaxima.ToString()).AlignCenter();
+
+                            // Se Puede Inscribir
+                            table.Cell().Padding(5).Text(h.SePuedeInscribir ? "Sí" : "No").FontColor(h.SePuedeInscribir ? Colors.Green.Darken2 : Colors.Red.Darken2).Bold().AlignCenter();
+                        }
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Generado el ").FontSize(9);
+                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(9).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            // 5. Devolver el archivo PDF para abrir en una pestaña aparte
+            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoHorariosClases.pdf");
+            return File(pdfBytes, "application/pdf");
         }
     }
 }
