@@ -1,0 +1,85 @@
+﻿@model List<GimnasioCuerpoSano.Models.Miembro>
+
+@{
+    ViewData["Title"] = "Seleccionar Miembro";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .wide-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            text-align: center;
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+        }
+
+        .top-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4>@ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="VerClases" method="get">
+                    <div class="mb-3">
+                        <label for="miembroSelect" class="form-label">Miembro:</label>
+                        <select id="miembroSelect" name="miembroId" class="form-select" required>
+                            <option value="">-- Seleccione un miembro --</option>
+                            @foreach (var m in Model)
+                            {
+                                <option value="@m.Id">@m.Nombre @m.Apellido</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="text-center mt-4 mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-arrow-right-circle"></i> Ver Clases
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver al Menú
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

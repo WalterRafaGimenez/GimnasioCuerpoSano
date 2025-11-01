@@ -1,0 +1,125 @@
+﻿@model GimnasioCuerpoSano.Models.ViewModels.ClasesEmpleadoViewModel
+
+@{
+    ViewData["Title"] = "Clases Disponibles";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .wide-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 15px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            text-align: center;
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+        }
+
+        .table-light th {
+            color: #212529 !important;
+            vertical-align: middle;
+        }
+
+        .table td.actions {
+            white-space: nowrap;
+        }
+
+        .top-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4>@ViewData["Title"] para @Model.NombreCompletoMiembro</h4>
+            </div>
+            <div class="card-body">
+                <div class="top-buttons">
+                    <a asp-action="SeleccionarMiembro" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Volver a Seleccionar Miembro
+                    </a>
+                    <a href="/" class="btn btn-secondary">
+                        <i class="bi bi-house-door"></i> Volver
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clase</th>
+                                <th>Entrenador</th>
+                                <th>Hora Inicio</th>
+                                <th>Hora Fin</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in Model.ClasesDisponibles)
+                            {
+                                var yaInscripto = h.Inscripciones?.Any(i => i.MiembroId == Model.MiembroId) ?? false;
+                                <tr>
+                                    <td>@(h.Clase?.Nombre ?? "Sin clase")</td>
+                                    <td>@(h.Clase?.Entrenador != null ? h.Clase.Entrenador.Nombre + " " + h.Clase.Entrenador.Apellido : "Sin entrenador")</td>
+                                    <td>@h.HoraInicio.ToString(@"hh\:mm")</td>
+                                    <td>@h.HoraFin.ToString(@"hh\:mm")</td>
+                                    <td>@(yaInscripto ? "Inscripto" : "Disponible")</td>
+                                    <td class="actions">
+                                        @if (!yaInscripto)
+                                        {
+                                            <form asp-action="Inscribirse" method="post" style="display:inline">
+                                                <input type="hidden" name="miembroId" value="@Model.MiembroId" />
+                                                <input type="hidden" name="horarioClaseId" value="@h.Id" />
+                                                <button type="submit" class="btn btn-success btn-sm">Inscribirse</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Desinscribirse" method="post" style="display:inline">
+                                                <input type="hidden" name="miembroId" value="@Model.MiembroId" />
+                                                <input type="hidden" name="horarioClaseId" value="@h.Id" />
+                                                <button type="submit" class="btn btn-danger btn-sm">Desinscribirse</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
