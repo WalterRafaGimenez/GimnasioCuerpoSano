@@ -102,6 +102,13 @@ namespace GimnasioCuerpoSano.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Asistencia>().ToTable("Asistencia");
+
+            // Relación Miembro - InscripcionClase
+            modelBuilder.Entity<InscripcionClase>()
+                .HasOne(i => i.Miembro)
+                .WithMany(m => m.Inscripciones)
+                .HasForeignKey(i => i.MiembroId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
 
