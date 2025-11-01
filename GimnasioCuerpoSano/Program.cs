@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using GimnasioCuerpoSano.Data;
 using GimnasioCuerpoSano.Models;
 using Microsoft.AspNetCore.Identity;
@@ -32,10 +33,29 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // -----------------------------------------------------
-// Servicios principales
+// Servicios principales y LOCALIZACIÓN (ANTES de app.Build)
 // -----------------------------------------------------
 builder.Services.AddControllersWithViews()
     .AddDataAnnotationsLocalization(); // <-- habilita la localización de DataAnnotations
+
+// **INICIO: CONFIGURACIÓN DE CULTURA**
+// 1. Configurar el soporte de Globalización
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// 2. Configurar la Cultura por defecto
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("es"), // Español genérico
+        new CultureInfo("es-AR") // Español de Argentina (ejemplo)
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("es"); // Cultura por defecto
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+// **FIN: CONFIGURACIÓN DE CULTURA**
 
 // Configuración de EF Core
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -53,18 +73,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 var app = builder.Build();
 
 // -----------------------------------------------------
-// Configuración de la cultura por defecto
-// -----------------------------------------------------
-var supportedCultures = new[] { new CultureInfo("es-AR") };
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("es-AR"),
-    SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures
-});
-
-// -----------------------------------------------------
-// Pipeline HTTP
+// Pipeline HTTP (DESPUÉS de app.Build)
 // -----------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {
@@ -74,6 +83,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// **APLICAR LOCALIZACIÓN (Middleware): DEBE IR AQUÍ**
+app.UseRequestLocalization();
+
 app.UseRouting();
 
 app.UseAuthentication();

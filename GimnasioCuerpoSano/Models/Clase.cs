@@ -12,7 +12,7 @@ namespace GimnasioCuerpoSano.Models
         public string? Nombre { get; set; }
 
         [Required(ErrorMessage = "El precio es obligatorio.")]
-        [Range(0, double.MaxValue, ErrorMessage = "El precio debe ser un número positivo.")]
+        [Range(0, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0.")]
         public decimal Precio { get; set; }
 
         [Required(ErrorMessage = "La duración es obligatoria.")]
