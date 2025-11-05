@@ -11,7 +11,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <!-- Ícono del navegador -->
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
@@ -19,6 +18,14 @@
             background-color: #f8f9fa;
             padding: 2rem;
             font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ✨ Estilo para el Logo ✨ */
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto; /* Centra horizontalmente y añade espacio abajo */
+            max-width: 100px; /* Tamaño del logo ajustado */
+            height: auto;
         }
 
         .card {
@@ -31,7 +38,7 @@
         }
 
         h2 {
-            color: #dc3545;
+            color: #dc3545; /* Título en color rojo */
             margin-bottom: 1.5rem;
             text-align: center;
         }
@@ -56,9 +63,12 @@
 
     <div class="container">
         <div class="card">
-            <h2>¿Eliminar este miembro?</h2>
 
-            <!-- DNI y TipoDocumento primero -->
+            @* 🟢 ¡Logo Agregado! 🟢 *@
+            <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
+
+            <h2 class="text-center">¿Eliminar este miembro?</h2>
+
             <div class="mb-3">
                 <label class="form-label">Tipo de Documento</label>
                 <div class="value-box">@Model.TipoDocumento</div>
@@ -69,7 +79,6 @@
                 <div class="value-box">@Model.DNI</div>
             </div>
 
-            <!-- Luego el resto de los campos -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="value-box">@Model.Nombre</div>
@@ -97,6 +106,7 @@
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="Id" />
                 <div class="text-center">
+                    @* Botones correctos: Eliminar (Rojo) y Cancelar (Gris) *@
                     <button type="submit" class="btn btn-danger px-4">Eliminar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
@@ -108,5 +118,3 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-

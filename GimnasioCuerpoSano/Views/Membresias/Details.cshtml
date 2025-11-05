@@ -1,34 +1,103 @@
 ﻿@model GimnasioCuerpoSano.Models.Membresia
 @{
     Layout = null;
+    ViewData["Title"] = "Detalles de Membresía";
 }
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Detalles de Membresía</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-container {
+            max-width: 450px; /* Ancho reducido para centrar mejor el contenido */
+            margin: 0 auto;
+        }
+
+        /* Estilo para el Logo */
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto;
+            max-width: 100px;
+            height: auto;
+        }
+
+        .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background: white;
+            padding: 2rem;
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        h2 {
+            color: #212529; /* Color de título oscuro */
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Estilos para la presentación de detalles */
+        .details-list {
+            margin-bottom: 2rem;
+            max-width: 350px; /* Ancho específico para la lista */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+            .details-list dt {
+                font-weight: 600;
+                color: #0d6efd; /* Color Primario para las etiquetas */
+                padding-top: 0.5rem;
+            }
+
+            .details-list dd {
+                font-weight: 400;
+                color: #212529;
+                border-bottom: 1px dashed #dee2e6; /* Línea de separación suave */
+                padding-bottom: 0.5rem;
+            }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Detalles de Membresía</h1>
+    <div class="form-container">
+        <div class="card">
+            @* 🟢 ¡Logo Agregado! 🟢 *@
+            <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
 
-        <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <div class="value-box">@Model.Nombre</div>
-        </div>
+            <h2 class="display-6">@ViewData["Title"]</h2>
 
-        <div class="mb-3">
-            <label class="form-label">Precio</label>
-            <div class="value-box">$@Model.Precio</div>
-        </div>
+            @* 📐 Detalles presentados en formato DL mejorado 📐 *@
+            <dl class="row details-list">
+                <dt class="col-sm-4 text-start">Nombre:</dt>
+                <dd class="col-sm-8 text-end">@Model.Nombre</dd>
 
-        <div class="text-center mt-4">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
-            <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+                <dt class="col-sm-4 text-start">Precio:</dt>
+                <dd class="col-sm-8 text-end">$@Model.Precio</dd>
+            </dl>
+
+            <div class="text-center mt-4">
+                @* 🎨 Botón Edit cambiado a .btn-primary (Azul) 🎨 *@
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
+            </div>
         </div>
     </div>
 </body>
 </html>
-

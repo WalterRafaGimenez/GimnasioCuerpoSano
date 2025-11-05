@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
@@ -21,23 +21,46 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Contenedor compacto (600px) 🟢 */
+        .delete-container {
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             padding: 2rem;
-            max-width: 600px;
-            margin: auto;
+            background: white;
         }
 
-        h2 {
-            color: #dc3545;
-            margin-bottom: 1.5rem;
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
             text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
         }
 
+            .main-header .page-title {
+                color: #dc3545; /* Título principal en rojo para alerta de eliminación */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* Estilos específicos de la vista Delete */
         .form-label {
             font-weight: bold;
+            color: #212529;
         }
 
         .value-box {
@@ -45,18 +68,23 @@
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
-        }
-
-        .btn {
-            border-radius: 8px;
+            color: #495057;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="delete-container">
         <div class="card">
-            <h2>¿Eliminar este entrenador?</h2>
+
+            @* Título que coincide con la imagen de referencia (pero con el estilo del main-header) *@
+            <h3 class="text-center text-danger mb-4">¿Seguro que deseas eliminar a este entrenador?</h3>
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
@@ -95,21 +123,22 @@
                 </div>
             </div>
 
-            <div class="alert alert-warning text-center">
+            @* Mensaje de advertencia claro y consistente *@
+            <div class="alert alert-warning text-center mt-3">
                 <strong>Atención:</strong> esta acción no se puede deshacer.
             </div>
 
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="Id" />
-                <div class="text-center">
-                    <button type="submit" class="btn btn-danger px-4">Eliminar</button>
+                @* 🟢 AJUSTE DE BOTONES: Centrados y estilos unificados 🟢 *@
+                <div class="mt-4 pt-3 border-top text-center d-flex justify-content-center">
+                    <button type="submit" class="btn btn-danger px-4 me-2">Eliminar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
             </form>
-        </div>
-    </div>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .delete-container *@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

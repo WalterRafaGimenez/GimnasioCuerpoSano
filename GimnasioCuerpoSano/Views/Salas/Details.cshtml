@@ -10,10 +10,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <!-- Ícono del navegador -->
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -21,86 +21,110 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor compacto para detalles/formularios 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             background: white;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 450px; /* Ancho ajustado para detalles */
             margin: auto;
         }
 
+        /* Título dentro de la tarjeta (Si aplica, aunque lo quitamos en unificaciones previas) */
         h2 {
-            color: #0d6efd;
+            color: #212529;
             margin-bottom: 1.5rem;
             text-align: center;
+            font-weight: 600;
         }
 
         .form-label {
             font-weight: bold;
             color: #495057;
             display: block;
-            text-align: center;
+            text-align: left; /* Alineación del label */
+            margin-bottom: 0.2rem;
         }
 
+        /* Contenedor de Valor de Detalle */
         .value-box {
-            background-color: #f1f3f5;
+            background-color: #e9ecef; /* Fondo más claro para los detalles */
+            color: #212529;
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
             width: 100%;
-            text-align: center;
+            text-align: left;
             box-sizing: border-box;
+            font-weight: 500;
         }
 
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="container">
         <div class="card">
-            <h2>Detalles de la Sala</h2>
+            @* Se eliminó el h2 original ya que usamos el h1/page-title fuera de la tarjeta *@
 
-            <!-- Número -->
             <div class="mb-3">
                 <label class="form-label">Número</label>
                 <div class="value-box">@Model.Numero</div>
             </div>
 
-            <!-- Nombre -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="value-box">@Model.Nombre</div>
             </div>
 
-            <!-- Capacidad Máxima -->
             <div class="mb-3">
                 <label class="form-label">Capacidad Máxima</label>
                 <div class="value-box">@Model.CapacidadMaxima</div>
             </div>
 
-            <!-- Ubicación -->
             <div class="mb-3">
                 <label class="form-label">Ubicación</label>
                 <div class="value-box">@Model.Ubicacion</div>
             </div>
 
-            <!-- Tipo de Sala -->
             <div class="mb-3">
                 <label class="form-label">Tipo de Sala</label>
                 <div class="value-box">@Model.TipoSala</div>
             </div>
 
-            <!-- Disponible -->
             <div class="mb-3">
                 <label class="form-label">Disponible</label>
                 <div class="value-box">@((Model.Disponible) ? "Sí" : "No")</div>
             </div>
 
-            <div class="text-center mt-4">
+            <div class="text-center mt-4 pt-3 border-top">
+                @* 🟢 UNIFICADO: Editar (Azul Primary) y Volver (Gris Secondary) 🟢 *@
                 <a asp-action="Edit" asp-route-id="@Model.ID_Sala" class="btn btn-primary px-4">Editar</a>
                 <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
             </div>

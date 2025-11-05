@@ -1,4 +1,11 @@
-﻿@{
+﻿@model dynamic
+
+@{
+    // 🎨 Definición de colores minimalistas y profesionales por Categoría
+    var colorGestionFinanzas = "btn-primary";
+    var colorLogisticaClases = "btn-success";
+    var colorAdministracion = "btn-secondary";
+
     Layout = null;
 }
 
@@ -7,22 +14,57 @@
 <head>
     <meta charset="utf-8" />
     <title>Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
         /* Estilo para centrar y dimensionar el logo */
         .header-logo {
-            display: block; /* Asegura que la imagen sea un bloque */
-            margin: 0 auto 10px auto; /* Centra horizontalmente y añade margen inferior */
-            max-width: 120px; /* Define el ancho máximo del logo (ajusta este valor) */
-            height: auto; /* Mantiene la proporción */
+            display: block;
+            margin: 0 auto 10px auto;
+            max-width: 120px;
+            height: auto;
         }
 
         /* Oculta o ajusta el título si el logo ocupa su lugar */
         .main-title {
             text-align: center;
-            margin-bottom: 0; /* Lo hacemos pegado al título */
+            margin-bottom: 0;
+        }
+
+        /* Estilo general para los botones del dashboard: Uniformidad */
+        .dashboard-btn {
+            width: 100%;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-align: center;
+            /* Se mantiene el font-size estándar de Bootstrap (1rem/16px para btn-lg) */
+        }
+
+        /* CLASE CLAVE: Reduce el padding horizontal (izq/der) para dar más espacio al texto,
+                         permitiendo que "Inscripción Clases" quepa sin cambiar el font-size. */
+        .btn-ajuste-padding {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+            white-space: nowrap; /* Fuerza a que el texto se mantenga en una línea */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dashboard-btn i {
+            margin-right: 8px; /* Espacio entre el icono y el texto */
+        }
+
+        /* Estilo específico para el botón de cerrar sesión */
+        .logout-btn {
+            width: 250px;
+            margin-top: 20px;
+        }
+
+        /* Ajuste de padding para la grilla de 4 columnas */
+        .dashboard-row .col-lg-3 {
+            padding: 8px;
         }
     </style>
 </head>
@@ -37,86 +79,122 @@
         {
             <p class="text-center">Bienvenido, <strong>@User.Identity?.Name</strong></p>
 
-            <div class="text-center mt-4 d-grid gap-3 d-md-flex justify-content-center flex-wrap">
+            @* CONTENEDOR DE BOTONES FUNCIONALES (GRID de 4 columnas) *@
+            <div class="row dashboard-row justify-content-center mt-4">
 
-           
-                @* Botones visibles para Administrador y Empleado *@
+                @* VISIBLE PARA ADMINISTRADOR Y EMPLEADO *@
                 @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
                 {
-                    <a asp-controller="Miembros" asp-action="Index" class="btn btn-primary btn-lg me-2">
-                        <i class="bi bi-person-check"></i> Miembros
-                    </a>
-                    <a asp-controller="Membresias" asp-action="Index" class="btn btn-success btn-lg me-2">
-                        <i class="bi bi-credit-card-2-front"></i> Membresías
-                    </a>
+                    // =================================================================
+                    // FILA 1: GESTIÓN DE PERSONAS Y FINANZAS (COLOR AZUL - Primario)
+                    // =================================================================
 
-                    <a asp-controller="Asistencias" asp-action="Registrar" class="btn btn-primary btn-lg me-2">
-                        <i class="bi bi-person-check"></i> Asistencia Miembro
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Miembros" asp-action="Index" class="btn @colorGestionFinanzas btn-lg dashboard-btn">
+                            <i class="bi bi-people"></i> Miembros
+                        </a>
+                    </div>
 
-                    <a asp-controller="Cobros" asp-action="Index" class="btn btn-warning btn-lg me-2">
-                        <i class="bi bi-cash-stack"></i> Cobros
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Membresias" asp-action="Index" class="btn @colorGestionFinanzas btn-lg dashboard-btn">
+                            <i class="bi bi-credit-card-2-front"></i> Membresías
+                        </a>
+                    </div>
 
-                    <a asp-controller="Salas" asp-action="Index" class="btn btn-secondary btn-lg me-2">
-                        <i class="bi bi-cash-stack"></i> Salas
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Cobros" asp-action="Index" class="btn @colorGestionFinanzas btn-lg dashboard-btn">
+                            <i class="bi bi-cash-stack"></i> Cobros
+                        </a>
+                    </div>
 
-                    <a asp-controller="Entrenadores" asp-action="Index" class="btn btn-warning btn-lg me-2">
-                        <i class="bi bi-people"></i> Entrenadores
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Asistencias" asp-action="Registrar" class="btn @colorGestionFinanzas btn-lg dashboard-btn btn-ajuste-padding">
+                            <i class="bi bi-clipboard-check"></i> Asistencias
+                        </a>
+                    </div>
 
-                    <a asp-controller="Clases" asp-action="Index" class="btn btn-info btn-lg me-2">
-                        <i class="bi bi-cash-stack"></i> Clases
-                    </a>
+                    // =================================================================
+                    // FILA 2: LOGÍSTICA Y CLASES (COLOR VERDE - Logística)
+                    // =================================================================
 
-                    <a asp-controller="HorarioClases" asp-action="Index" class="btn btn-success btn-lg me-2">
-                        <i class="bi bi-credit-card-2-front"></i>Horario Clases
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Salas" asp-action="Index" class="btn @colorLogisticaClases btn-lg dashboard-btn">
+                            <i class="bi bi-door-open"></i> Salas
+                        </a>
+                    </div>
 
-                    <a asp-controller="Empleado" asp-action="SeleccionarMiembro" class="btn btn-primary btn-lg me-2">
-                        Inscripción a Clases
-                    </a>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Entrenadores" asp-action="Index" class="btn @colorLogisticaClases btn-lg dashboard-btn">
+                            <i class="bi bi-person-workspace"></i> Entrenadores
+                        </a>
+                    </div>
 
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Clases" asp-action="Index" class="btn @colorLogisticaClases btn-lg dashboard-btn">
+                            <i class="bi bi-calendar-event"></i> Clases
+                        </a>
+                    </div>
 
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="HorarioClases" asp-action="Index" class="btn @colorLogisticaClases btn-lg dashboard-btn">
+                            <i class="bi bi-clock-history"></i> Horario Clases
+                        </a>
+                    </div>
+
+                    // =================================================================
+                    // FILA 3: USO FINAL (Verde)
+                    // =================================================================
+
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Empleado" asp-action="SeleccionarMiembro" class="btn @colorLogisticaClases btn-lg dashboard-btn btn-ajuste-padding">
+                            <i class="bi bi-journal-plus"></i> Inscripción Clases
+                        </a>
+                    </div>
                 }
 
+                @* GESTIÓN DE ROLES (SOLO ADMIN) - Color Gris para seguridad/back-end *@
                 @if (User.IsInRole("Administrador"))
                 {
-                    
-                    <a class="btn btn-warning btn-lg me-2" asp-controller="RoleManagement" asp-action="Index">Gestión de Roles</a>
-                   
-                    
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a class="btn @colorAdministracion btn-lg dashboard-btn" asp-controller="RoleManagement" asp-action="Index">
+                            <i class="bi bi-lock"></i> Gestión de Roles
+                        </a>
+                    </div>
                 }
 
+            </div>
 
-                @* Botones visibles solo para Miembros o Entrenadores, si corresponde *@
+
+            @* SECCIÓN DE BOTONES ESPECÍFICOS POR ROL (Miembro y Entrenador) *@
+            @* ✅ MODIFICADO: Se usa d-flex y w-auto para ponerlos en una sola línea centrada. ✅ *@
+            <div class="row dashboard-row justify-content-center mt-5 d-flex">
 
                 @if (User.IsInRole("Miembro"))
                 {
-                    <a asp-controller="Perfil" asp-action="Index" class="btn btn-primary btn-lg me-2">
+                    <a asp-controller="Perfil" asp-action="Index" class="btn btn-info btn-lg me-3 w-auto">
                         <i class="bi bi-person"></i> Mi Perfil
                     </a>
-                    <a asp-controller="ClasesMiembro" asp-action="Index" class="btn btn-success btn-lg">
+                    <a asp-controller="ClasesMiembro" asp-action="Index" class="btn btn-warning btn-lg w-auto">
                         <i class="bi bi-journal-text"></i> Clases Disponibles
                     </a>
-
                 }
+
                 @if (User.IsInRole("Entrenador"))
                 {
-                    <a asp-controller="PerfilEntrenador" asp-action="Index" class="btn btn-primary btn-lg me-2">
+                    <a asp-controller="PerfilEntrenador" asp-action="Index" class="btn btn-info btn-lg me-3 w-auto">
                         <i class="bi bi-person"></i> Mi Perfil
                     </a>
-                    <a asp-controller="ClasesEntrenador" asp-action="Index" class="btn btn-success btn-lg">
+                    <a asp-controller="ClasesEntrenador" asp-action="Index" class="btn btn-warning btn-lg w-auto">
                         <i class="bi bi-journal-text"></i> Mis Clases
                     </a>
                 }
 
             </div>
 
-            <div class="text-center mt-4">
+            @* BOTÓN CERRAR SESIÓN (SEPARADO Y ALINEADO AL FINAL) *@
+            <div class="text-center mt-5">
                 <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                    <button type="submit" class="btn btn-danger btn-lg">
+                    <button type="submit" class="btn btn-danger btn-lg logout-btn">
                         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                     </button>
                 </form>
@@ -124,6 +202,7 @@
         }
         else
         {
+            @* PANTALLA DE LOGIN/REGISTRO *@
             <div class="text-center mt-4">
                 <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg me-2">
                     <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión

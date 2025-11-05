@@ -9,32 +9,109 @@
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    @* Si tienes un site.css con estilos generales, puedes mantenerlo aquí *@
+    @* <link rel="stylesheet" href="~/css/site.css" /> *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (400px) 🟢 */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: none;
+        }
+
+        /* 🟢 UNIFICADO: Título de Formulario (dentro de la tarjeta) 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Estilos específicos para la vista de detalles */
+        .card p {
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* 🟢 Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .title-logo {
+                font-size: 0.9rem;
+                color: #6c757d;
+            }
+
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+            }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Detalles del Cobro</h1>
 
-        <div class="card p-4 mt-4 shadow-sm">
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="text-center main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 70px; height: auto;" />
+       
+    </div>
+
+    @* Usamos form-container para limitar el ancho a 400px *@
+    <div class="form-container">
+        @* 🟢 Tarjeta compacta (400px de ancho) con relleno p-4 🟢 *@
+        <div class="card p-4">
+
+            @* 🟢 Título interno de Formulario 🟢 *@
+            <h2 class="display-6">@ViewData["Title"]</h2>
+
+            @* 🟢 Contenido de Detalles 🟢 *@
             <p><strong>Código:</strong> @Model.Codigo</p>
             <p><strong>Monto:</strong> $@Model.Monto.ToString("N2")</p>
             <p><strong>Fecha de Pago:</strong> @Model.FechaPago.ToString("dd/MM/yyyy")</p>
             <p><strong>Método de Pago:</strong> @Model.MetodoPago</p>
             <p>
                 <strong>Estado:</strong>
-                <span style="color:@(Model.Estado == "Vencido" ? "red" : "green")">
+                <span class="fw-bold" style="color:@(Model.Estado == "Vencido" ? "red" : "green")">
                     @Model.Estado
                 </span>
             </p>
             <p><strong>Miembro:</strong> @Model.Miembro?.Nombre @Model.Miembro?.Apellido</p>
             <p><strong>Membresía:</strong> @Model.Membresia?.Nombre</p>
 
-            <div class="text-center mt-4">
-                <a asp-action="Index" class="btn btn-secondary">Volver</a>
-                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success" target="_blank">Generar PDF</a>
+            <div class="text-center mt-4 pt-3 border-top">
+                @* 🟢 Botones Unificados: Volver (Gris/Secondary) y Generar PDF (Verde/Success) 🟢 *@
+                <a asp-action="Index" class="btn btn-secondary px-4">Volver</a>
+                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success px-4 ms-2" target="_blank">Generar PDF</a>
             </div>
-        </div>
-    </div>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
+
+    @* Agregué Bootstrap JS si fuera necesario, aunque no es crítico para esta vista estática *@
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

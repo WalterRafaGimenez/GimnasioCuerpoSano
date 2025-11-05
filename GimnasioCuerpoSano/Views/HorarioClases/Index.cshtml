@@ -10,42 +10,75 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title> @* Añadido el título completo *@
+
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', sans-serif;
+            padding: 2rem; /* Agregamos padding al body para mejor visualización */
         }
+
+        /* 🟢 UNIFICADO: Estilos para el Encabezado y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para la consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
 
         .wide-container {
             max-width: 1400px;
-            margin: 30px auto;
-            padding: 15px;
+            margin: 0 auto; /* Centra el contenedor */
+            padding: 0 15px;
         }
 
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
         .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
         }
 
-        .card-header {
-            text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            border-radius: 10px 10px 0 0;
-            padding: 15px;
-        }
+        /* Eliminamos el card-header azul y lo reemplazamos por el estilo del título principal */
+        /*.card-header {
+                    background-color: transparent;
+                    border-bottom: none;
+                    text-align: center;
+                }*/
 
-        .table-light th {
-            color: #212529 !important;
+        /* 🎨 CAMBIO CLAVE: Estilo de cabecera de tabla: Gris Claro y Letras Negras 🎨 */
+        thead th {
+            **background-color: #f1f3f5 !important; /* Gris Claro */
+            ** **color: #212529 !important; /* Texto Negro */
+            ** text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            font-weight: 600; /* Aseguramos que sea negrita */
             vertical-align: middle;
+            text-align: center;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f3f5;
+            transition: 0.2s;
         }
 
         .table td.actions {
             white-space: nowrap;
+            width: 1%;
+            padding: 0.5rem;
         }
 
         .top-buttons {
@@ -54,15 +87,36 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            margin: 0.2rem;
+        }
+        /* Ajuste para el botón de Inscripciones, para que se vea como en la imagen de ejemplo */
+        .btn-toggle-inscripciones {
+            width: 55px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+    @* 🟢 UNIFICADO: Logo y Título Principal 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="wide-container">
         <div class="card shadow-lg">
-            <div class="card-header">
+
+            @* Eliminamos card-header para el título quede centrado con el logo *@
+            @* <div class="card-header">
                 <h4>@ViewData["Title"]</h4>
-            </div>
+            </div> *@
+
             <div class="card-body">
+
                 <div class="top-buttons">
                     <a asp-action="Create" class="btn btn-success">
                         <i class="bi bi-plus-circle"></i> Nuevo Horario
@@ -78,8 +132,8 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle text-center">
-                        <thead class="table-light">
+                    <table class="table table-bordered table-striped align-middle text-center shadow-sm mb-0">
+                        <thead>
                             <tr>
                                 <th>Clase / Sala</th>
                                 <th>Día</th>
@@ -95,32 +149,32 @@
                                 foreach (var h in Model)
                                 {
                                     <tr>
-                                       
+
                                         <td>
                                             @h.Clase?.Nombre<br />
                                             Sala: @h.Sala?.Nombre
                                         </td>
 
-                                        
+
                                         <td>@h.DiaSemana</td>
 
-                                        
+
                                         <td>
                                             @h.HoraInicio.ToString(@"hh\:mm") - @h.HoraFin.ToString(@"hh\:mm")
                                             <br />
                                             (@h.Clase?.DuracionMinutos min)
                                         </td>
 
-                                        
+
                                         <td>
                                             @h.CapacidadMaxima
                                         </td>
 
-                                        
+
                                         <td>
                                             <form asp-action="ToggleInscripciones" method="post" style="display:inline;">
                                                 <input type="hidden" name="id" value="@h.Id" />
-                                                <button type="submit" class="btn btn-sm @(h.SePuedeInscribir ? "btn-success" : "btn-secondary")">
+                                                <button type="submit" class="btn btn-sm btn-toggle-inscripciones @(h.SePuedeInscribir ? "btn-success" : "btn-secondary")">
                                                     @(h.SePuedeInscribir ? "Sí" : "No")
                                                 </button>
                                                 @Html.AntiForgeryToken()
@@ -129,10 +183,10 @@
 
 
                                         <td class="actions">
-                                                                                       
-                                            <a asp-action="Edit" asp-route-id="@h.Id" class="btn btn-warning btn-sm me-1">Editar</a>
-                                            <a asp-action="Details" asp-route-id="@h.Id" class="btn btn-info btn-sm me-1">Ver</a>
-                                            <a asp-action="Delete" asp-route-id="@h.Id" class="btn btn-danger btn-sm me-1">Eliminar</a>
+                                            @* Orden de botones ajustado: Editar, Ver, Eliminar *@
+                                            <a asp-action="Edit" asp-route-id="@h.Id" class="btn btn-primary btn-sm me-1"><i class="bi bi-pencil"></i> Editar</a>
+                                            <a asp-action="Details" asp-route-id="@h.Id" class="btn btn-info btn-sm me-1"><i class="bi bi-eye"></i> Ver</a>
+                                            <a asp-action="Delete" asp-route-id="@h.Id" class="btn btn-danger btn-sm me-1"><i class="bi bi-trash"></i> Eliminar</a>
                                         </td>
                                     </tr>
                                 }
@@ -150,6 +204,6 @@
         </div>
     </div>
 
-    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

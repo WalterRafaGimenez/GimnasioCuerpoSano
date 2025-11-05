@@ -10,8 +10,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -19,42 +21,77 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
+        /* 🟢 UNIFICADO: Contenedor compacto (600px) 🟢 */
+        .details-container {
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
         }
 
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             padding: 2rem;
             background: white;
-            max-width: 600px;
-            margin: auto;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
 
+        /* Estilos específicos de detalles */
         .info-row {
-            margin-bottom: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e9ecef;
         }
+
+            .info-row:last-child {
+                border-bottom: none;
+            }
 
         .label {
             font-weight: 600;
             color: #212529;
+            display: inline-block;
+            width: 50%; /* Ajuste para alinear labels */
         }
 
         .value {
             color: #495057;
+            display: inline-block;
+            width: 48%;
         }
+
     </style>
 </head>
 <body>
-    <div class="container">
+
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title text-primary">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="details-container">
         <div class="card">
-            <h2 class="text-center">Detalles del Entrenador</h2>
 
             <div class="info-row">
                 <span class="label">Tipo Documento:</span>
@@ -101,21 +138,25 @@
                 <span class="value">@Model.FechaVencimientoCertificado?.ToString("dd/MM/yyyy")</span>
             </div>
 
-            @if (!string.IsNullOrEmpty(Model.RutaCertificado))
-            {
-                <div class="info-row">
-                    <a href="@Model.RutaCertificado" target="_blank" class="btn btn-secondary">Ver Certificado</a>
-                </div>
-            }
+            @* ✅ MODIFICACIÓN: Contenedor de botones unificado para Flexbox ✅ *@
+            <div class="text-center mt-4 pt-3 border-top d-flex justify-content-center">
 
-            <div class="text-center mt-4">
-                <a asp-action="Index" class="btn btn-primary px-4">Volver al listado</a>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4 ms-2">Editar</a>
+                @* Botón Editar (Primary/Azul) *@
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 me-3">Editar</a>
+
+                @* Botón Ver Certificado (Dark/Negro) - Movido y con margen derecho (me-3) *@
+                @if (!string.IsNullOrEmpty(Model.RutaCertificado))
+                {
+                    <a href="@Model.RutaCertificado" target="_blank" class="btn btn-dark px-4 me-3">Ver Certificado</a>
+                }
+
+                @* Botón Volver (Secondary/Gris) *@
+                <a asp-action="Index" class="btn btn-secondary px-4">Volver</a>
             </div>
-        </div>
-    </div>
+
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .details-container *@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
-
+</html></html>

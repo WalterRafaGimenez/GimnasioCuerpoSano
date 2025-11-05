@@ -9,8 +9,8 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-width=1.0" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
@@ -20,23 +20,47 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+            }
+
+            .main-header .page-title {
+                color: #dc3545; /* Título principal en Rojo de advertencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (600px) y Card 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             background: white;
-            padding: 2rem;
+            padding: 2.5rem;
             max-width: 600px;
             margin: auto;
         }
 
+        /* Título interno de la card (Rojo para eliminación) */
         h2 {
             color: #dc3545;
             margin-bottom: 1.5rem;
             text-align: center;
+            font-weight: 600;
         }
 
         .form-label {
             font-weight: bold;
+            color: #212529;
         }
 
         .value-box {
@@ -44,18 +68,28 @@
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
+            color: #495057;
+            /* Se asegura que se vea como un campo de solo lectura */
+            border: 1px solid #dee2e6;
         }
 
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
+    @* 🟢 AGREGADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
 
     <div class="container">
         <div class="card">
-            <h2>¿Eliminar esta clase?</h2>
+            
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
@@ -69,27 +103,29 @@
 
             <div class="mb-3">
                 <label class="form-label">Duración (minutos)</label>
-                <div class="value-box">@Model.DuracionMinutos</div>
+                <div class="value-box">@Model.DuracionMinutos minutos</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Entrenador</label>
-                <div class="value-box">@Model.Entrenador?.Apellido, @Model.Entrenador?.Nombre</div>
+                @* Se usa el operador ?. para manejo seguro de nulos *@
+                <div class="value-box">@(Model.Entrenador != null ? $"{Model.Entrenador.Apellido}, {Model.Entrenador.Nombre}" : "No Asignado")</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Sala</label>
-                <div class="value-box">@Model.Sala?.Numero</div>
+                <div class="value-box">@(Model.Sala != null ? Model.Sala.Numero : "No Asignada")</div>
             </div>
 
-            <div class="alert alert-warning text-center">
+            <div class="alert alert-warning text-center mt-4">
                 <strong>Atención:</strong> esta acción no se puede deshacer.
             </div>
 
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="Id" />
-                <div class="text-center">
-                    <button type="submit" class="btn btn-danger px-4">Eliminar</button>
+                @* 🟢 AJUSTE DE BOTONES: Centrados y estilos unificados (Eliminar Rojo, Cancelar Gris) 🟢 *@
+                <div class="text-center mt-4 pt-3 border-top d-flex justify-content-center">
+                    <button type="submit" class="btn btn-danger px-4 me-2">Eliminar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
             </form>
@@ -100,6 +136,3 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-

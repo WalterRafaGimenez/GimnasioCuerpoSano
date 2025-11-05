@@ -9,12 +9,95 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Listado de Cobros - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    @* Usamos estilos internos para asegurar la unificación con Miembros *@
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Contenedor ancho 🟢 */
+        .list-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto;
+            max-width: 100px;
+            height: auto;
+        }
+
+        /* 🟢 UNIFICADO: Título como h2 oscuro y centrado 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        table {
+            background: white;
+            width: 100%;
+            /* 🟢 UNIFICADO: Separación de filas como en Miembros 🟢 */
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        thead tr {
+            background-color: #f1f3f5;
+        }
+
+        th {
+            background-color: #f1f3f5 !important;
+            color: #212529 !important;
+            text-align: center;
+            padding: 1rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        td {
+            padding: 1rem;
+            text-align: center;
+            vertical-align: middle;
+            /* 🟢 UNIFICADO: La línea separadora inferior 🟢 */
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        /* Quitar el borde inferior de la última fila */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Listado de Cobros</h1>
+    <div class="list-container text-center">
+        @* 🟢 LOGO UNIFICADO *@
+        <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
+
+        @* 🟢 TÍTULO UNIFICADO (H2 y Color) *@
+        <h2 class="display-6">@ViewData["Title"]</h2>
 
         @* Mensajes de éxito o error *@
         @if (TempData["Mensaje"] != null)
@@ -26,50 +109,69 @@
             <div class="alert alert-danger">@TempData["Error"]</div>
         }
 
-        <div class="mb-3">
-            <a asp-action="Create" class="btn btn-success">Nuevo Cobro</a>
-            <a asp-action="ListadoPDF" class="btn btn-info ms-2" target="_blank">Listado PDF</a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2">Volver al Menú</a>
+        <div class="text-center mb-4">
+            @* 🟢 BOTONES GLOBALES UNIFICADOS (Verde/Azul/Gris) *@
+            <a asp-action="Create" class="btn btn-success px-4 me-2">
+                <i class="bi bi-plus-circle"></i> Nuevo Cobro
+            </a>
+            <a asp-action="ListadoPDF" class="btn btn-primary px-4 me-2" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> Imprimir Listado PDF
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">
+                <i class="bi bi-arrow-left"></i> Volver al Menú
+            </a>
         </div>
 
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Socio</th>
-                    <th>Membresía</th>
-                    <th>Monto</th>
-                    <th>Fecha de Pago</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in Model)
-                {
-                    <tr>
-                        <td>@c.Miembro?.Nombre @c.Miembro?.Apellido</td>
-                        <td>@c.Membresia?.Nombre</td>
-                        <td>@c.Monto.ToString("C")</td>
-                        <td>@c.FechaPago.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <span class="badge @(c.Estado == "Vencido" ? "bg-danger" : "bg-success")">
-                                @c.Estado
-                            </span>
-                        </td>
-                        <td>
-                            <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@c.Id">Ver</a>
-                            <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@c.Id">Editar</a>
-                            <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@c.Id">Eliminar</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        @if (Model != null && Model.Any())
+        {
+            @* 🟢 CONTENEDOR DE TABLA UNIFICADO (CARD P-3) *@
+            <div class="table-responsive card p-3">
+                @* Eliminamos clases table-striped y table-bordered para usar el diseño unificado *@
+                <table class="table align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th>Socio</th>
+                            <th>Membresía</th>
+                            <th>Monto</th>
+                            <th>Fecha de Pago</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            <tr>
+                                <td>@c.Miembro?.Nombre @c.Miembro?.Apellido</td>
+                                <td>@c.Membresia?.Nombre</td>
+                                <td>@c.Monto.ToString()</td>
+                                <td>@c.FechaPago.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="badge @(c.Estado == "Vencido" ? "bg-danger" : "bg-success")">
+                                        @c.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm me-2" asp-action="Edit" asp-route-id="@c.Id">Editar</a>
+                                    <a class="btn btn-info btn-sm me-2" asp-action="Details" asp-route-id="@c.Id">Ver</a>
+                                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@c.Id">Eliminar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">No hay cobros registrados.</div>
+        }
     </div>
 
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* Mantenemos los scripts de validación si son necesarios para el layout, aunque este es Index *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
-

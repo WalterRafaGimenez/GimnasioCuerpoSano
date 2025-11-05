@@ -10,53 +10,119 @@
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 2rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilos para el Encabezado y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px; /* Tamaño del logo */
+                height: auto;
+                margin-bottom: 5px;
+            }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para la consistencia */
+                font-weight: 700;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor más estrecho y centrado 🟢 */
+        .wide-container {
+            max-width: 600px; /* Ancho ajustado para vistas de Detalle */
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        /* Estilo para las filas de detalles */
+        .dl-horizontal dt {
+            font-weight: 600;
+            color: #495057;
+            text-align: left; /* Alinea los labels a la izquierda */
+        }
+
+        .dl-horizontal dd {
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef; /* Línea separadora */
+            padding-bottom: 5px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white text-center">
-                <h4>@ViewData["Title"]</h4>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-4">Clase</dt>
-                    <dd class="col-sm-8">@Model.Clase?.Nombre</dd>
+    @* 🟢 LOGO Y TITULO PRINCIPAL 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
 
-                    <dt class="col-sm-4">Sala</dt>
-                    <dd class="col-sm-8">@Model.Sala?.Nombre</dd>
+    <div class="wide-container">
+        <div class="card shadow-lg">
+            
+            <div class="card-body">
+                <dl class="row dl-horizontal">
+                    <dt class="col-sm-6">Clase</dt>
+                    <dd class="col-sm-6">@Model.Clase?.Nombre</dd>
 
-                    <dt class="col-sm-4">Día de la Semana</dt>
-                    <dd class="col-sm-8">@Model.DiaSemana</dd>
+                    <dt class="col-sm-6">Sala</dt>
+                    <dd class="col-sm-6">@Model.Sala?.Nombre</dd>
 
-                    <dt class="col-sm-4">Capacidad Máxima</dt>
-                    <dd class="col-sm-8">@Model.CapacidadMaxima</dd>
+                    <dt class="col-sm-6">Día de la Semana</dt>
+                    <dd class="col-sm-6">@Model.DiaSemana</dd>
 
-                    <dt class="col-sm-4">Hora Inicio</dt>
-                    <dd class="col-sm-8">@Model.HoraInicio.ToString(@"hh\:mm")</dd>
+                    <dt class="col-sm-6">Capacidad Máxima</dt>
+                    <dd class="col-sm-6">@Model.CapacidadMaxima</dd>
 
-                    <dt class="col-sm-4">Hora Fin</dt>
-                    <dd class="col-sm-8">@Model.HoraFin.ToString(@"hh\:mm")</dd>
+                    <dt class="col-sm-6">Hora Inicio</dt>
+                    <dd class="col-sm-6">@Model.HoraInicio.ToString(@"hh\:mm")</dd>
 
-                    <dt class="col-sm-4">Habilitado para inscripción</dt>
-                    <dd class="col-sm-8">@((Model.SePuedeInscribir) ? "Sí" : "No")</dd>
-                </dl>
+                    <dt class="col-sm-6">Hora Fin</dt>
+                    <dd class="col-sm-6">@Model.HoraFin.ToString(@"hh\:mm")</dd>
 
-                <div class="text-center mt-3">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                        <i class="bi bi-pencil-square"></i> Editar
-                    </a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </a>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="bi bi-house-door"></i> Volver al Listado
-                    </a>
-                </div>
-            </div>
+                    <dt class="col-sm-6">Habilitado para inscripción</dt>
+                    <dd class="col-sm-6">@((Model.SePuedeInscribir) ? "Sí" : "No")</dd>
+                </dl>
+
+                <div class="text-center mt-4">
+                    
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Editar
+            </a>
+
+            @* Botón Volver al listado (gris/secondary) *@
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
         </div>
+    </div>
+    </div>
     </div>
 
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

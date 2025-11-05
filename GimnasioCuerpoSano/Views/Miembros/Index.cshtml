@@ -2,7 +2,7 @@
 
 @{
     Layout = null; // que no use layout
-    ViewData["Title"] = "Listado de Miembros";
+    ViewData["Title"] = "Listado de Miembros";
 }
 
 <!DOCTYPE html>
@@ -11,58 +11,97 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <!-- Ícono del navegador -->
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
-    <!-- Incluimos Bootstrap para las clases de tabla y botones -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
 
     <style>
-        body {
-            background-color: #f8f9fa;
-            padding: 2rem;
-            font-family: 'Segoe UI', sans-serif;
+                body {
+                        background-color: #f8f9fa;
+                        padding: 2rem;
+                        font-family: 'Segoe UI', sans-serif;
+
         }
 
-        /* NUEVA CLASE PARA CENTRAR EL LISTADO */
-        .list-container {
-            max-width: 1400px; /* Ancho máximo para el contenido, puedes ajustarlo si quieres más o menos */
-            margin: 0 auto; /* Centra el contenedor horizontalmente */
-            padding: 0 15px; /* Pequeño padding lateral para responsividad */
+                .list-container {
+
+            /* Usamos un ancho amplio, pero centrado */
+                        max-width: 1400px;
+                        margin: 0 auto;
+                        padding: 0 15px;
+
         }
 
-        .card {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-radius: 10px;
+
+        /* Estilo para el logo (uniformidad) */
+                .header-logo {
+                        display: block;
+                        margin: 0 auto 15px auto;
+                        max-width: 100px; /* Tamaño unificado con Membresía */
+                        height: auto;
+
         }
 
-        table {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
+                .card {
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Sombra consistente */
+                        border-radius: 10px;
+
+        }
+
+                table {
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+
+            /* Aplicamos la estructura de tabla simple del listado de membresía */
+                        border-collapse: separate;
+                        border-spacing: 0 10px;
+
+        }
+
+                thead tr {
+            background-color: #f1f3f5; /* Fondo más claro para el encabezado */
         }
 
         th {
-            background-color: #0d6efd;
-            color: white;
+            background-color: #f1f3f5 !important; /* Sobrescribir el azul si viene de site.css, usando el color unificado */
+            color: #212529 !important;
+            text-align: center;
         }
 
-        .btn {
-            border-radius: 8px;
+                td {
+                        vertical-align: middle;
+                        border-bottom: 1px solid #dee2e6;
+                        padding: 1rem;
+
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
+                .btn {
+                        border-radius: 8px;
+                        font-weight: 500;
+
         }
+
+                h2 {
+                        color: #212529; /* Título oscuro y centrado */
+                        margin-bottom: 1.5rem;
+                        text-align: center;
+                        font-weight: 600;
+
+        }
+
+
     </style>
 </head>
 <body>
 
-    <!-- APLICAMOS LA CLASE list-container AL DIV PRINCIPAL -->
     <div class="list-container">
+        @* LOGO UNIFICADO *@
+        <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo text-center" />
+
         <div class="text-center mb-4">
-            <h2>Listado de Miembros</h2>
+            <h2>@ViewData["Title"]</h2>
 
             @if (TempData["Mensaje"] != null)
             {
@@ -70,34 +109,41 @@
             }
 
             <div class="d-flex justify-content-center align-items-center">
-                <a asp-action="Create" class="btn btn-success me-2">Agregar nuevo miembro</a>
-
-                <a asp-action="ImprimirListado" class="btn btn-primary me-2" target="_blank">
-                    Imprimir Listado PDF
+                @* Botones Globales (Verde=Crear, Azul=PDF, Gris=Volver) -> Correctos *@
+                <a asp-action="Create" class="btn btn-success me-2">
+                    <i class="bi bi-person-plus"></i> Agregar nuevo miembro
                 </a>
 
-                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">Volver al Menú</a>
+                <a asp-action="ImprimirListado" class="btn btn-primary me-2" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> Imprimir Listado PDF
+                </a>
+
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">
+                    <i class="bi bi-arrow-left"></i> Volver al Menú
+                </a>
             </div>
         </div>
 
         @if (Model != null && Model.Any())
         {
-            <!-- La tabla está envuelta en table-responsive y usa las clases de Bootstrap -->
-            <div class="table-responsive card">
-                <table class="table table-striped table-bordered align-middle text-center">
+            <div class="table-responsive card p-3">
+                @* Añadimos p-3 para separar la tabla de los bordes del card *@
+                <table class="table align-middle text-center">
+                    @* Eliminamos table-striped/table-bordered para el look unificado *@
                     <thead>
                         <tr>
-                            <th>Tipo Documento</th>
+                            @* Nombres de columnas abreviados para que quepa mejor en el ancho unificado *@
+                            <th>Tipo Doc</th>
                             <th>DNI</th>
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Dirección</th>
                             <th>Teléfono</th>
                             <th>Mail</th>
-                            <th>Tipo</th>
-                            <th>Descuento</th>
+                            <th>Membresía</th>
+                            <th>Dscto</th> @* Abreviado por espacio *@
                             <th>Valor</th>
-                            <th>Fecha Alta</th>
+                            <th>F. Alta</th> @* Abreviado por espacio *@
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -118,11 +164,14 @@
                                 <td>$@item.ValorMembresia</td>
                                 <td>@item.FechaAlta.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
-                                    <!-- Agrupamos los botones en un div para mejor control de espacio -->
                                     <div class="d-grid gap-2 d-md-block">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
+                                        @* 🎨 Edit: De Amarillo a Azul (.btn-primary) 🎨 *@
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">Editar</a>
+
+                                        @* 🎨 Ver: De Azul claro a (.btn-info) 🎨 *@
                                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>
-                                        <!-- Usamos un botón para Delete que puede requerir confirmación -->
+
+                                        @* Eliminar: Se mantiene en Rojo (.btn-danger) *@
                                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
                                     </div>
                                 </td>
@@ -137,14 +186,8 @@
             <div class="alert alert-info text-center">No hay miembros registrados.</div>
         }
 
-        <!-- También centramos los botones inferiores en el listado -->
-        <!--<div class="text-center mt-4">
-            <a asp-action="Create" class="btn btn-success px-4">Nueva Membresía</a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al Menú</a>
-        </div>-->
-    </div> <!-- Cierre de .list-container -->
+    </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

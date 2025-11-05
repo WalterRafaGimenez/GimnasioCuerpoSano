@@ -4,115 +4,201 @@
     Layout = null;
 }
 
-<link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
 
-<div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        /* 🟢 UNIFICADO: Contenedor compacto (500px) 🟢 */
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
+        }
 
-    <form asp-action="Create" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label asp-for="TipoDocumento" class="form-label"></label>
-            <select asp-for="TipoDocumento" class="form-control" id="tipoDocumento">
-                <option value="DNI">DNI</option>
-                <option value="DNI-Extranjero">DNI Extranjero</option>
-            </select>
-            <span asp-validation-for="TipoDocumento" class="text-danger"></span>
-        </div>
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
+            padding: 2rem;
+            background: white;
+        }
 
-        <div class="mb-3">
-            <label asp-for="DNI" class="form-label"></label>
-            <input asp-for="DNI" class="form-control" id="dniInput"
-                   data-val-remote-url="@Url.Action("VerificarDNI", "Entrenadores")"
-                   data-val-remote-additionalfields="*.Id"
-                   data-val-remote-error="Ya existe otro entrenador con este DNI" />
-            <span asp-validation-for="DNI" class="text-danger"></span>
-        </div>
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
 
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control"
-                   data-val-remote-url="@Url.Action("VerificarEmail", "Entrenadores")"
-                   data-val-remote-additionalfields="*.Id"
-                   data-val-remote-error="Ya existe otro entrenador con este email" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
 
-        <div class="mb-3">
-            <label asp-for="Nombre" class="form-label"></label>
-            <input asp-for="Nombre" class="form-control" />
-            <span asp-validation-for="Nombre" class="text-danger"></span>
-        </div>
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
 
-        <div class="mb-3">
-            <label asp-for="Apellido" class="form-label"></label>
-            <input asp-for="Apellido" class="form-control" />
-            <span asp-validation-for="Apellido" class="text-danger"></span>
-        </div>
+        /* Estilo para el título dentro de la tarjeta (si aplica) */
+        .card h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
 
-        <div class="mb-3">
-            <label asp-for="Direccion" class="form-label"></label>
-            <input asp-for="Direccion" class="form-control" />
-            <span asp-validation-for="Direccion" class="text-danger"></span>
-        </div>
+        /* 🔴 CORRECCIÓN: Fuerza los mensajes de validación a ser rojos 🔴 */
+        /* Aseguramos que la clase text-danger y cualquier campo de error de validación sea rojo */
+        .text-danger,
+        .field-validation-error {
+            color: #dc3545 !important; /* Rojo de Bootstrap */
+            font-weight: 500;
+        }
 
-        <div class="mb-3">
-            <label asp-for="Telefono" class="form-label"></label>
-            <input asp-for="Telefono" class="form-control" maxlength="10" />
-            <span asp-validation-for="Telefono" class="text-danger"></span>
-        </div>
+    </style>
+</head>
+<body>
 
-        <div class="mb-3">
-            <label asp-for="Especialidad" class="form-label"></label>
-            <input asp-for="Especialidad" class="form-control" />
-            <span asp-validation-for="Especialidad" class="text-danger"></span>
-        </div>
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
 
-        <div class="mb-3">
-            <label asp-for="FechaVencimientoCertificado" class="form-label"></label>
-            <input asp-for="FechaVencimientoCertificado" class="form-control" type="date" />
-            <span asp-validation-for="FechaVencimientoCertificado" class="text-danger"></span>
-        </div>
+    @* Usamos form-container para limitar el ancho *@
+    <div class="form-container">
+        <div class="card">
 
-        <div class="mb-3">
-            <label for="certificadoArchivo" class="form-label">Certificado (PDF o imagen)</label>
-            <input type="file"
-                   id="certificadoArchivo"
-                   name="certificadoArchivo"
-                   class="form-control"
-                   required
-                   accept="image/jpeg, image/png, application/pdf" />
-            <span asp-validation-for="RutaCertificado" class="text-danger"></span>
-        </div>
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
 
-        <div class="alert alert-warning text-center">
-            <strong>Atención:</strong> Debe adjuntar un archivo de certificado válido (PDF o imagen).
-        </div>
+                <div class="mb-3">
+                    <label asp-for="TipoDocumento" class="form-label fw-bold"></label>
+                    <select asp-for="TipoDocumento" class="form-select" id="tipoDocumento">
+                        <option value="DNI">DNI</option>
+                        <option value="DNI-Extranjero">DNI Extranjero</option>
+                    </select>
+                    <span asp-validation-for="TipoDocumento" class="text-danger"></span>
+                </div>
 
-        <div class="mt-4 text-center">
-            <button type="submit" class="btn btn-success me-2 px-4">Guardar</button>
-            <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
-        </div>
-    </form>
-</div>
+                <div class="mb-3">
+                    <label asp-for="DNI" class="form-label fw-bold"></label>
+                    <input asp-for="DNI" class="form-control" id="dniInput"
+                           data-val-remote-url="@Url.Action("VerificarDNI", "Entrenadores")"
+                           data-val-remote-additionalfields="*.Id"
+                           data-val-remote-error="Ya existe otro entrenador con este DNI" />
+                    <span asp-validation-for="DNI" class="text-danger"></span>
+                </div>
 
-@section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-bold"></label>
+                    <input asp-for="Email" class="form-control"
+                           data-val-remote-url="@Url.Action("VerificarEmail", "Entrenadores")"
+                           data-val-remote-additionalfields="*.Id"
+                           data-val-remote-error="Ya existe otro entrenador con este email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label fw-bold"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Apellido" class="form-label fw-bold"></label>
+                    <input asp-for="Apellido" class="form-control" />
+                    <span asp-validation-for="Apellido" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Direccion" class="form-label fw-bold"></label>
+                    <input asp-for="Direccion" class="form-control" />
+                    <span asp-validation-for="Direccion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Telefono" class="form-label fw-bold"></label>
+                    <input asp-for="Telefono" class="form-control" maxlength="10" />
+                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Especialidad" class="form-label fw-bold"></label>
+                    <input asp-for="Especialidad" class="form-control" />
+                    <span asp-validation-for="Especialidad" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FechaVencimientoCertificado" class="form-label fw-bold"></label>
+                    <input asp-for="FechaVencimientoCertificado" class="form-control" type="date" />
+                    <span asp-validation-for="FechaVencimientoCertificado" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="certificadoArchivo" class="form-label fw-bold">Certificado (PDF o imagen)</label>
+                    <input type="file"
+                           id="certificadoArchivo"
+                           name="certificadoArchivo"
+                           class="form-control"
+                           required
+                           accept="image/jpeg, image/png, application/pdf" />
+                    <span asp-validation-for="RutaCertificado" class="text-danger"></span>
+                </div>
+
+                <div class="alert alert-warning text-center">
+                    <strong>Atención:</strong> Debe adjuntar un archivo de certificado válido (PDF o imagen).
+                </div>
+
+                <div class="mt-4 pt-3 border-top text-center d-flex justify-content-center">
+                    <button type="submit" class="btn btn-success px-4">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+                </div>
+            </form>
+
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
+
+
+    @* Se incluyen los scripts de validación *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
         const tipoDocumento = document.getElementById('tipoDocumento');
         const dniInput = document.getElementById('dniInput');
 
         function ajustarMaxLength() {
+            // Se ajusta el max length si es DNI o DNI-Extranjero
             dniInput.maxLength = tipoDocumento.value === 'DNI' ? 8 : 9;
         }
 
         dniInput.addEventListener('input', () => {
+            // Asegura que solo se ingresen números
             dniInput.value = dniInput.value.replace(/\D/g, '');
         });
 
         tipoDocumento.addEventListener('change', ajustarMaxLength);
         ajustarMaxLength();
     </script>
-}
+</body>
+</html>

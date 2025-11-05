@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
@@ -20,23 +20,47 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+            }
+
+            .main-header .page-title {
+                color: #212529; /* Título principal en negro/gris oscuro */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (600px) y Card 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             background: white;
-            padding: 2rem;
+            padding: 2.5rem;
             max-width: 600px;
             margin: auto;
         }
 
+        /* Color del título interno de la card (usando el azul consistente) */
         h2 {
             color: #0d6efd;
             margin-bottom: 1.5rem;
             text-align: center;
+            font-weight: 600;
         }
 
         .form-label {
             font-weight: bold;
+            color: #212529;
         }
 
         .value-box {
@@ -44,18 +68,25 @@
             border-radius: 6px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
+            color: #495057;
         }
 
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="container">
         <div class="card">
-            <h2>Detalle de Clase</h2>
+            <h2>Clase: @Model.Nombre</h2>
 
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
@@ -64,29 +95,37 @@
 
             <div class="mb-3">
                 <label class="form-label">Precio</label>
-                <div class="value-box">@Model.Precio.ToString("C2")</div>
+                <div class="value-box">@Model.Precio.ToString()</div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Duración (minutos)</label>
-                <div class="value-box">@Model.DuracionMinutos</div>
+                <label class="form-label">Duración</label>
+                <div class="value-box">@Model.DuracionMinutos minutos</div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Entrenador</label>
-                <div class="value-box">@Model.Entrenador?.Apellido, @Model.Entrenador?.Nombre</div>
+                <label class="form-label">Entrenador Asignado</label>
+                <div class="value-box">
+                    @(Model.Entrenador != null ? $"{Model.Entrenador.Apellido}, {Model.Entrenador.Nombre}" : "No Asignado")
+                </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Sala</label>
-                <div class="value-box">@Model.Sala?.Numero</div>
+                <div class="value-box">
+                    @(Model.Sala != null ? Model.Sala.Numero : "No Asignada")
+                </div>
             </div>
 
-            <div class="text-center mt-4">
+
+            <div class="text-center mt-4 pt-3 border-top">
+
+                @* ✅ CORRECCIÓN FINAL: Usamos me-3 en el primer botón (Editar) y ninguno en el segundo (Volver) *@
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 **me-3**">Editar</a>
+
                 <a asp-action="Index" class="btn btn-secondary px-4">Volver</a>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 ms-2">Editar</a>
-            </div>
 
+            </div>
         </div>
     </div>
 

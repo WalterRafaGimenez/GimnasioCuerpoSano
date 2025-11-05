@@ -3,7 +3,7 @@
 @{
     Layout = null;
     ViewData["Title"] = "Registrar Asistencia";
-    var asistenciasHoy = ViewBag.AsistenciasHoy as List<int>;
+    // El ViewBag.AsistenciasHoy se maneja dentro del foreach, por lo que no es necesario aquí.
 }
 
 <!DOCTYPE html>
@@ -14,6 +14,7 @@
     <title>@ViewData["Title"]</title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 
     <style>
@@ -32,6 +33,14 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
+        /* Estilo para el logo (tomado del dashboard) */
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto;
+            max-width: 120px;
+            height: auto;
+        }
+
         h2 {
             color: #0d6efd;
             text-align: center;
@@ -39,7 +48,7 @@
         }
 
         th {
-            background-color: #0d6efd;
+            background-color: #0d6efd; /* Color principal de la marca (Azul) */
             color: white;
             text-align: center;
         }
@@ -51,6 +60,7 @@
 
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
 
         .alert {
@@ -64,7 +74,11 @@
 </head>
 <body>
     <div class="form-container">
-        <h2>Registrar Asistencia</h2>
+
+        @* INTEGRACIÓN DEL LOGO *@
+        <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
+
+        <h2>@ViewData["Title"]</h2>
 
         @if (TempData["Mensaje"] != null)
         {
@@ -76,12 +90,17 @@
             <div class="alert alert-warning">@TempData["Error"]</div>
         }
 
+        @* BOTONES SUPERIORES: Coherencia de Color *@
         <div class="d-flex justify-content-center gap-2 mb-3">
+            @* 'Ver Asistencias' es una acción principal para este módulo, lo dejaremos en Azul (o Gris, si se considera secundario). 
+               Lo mantendremos en Gris, como acción de navegación. *@
             <a asp-controller="Asistencias" asp-action="Index" class="btn btn-secondary">
-                Ver Asistencias
+                <i class="bi bi-list-columns"></i> Ver Asistencias
             </a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-                Volver al Menú
+
+            @* 'Volver al Menú' es neutral. Se cambia de 'btn-outline-secondary' a 'btn-secondary' para que sea sólido. *@
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Menú
             </a>
         </div>
 
@@ -108,17 +127,19 @@
                                 <td>@miembro.FechaVencimiento.ToString("dd/MM/yyyy")</td>
                                 <td>
                                     @{
-                                        var asistencia = (ViewBag.AsistenciasHoy as List<GimnasioCuerpoSano.Models.Asistencia>)
-                                        ?.FirstOrDefault(a => a.ID_Miembro == miembro.Id);
+                                        // Usamos el código de búsqueda que ya tienes
+                                        var asistenciasHoy = ViewBag.AsistenciasHoy as List<GimnasioCuerpoSano.Models.Asistencia>;
+                                        var asistencia = asistenciasHoy?.FirstOrDefault(a => a.ID_Miembro == miembro.Id);
                                     }
 
                                     @if (asistencia != null)
                                     {
                                         if (asistencia.HoraSalida == null)
                                         {
-                                            <span class="text-success fw-bold">✅ Ya ingresó</span>
+                                            <span class="text-success fw-bold me-2">✅ Ingreso OK</span>
                                             <form asp-action="RegistrarSalida" method="post" style="display:inline;">
                                                 <input type="hidden" name="id" value="@miembro.Id" />
+                                                @* Botón de Salida: Rojo (Advertencia/Fin de acción) *@
                                                 <button type="submit" class="btn btn-danger btn-sm">Salida</button>
                                             </form>
                                         }
@@ -131,11 +152,11 @@
                                     {
                                         <form asp-action="RegistrarEntrada" method="post" style="display:inline;">
                                             <input type="hidden" name="id" value="@miembro.Id" />
+                                            @* Botón de Entrada: Verde (Acción de éxito/Creación de registro) *@
                                             <button type="submit" class="btn btn-success btn-sm">Entrada</button>
                                         </form>
                                     }
                                 </td>
-
                             </tr>
                         }
                     </tbody>

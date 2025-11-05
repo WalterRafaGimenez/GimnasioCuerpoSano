@@ -8,116 +8,152 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Editar Cobro - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    @* Si tienes un site.css con estilos generales, puedes mantenerlo aquí *@
+    @* <link rel="stylesheet" href="~/css/site.css" /> *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (400px) 🟢 */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto 3rem auto; /* Ajustamos el margen superior para el logo */
+            padding: 0 15px;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: none;
+        }
+
+        /* 🟢 UNIFICADO: Título de Formulario (dentro de la tarjeta) 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Ajustes de formularios */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+            .form-group label {
+                font-weight: 500;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500; /* Asegura la misma tipografía */
+        }
+
+        /* 🟢 Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .title-logo {
+                font-size: 0.9rem;
+                color: #6c757d;
+            }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para el formulario */
+                font-weight: 700;
+            }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Editar Cobro</h1>
 
-        <form asp-action="Edit" method="post">
-            @* Id oculto para identificar el cobro *@
-            <input type="hidden" asp-for="Id" />
-
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-            <!-- SOCIO / MIEMBRO -->
-            <div class="form-group">
-                <label>Socio / Miembro</label>
-                <select asp-for="MiembroId" class="form-control" id="MiembroId">
-                    <option value="">-- Seleccione un miembro --</option>
-                    @foreach (var miembro in ViewBag.Miembros)
-                    {
-                        if (miembro.Id == Model.MiembroId)
-                        {
-                            <option value="@miembro.Id" selected="selected">
-                                @($"{miembro.Nombre} {miembro.Apellido}")
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="@miembro.Id">
-                                @($"{miembro.Nombre} {miembro.Apellido}")
-                            </option>
-                        }
-                    }
-                </select>
-                <span asp-validation-for="MiembroId" class="text-danger"></span>
-            </div>
-
-            <!-- MEMBRESÍA (solo lectura) -->
-            <div class="form-group">
-                <label>Tipo de Membresía</label>
-                <input type="text" id="NombreMembresia" class="form-control" readonly
-                       value="@(Model.Membresia?.Nombre ?? "")" placeholder="Se mostrará automáticamente" />
-                <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
-                <span asp-validation-for="MembresiaId" class="text-danger"></span>
-            </div>
-
-            <!-- MÉTODO DE PAGO -->
-            <div class="form-group">
-                <label>Método de Pago</label>
-                <select asp-for="MetodoPago" class="form-control">
-                    <option value="">-- Seleccione método --</option>
-
-                    @* Usamos if/else para evitar la expresión C# en atributos *@
-                    @if (Model.MetodoPago == "Efectivo")
-                    {
-                        <option value="Efectivo" selected="selected">Efectivo</option>
-                    }
-                    else
-                    {
-                        <option value="Efectivo">Efectivo</option>
-                    }
-
-                    @if (Model.MetodoPago == "Transferencia")
-                    {
-                        <option value="Transferencia" selected="selected">Transferencia Bancaria</option>
-                    }
-                    else
-                    {
-                        <option value="Transferencia">Transferencia Bancaria</option>
-                    }
-
-                    @if (Model.MetodoPago == "Mercado Pago")
-                    {
-                        <option value="Mercado Pago" selected="selected">Mercado Pago</option>
-                    }
-                    else
-                    {
-                        <option value="Mercado Pago">Mercado Pago</option>
-                    }
-
-                    @if (Model.MetodoPago == "Tarjeta Crédito")
-                    {
-                        <option value="Tarjeta Crédito" selected="selected">Tarjeta de Crédito</option>
-                    }
-                    else
-                    {
-                        <option value="Tarjeta Crédito">Tarjeta de Crédito</option>
-                    }
-
-                    @if (Model.MetodoPago == "Tarjeta Débito")
-                    {
-                        <option value="Tarjeta Débito" selected="selected">Tarjeta de Débito</option>
-                    }
-                    else
-                    {
-                        <option value="Tarjeta Débito">Tarjeta de Débito</option>
-                    }
-                </select>
-                <span asp-validation-for="MetodoPago" class="text-danger"></span>
-            </div>
-
-            <!-- BOTONES -->
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
-                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
-            </div>
-        </form>
+    @* 🟢 AJUSTE DE TAMAÑO DEL LOGO A 100PX PARA CONSISTENCIA CON INDEX 🟢 *@
+    <div class="text-center main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        
     </div>
 
+    <div class="form-container">
+        @* 🟢 Tarjeta compacta (400px de ancho) con relleno p-4 🟢 *@
+        <div class="card p-4">
+
+            @* 🟢 Título interno de Formulario 🟢 *@
+            <h2 class="display-6">@ViewData["Title"]</h2>
+
+            <form asp-action="Edit" method="post">
+                @* Id oculto para identificar el cobro *@
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="form-group">
+                    <label>Socio / Miembro</label>
+                    <select asp-for="MiembroId" class="form-control" id="MiembroId">
+                        <option value="">-- Seleccione un miembro --</option>
+                        @foreach (var miembro in ViewBag.Miembros)
+                        {
+                            <option value="@miembro.Id" selected="@(miembro.Id == Model.MiembroId ? "selected" : null)">
+                                @($"{miembro.Nombre} {miembro.Apellido}")
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="MiembroId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Membresía</label>
+                    <input type="text" id="NombreMembresia" class="form-control" readonly
+                           value="@(Model.Membresia?.Nombre ?? "")" placeholder="Se mostrará automáticamente" />
+                    <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
+                    <span asp-validation-for="MembresiaId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Método de Pago</label>
+                    <select asp-for="MetodoPago" class="form-control">
+                        <option value="">-- Seleccione método --</option>
+                        @{
+                            var metodos = new List<string> { "Efectivo", "Transferencia", "Mercado Pago", "Tarjeta Crédito", "Tarjeta Débito" };
+                        }
+                        @foreach (var metodo in metodos)
+                        {
+                            <option value="@metodo" selected="@(Model.MetodoPago == metodo ? "selected" : null)">
+                                @(metodo.Replace("Transferencia", "Transferencia Bancaria").Replace("Tarjeta Crédito", "Tarjeta de Crédito").Replace("Tarjeta Débito", "Tarjeta de Débito"))
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="MetodoPago" class="text-danger"></span>
+                </div>
+
+                <div class="text-center mt-4">
+                    @* 🟢 Botones Unificados: Guardar Cambios (Azul/Primary) y Volver (Gris/Secondary) 🟢 *@
+                    <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+                </div>
+            </form>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
@@ -154,9 +190,7 @@
         });
 
         // Si ya hay un miembro seleccionado, actualiza la membresía al cargar la página
-        // (útil cuando se abre Edit con datos ya cargados)
         document.getElementById("MiembroId").dispatchEvent(new Event('change'));
     </script>
 </body>
 </html>
-

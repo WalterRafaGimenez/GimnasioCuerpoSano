@@ -10,7 +10,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
         body {
@@ -19,58 +20,93 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #dc3545; /* Título en color rojo para indicar advertencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor compacto para formularios/detalles de eliminación 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             padding: 2rem;
             background: white;
-            max-width: 600px;
+            max-width: 450px; /* Ancho ajustado para la confirmación */
             margin: auto;
         }
 
+        /* 🟢 UNIFICADO: Título de Confirmación 🟢 */
         h2 {
-            color: #dc3545;
+            color: #212529; /* Color de texto oscuro para el subtítulo */
             margin-bottom: 1.5rem;
             text-align: center;
+            font-weight: 600;
+            font-size: 1.5rem;
         }
 
+        /* Definiciones de Detalles */
         dt {
             font-weight: bold;
+            color: #495057;
         }
 
+        /* 🟢 UNIFICADO: Estilo de botón 🟢 */
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
+
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="container">
         <div class="card">
             <h2>¿Seguro que deseas eliminar esta sala?</h2>
 
+            <p class="text-danger text-center mb-4">
+                **Advertencia:** Esta acción no se puede deshacer.
+            </p>
+
             <dl class="row mb-4">
-                <dt class="col-sm-4">Número:</dt>
-                <dd class="col-sm-8">@Model.Numero</dd>
+                <dt class="col-sm-5">Número:</dt>
+                <dd class="col-sm-7">@Model.Numero</dd>
 
-                <dt class="col-sm-4">Nombre:</dt>
-                <dd class="col-sm-8">@Model.Nombre</dd>
+                <dt class="col-sm-5">Nombre:</dt>
+                <dd class="col-sm-7">@Model.Nombre</dd>
 
-                <dt class="col-sm-4">Capacidad:</dt>
-                <dd class="col-sm-8">@Model.CapacidadMaxima</dd>
+                <dt class="col-sm-5">Capacidad:</dt>
+                <dd class="col-sm-7">@Model.CapacidadMaxima</dd>
 
-                <dt class="col-sm-4">Ubicación:</dt>
-                <dd class="col-sm-8">@Model.Ubicacion</dd>
+                <dt class="col-sm-5">Ubicación:</dt>
+                <dd class="col-sm-7">@Model.Ubicacion</dd>
 
-                <dt class="col-sm-4">Tipo:</dt>
-                <dd class="col-sm-8">@Model.TipoSala</dd>
+                <dt class="col-sm-5">Tipo:</dt>
+                <dd class="col-sm-7">@Model.TipoSala</dd>
 
-                <dt class="col-sm-4">Disponible:</dt>
-                <dd class="col-sm-8">@((Model.Disponible) ? "Sí" : "No")</dd>
+                <dt class="col-sm-5">Disponible:</dt>
+                <dd class="col-sm-7">@((Model.Disponible) ? "Sí" : "No")</dd>
             </dl>
 
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="ID_Sala" />
-                <div class="text-center">
+                <div class="text-center mt-4 pt-3 border-top">
+                    @* 🟢 UNIFICADO: Eliminar (Rojo Danger) y Cancelar (Gris Secondary) 🟢 *@
                     <button type="submit" class="btn btn-danger px-4">Eliminar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
@@ -81,4 +117,3 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

@@ -13,11 +13,72 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
-    @* (Tus estilos CSS aquí) *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 2rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilos para el Encabezado y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para la consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor más estrecho y centrado 🟢 */
+        .wide-container {
+            max-width: 800px; /* Ancho ajustado para que no se vea tan grande */
+            margin: 0 auto; /* Centra el contenedor */
+            padding: 0 15px;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .card-header {
+            /* Hacer transparente para usar el título simple superior */
+            background-color: transparent;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+    </style>
 
     <script>
         let ClasesDuracionMap = {};
@@ -54,8 +115,8 @@
             if (horaInicio && duracion > 0) {
                 const [hh, mm] = horaInicio.split(":").map(Number);
                 let fecha = new Date();
-                fecha.setHours(hh);
-                fecha.setMinutes(mm + duracion);
+                fecha.setHours(hh, mm, 0, 0);
+                fecha.setMinutes(fecha.getMinutes() + duracion);
 
                 const hhFin = fecha.getHours().toString().padStart(2, "0");
                 const mmFin = fecha.getMinutes().toString().padStart(2, "0");
@@ -67,11 +128,18 @@
     </script>
 </head>
 <body>
+    @* 🟢 LOGO Y TITULO PRINCIPAL 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="wide-container">
         <div class="card shadow-lg">
-            <div class="card-header">
-                <h4>@ViewData["Title"]</h4>
-            </div>
+            @* Se eliminó el card-header para usar el título superior * @
+            @* <div class="card-header">
+                <h4>@ViewData["Title"]</h4>
+            </div> *@
             <div class="card-body">
                 <form asp-action="Edit" method="post">
                     <input type="hidden" asp-for="Id" />
@@ -131,9 +199,11 @@
                     </div>
 
                     <div class="btn-container">
+                        @* Botón Guardar Cambios (Azul) *@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-circle"></i> Guardar Cambios
                         </button>
+                        @* Botón Cancelar (Gris) *@
                         <a asp-action="Index" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancelar
                         </a>
@@ -143,16 +213,11 @@
         </div>
     </div>
 
-    @* CORRECCIÓN 1: Agregar JQUERY. Es la base de la validación. *@
     <script src="/lib/jquery/dist/jquery.min.js"></script>
 
-    @* CORRECCIÓN 2: Mover el Parcial de Validación para que se cargue DESPUÉS de jQuery. *@
     <partial name="_ValidationScriptsPartial" />
 
-    @* Los scripts de Bootstrap pueden ir al final *@
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    @* NOTA: Si la consola sigue mostrando el 404 para bootstrap-icons.css,
-                        debes verificar la ruta en tu proyecto (wwwroot/lib/bootstrap-icons/font/). *@
 </body>
 </html>

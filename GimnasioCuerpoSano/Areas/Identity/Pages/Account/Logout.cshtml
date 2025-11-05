@@ -8,20 +8,57 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cerrar Sesión - Gimnasio Cuerpo Sano</title>
+
+    @* ✅ AGREGADO: Cargar Bootstrap CSS para que los estilos de botón funcionen ✅ *@
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+
+        .logout-container {
+            max-width: 450px; /* Ancho ajustado para centrar el diálogo */
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: white;
+            text-align: center;
+        }
+
+        .logout-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Cerrar Sesión</h1>
+        <div class="logout-container">
 
-        <p class="text-center">¿Seguro que deseas cerrar la sesión actual?</p>
+            <h1 class="logout-title">Cerrar Sesión</h1>
 
-        <form class="text-center mt-4" method="post">
-            <button type="submit" class="btn btn-danger">Cerrar Sesión</button>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
+            <p class="text-center">¿Seguro que deseas cerrar la sesión actual?</p>
+
+            <form class="text-center mt-4 d-flex justify-content-center" method="post">
+              
+                <button type="submit" class="btn btn-danger btn-lg me-3">Cerrar Sesión</button>
+
+              
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
+            </form>
+
+        </div> @* Cierre de .logout-container *@
+    </div> @* Cierre de .container *@
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

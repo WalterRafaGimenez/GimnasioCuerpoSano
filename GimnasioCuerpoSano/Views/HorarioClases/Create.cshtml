@@ -11,36 +11,61 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', sans-serif;
+            padding: 2rem; /* Agregamos padding al body para mejor visualización */
         }
+
+        /* 🟢 UNIFICADO: Estilos para el Encabezado y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para la consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
 
         .wide-container {
             max-width: 800px;
-            margin: 30px auto;
-            padding: 15px;
+            margin: 0 auto; /* Centra el contenedor */
+            padding: 0 15px;
         }
 
         .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px; /* Ligeramente más redondeado */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Sombra más definida */
+            background: white;
+            overflow: hidden;
         }
 
+        /* ❌ ELIMINADO: Fondo azul del título de la tarjeta ❌ */
         .card-header {
             text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            padding: 15px;
+            background-color: transparent; /* Fondo transparente */
+            color: #212529; /* Color de texto oscuro por si se usa */
+            border-bottom: none; /* Eliminar borde inferior */
+            padding: 15px 15px 0 15px; /* Ajustar padding */
         }
+
+            .card-header h4 {
+                font-weight: 600;
+                color: #0d6efd; /* Mantener color azul del h4 si se usara */
+            }
 
         .form-label {
             font-weight: 500;
@@ -52,12 +77,19 @@
             gap: 10px;
             margin-top: 20px;
         }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
     </style>
 
     <script>
         let ClasesDuracionMap = {};
 
         window.onload = function () {
+            // Asegúrate de que clasesJson esté definido antes de parsear
             const clasesData = JSON.parse('@Html.Raw(clasesJson)');
             clasesData.forEach(clase => {
                 ClasesDuracionMap[clase.Id] = clase.DuracionMinutos;
@@ -66,6 +98,7 @@
             const claseSelect = document.getElementById("ClaseId");
             const horaInicioInput = document.getElementById("HoraInicio");
 
+            // Llamar al calcularHoraFin() inicial si ya hay valores
             calcularHoraFin();
 
             claseSelect.addEventListener("change", calcularHoraFin);
@@ -80,13 +113,14 @@
             const horaInicio = horaInicioInput.value;
             const claseId = claseSelect.value;
 
-            const duracion = ClasesDuracionMap[claseId] || 0;
+            // Asegurar que el id es un número
+            const duracion = ClasesDuracionMap[parseInt(claseId)] || 0;
 
             if (horaInicio && duracion > 0) {
                 const [hh, mm] = horaInicio.split(":").map(Number);
                 let fecha = new Date();
-                fecha.setHours(hh);
-                fecha.setMinutes(mm + duracion);
+                fecha.setHours(hh, mm, 0, 0); // Establecer horas y minutos
+                fecha.setMinutes(fecha.getMinutes() + duracion); // Sumar duración
 
                 const hhFin = fecha.getHours().toString().padStart(2, "0");
                 const mmFin = fecha.getMinutes().toString().padStart(2, "0");
@@ -99,11 +133,18 @@
 
 </head>
 <body>
+    @* 🟢 UNIFICADO: Logo y Título Principal (Reemplaza el card-header azul) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="wide-container">
         <div class="card shadow-lg">
-            <div class="card-header">
+            @* Se eliminó el card-header para centrar el título con el logo * @
+            @* <div class="card-header">
                 <h4>@ViewData["Title"]</h4>
-            </div>
+            </div> *@
             <div class="card-body">
 
                 @* === BLOQUE DE DEPURACIÓN DE ERRORES === *@
@@ -125,9 +166,11 @@
                 }
 
                 <form asp-action="Create" method="post" id="formHorario">
+                    @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    @* === HIDDEN INPUTS PARA DEBUG Y BINDING CORRECTO === *@
+                    @* === HIDDEN INPUTS PARA DEBUG Y BINDING CORRECTO (mantenerlos) === *@
+                    @* Nota: Estos son necesarios para asegurar que los valores de los select se envíen correctamente al modelo si no se usan helpers directamente. Se recomienda mantenerlos si son la forma actual de trabajo. *@
                     <input type="hidden" id="ClaseIdHidden" name="ClaseId" />
                     <input type="hidden" id="SalaIdHidden" name="SalaId" />
 
@@ -135,14 +178,14 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="ClaseId" class="form-label">Clase</label>
                             <select asp-for="ClaseId" class="form-select" id="ClaseId" asp-items="ViewBag.Clases">
-                                <option value="0">-- Seleccione Clase --</option>
+                                <option value="">-- Seleccione Clase --</option>
                             </select>
                             <span asp-validation-for="ClaseId" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label asp-for="SalaId" class="form-label">Sala</label>
                             <select asp-for="SalaId" class="form-select" id="SalaId" asp-items="ViewBag.Salas">
-                                <option value="0">-- Seleccione Sala --</option>
+                                <option value="">-- Seleccione Sala --</option>
                             </select>
                             <span asp-validation-for="SalaId" class="text-danger"></span>
                         </div>
@@ -152,7 +195,7 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="DiaSemana" class="form-label">Día de la Semana</label>
                             <select asp-for="DiaSemana" class="form-select" asp-items="ViewBag.DiasSemana">
-                                <option value="0">-- Seleccione Día --</option>
+                                <option value="">-- Seleccione Día --</option>
                             </select>
                             <span asp-validation-for="DiaSemana" class="text-danger"></span>
                         </div>
@@ -183,9 +226,11 @@
                     </div>
 
                     <div class="btn-container">
-                        <button type="submit" class="btn btn-primary">
+                        @* 🟢 Botón Guardar: Cambiado a btn-success (verde) para consistencia 🟢 *@
+                        <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-circle"></i> Guardar
                         </button>
+                        @* 🟢 Botón Cancelar: Cambiado a btn-secondary (gris) 🟢 *@
                         <a asp-action="Index" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancelar
                         </a>
@@ -202,8 +247,9 @@
                         document.getElementById('ClaseIdHidden').value = claseSelect.value;
                         document.getElementById('SalaIdHidden').value = salaSelect.value;
 
-                        console.log("Valor Clase enviado:", claseSelect.value);
-                        console.log("Valor Sala enviado:", salaSelect.value);
+                        // Los logs de consola se eliminan en producción
+                        // console.log("Valor Clase enviado:", claseSelect.value);
+                        // console.log("Valor Sala enviado:", salaSelect.value);
                     });
                 </script>
 
@@ -211,10 +257,8 @@
         </div>
     </div>
 
-    <!-- jQuery -->
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
-    <!-- Bootstrap JS -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

@@ -9,56 +9,142 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> @* Asumiendo que site.css trae estilos de la tabla/card *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+            }
+
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 16px; /* Ajuste de padding para botones de acción principal */
+        }
+
+        /* Contenedor de la tabla con efecto Card */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        /* Botones de acción dentro de la tabla */
+        .btn-sm {
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+
+        /* Aseguramos el color de los botones de la tabla según las imágenes */
+        .btn-warning { /* Editar */
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-info { /* Ver */
+            background-color: #0dcaf0;
+            border-color: #0dcaf0;
+            color: white;
+        }
+
+        .btn-danger { /* Eliminar */
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1>@ViewData["Title"]</h1>
+    @* 🟢 UNIFICADO: Logo y Título Principal 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
 
-        <div class="mb-3 text-end">
-            <a asp-action="Create" class="btn btn-primary">Nueva Clase</a>
-            <a asp-action="GenerarListadoPdf" target="_blank" class="btn btn-danger ms-2">Generar PDF</a>
+    <div class="container">
+
+        @* 🟢 AJUSTE DE BOTONES SUPERIORES: Colores consistentes según Listados 🟢 *@
+        <div class="mb-4 text-center">
+            @* Nueva Clase: Verde (Success) *@
+            <a asp-action="Create" class="btn btn-success">Nueva Clase</a>
+
+            @* Generar PDF: Rojo (Danger) - Como se ve en la imagen de Listado de Clases *@
+            <a asp-action="GenerarListadoPdf" target="_blank" class="btn btn-primary">Generar Listado PDF</a>
+
+            @* Volver al Menú: Gris (Secondary) *@
             <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2">Volver al Menú</a>
         </div>
 
-        @if (!Model.Any())
-        {
-            <div class="alert alert-info">No hay clases registradas.</div>
-        }
-        else
-        {
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Duración</th>
-                        <th>Entrenador</th>
-                        <th>Sala</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+        <div class="table-container">
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">No hay clases registradas.</div>
+            }
+            else
+            {
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        @* Cambiado a table-light para un look más limpio, pero puedes usar table-dark si prefieres el contraste *@
                         <tr>
-                            <td>@item.Nombre</td>
-                            <td>@item.Precio.ToString("C2")</td>
-                            <td>@item.DuracionMinutos min</td>
-                            <td>@(item.Entrenador != null ? $"{item.Entrenador.Apellido}, {item.Entrenador.Nombre}" : "")</td>
-                            <td>@(item.Sala != null ? item.Sala.Numero : "")</td>
-                            <td class="text-center">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Detalles</a>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm mx-1">Editar</a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
-                            </td>
+                            <th class="fw-bold">Nombre</th>
+                            <th class="fw-bold">Precio</th>
+                            <th class="fw-bold">Duración</th>
+                            <th class="fw-bold">Entrenador</th>
+                            <th class="fw-bold">Sala</th>
+                            <th class="text-center fw-bold">Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Nombre</td>
+                                <td>$@item.Precio.ToString("N2")</td> @* Formato de moneda *@
+                                <td>@item.DuracionMinutos min</td>
+                                <td>@(item.Entrenador != null ? $"{item.Entrenador.Apellido}, {item.Entrenador.Nombre}" : "N/A")</td>
+                                <td>@(item.Sala != null ? item.Sala.Numero : "N/A")</td>
+                                <td class="text-center">
+                                    @* 🟢 Botones de la tabla (Ver, Editar, Eliminar) 🟢 *@
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm me-2">Editar</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Ver</a>                                    
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div> @* Cierre de .table-container *@
     </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

@@ -10,7 +10,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
         body {
@@ -19,41 +20,66 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+            }
+
+            .main-header .page-title {
+                color: #212529; /* Título en negro o azul oscuro para formularios */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (600px) 🟢 */
         .card-form {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             background: white;
-            padding: 2rem;
+            padding: 2.5rem; /* Aumentado un poco el padding */
             max-width: 600px;
             margin: auto;
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+        /* Eliminamos el h2 interno ya que usamos el main-header */
 
         .form-label {
             font-weight: bold;
+            color: #212529;
         }
 
-        .value-box {
-            background-color: #f1f3f5;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            margin-bottom: 1rem;
-        }
-
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
         .btn {
             border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* Ajuste de color del título para que sea consistente (azul) si se mantiene dentro de la card */
+        .card-form h2 {
+            color: #0d6efd; /* Color azul de Bootstrap Primary */
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
 <body>
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
     <div class="container">
         <div class="card-form">
-            <h2>@ViewData["Title"]</h2>
+            
 
             @if (ViewBag.Error != null)
             {
@@ -86,7 +112,7 @@
                 <div class="mb-3">
                     <label asp-for="EntrenadorId" class="form-label">Entrenador</label>
                     <select asp-for="EntrenadorId" asp-items="ViewBag.Entrenadores" class="form-select">
-                        <option value="0">-- Seleccione un entrenador --</option>
+                        <option value="">-- Seleccione un entrenador --</option>
                     </select>
                     <span asp-validation-for="EntrenadorId" class="text-danger"></span>
                 </div>
@@ -94,13 +120,14 @@
                 <div class="mb-3">
                     <label asp-for="SalaId" class="form-label">Sala</label>
                     <select asp-for="SalaId" asp-items="ViewBag.Salas" class="form-select">
-                        <option value="0">-- Seleccione una sala --</option>
+                        <option value="">-- Seleccione una sala --</option>
                     </select>
                     <span asp-validation-for="SalaId" class="text-danger"></span>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-success px-4">Guardar</button>
+                @* 🟢 AJUSTE DE BOTONES: Centrados y estilos unificados (Guardar Verde, Volver Gris) 🟢 *@
+                <div class="text-center mt-4 pt-3 border-top d-flex justify-content-center">
+                    <button type="submit" class="btn btn-success px-4 me-2">Guardar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
                 </div>
             </form>
@@ -114,7 +141,10 @@
         const duracionInput = document.getElementById('duracionInput');
         if (duracionInput) {
             duracionInput.addEventListener('input', () => {
-                duracionInput.value = duracionInput.value.replace(/\D/g, '');
+                // Permite el campo vacío al inicio, pero si tiene valor, lo limpia de no dígitos.
+                if (duracionInput.value) {
+                    duracionInput.value = duracionInput.value.replace(/\D/g, '');
+                }
             });
         }
     </script>

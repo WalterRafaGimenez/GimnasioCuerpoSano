@@ -1,7 +1,8 @@
 ﻿@model GimnasioCuerpoSano.Models.ViewModels.ClasesEmpleadoViewModel
 
 @{
-    ViewData["Title"] = "Clases Disponibles";
+    Layout = null; // Aseguramos que no se use un layout que pueda interferir con el estilo
+    ViewData["Title"] = "Clases Disponibles";
 }
 
 <!DOCTYPE html>
@@ -10,71 +11,87 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
+                        body {
+                                    background-color: #f8f9fa;
+                                    font-family: 'Segoe UI', sans-serif;
+                                    padding: 2rem;
+
         }
 
-        .wide-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 15px;
+
+        /* 🟢 Estilos para el Encabezado (Unificado) 🟢 */
+                .main-header {
+                        text-align: center;
+                        margin-top: 1rem;
+                        margin-bottom: 2rem;
+
         }
 
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    .main-header .logo {
+                            width: 100px;
+                            height: auto;
+                            margin-bottom: 5px;
+
         }
 
-        .card-header {
-            text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            border-radius: 10px 10px 0 0;
-            padding: 15px;
+                    .main-header .page-title {
+                            color: #212529; /* Título oscuro para la consistencia */
+                            font-weight: 700;
+                            font-size: 2rem;
+
         }
 
-        .table-light th {
-            color: #212529 !important;
-            vertical-align: middle;
+                        .wide-container {
+                                    max-width: 1000px; /* Ancho ajustado para la tabla */
+                                    margin: 0 auto; /* Centrar */
+                                    padding: 0 15px;
+
         }
 
-        .table td.actions {
-            white-space: nowrap;
+                        .card {
+                                    border-radius: 12px;
+                                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                                    background: white;
+                                    padding: 20px;
+
         }
 
-        .top-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+                        .table-light th {
+                                    **background-color: #e9ecef !important;
+            ** /* Cabecera gris clara */
+                                    **color: #212529 !important;
+            ** /* Letras oscuras */
+                                    vertical-align: middle;
+            **font-weight: 700;
+            **        
         }
+
+                        .table td.actions {
+                                    white-space: nowrap;
+
+        }
+
+
+
     </style>
 </head>
 <body>
+
+    @* 🟢 LOGO Y TITULO PRINCIPAL (Estilo Consistente: Negro, Centrado) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">Clases Disponibles para @Model.NombreCompletoMiembro</h1>
+    </div>
+
     <div class="wide-container">
         <div class="card shadow-lg">
-            <div class="card-header">
-                <h4>@ViewData["Title"] para @Model.NombreCompletoMiembro</h4>
-            </div>
             <div class="card-body">
-                <div class="top-buttons">
-                    <a asp-action="SeleccionarMiembro" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left-circle"></i> Volver a Seleccionar Miembro
-                    </a>
 
-                    <a asp-action="ImprimirInscripciones" target="_blank" class="btn btn-primary">
-                        <i class="bi bi-file-earmark-pdf"></i> Lista de clases inscriptas
-                    </a>
-
-                    <a href="/" class="btn btn-secondary">
-                        <i class="bi bi-house-door"></i> Volver
-                    </a>
-                </div>
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle text-center">
@@ -97,14 +114,25 @@
                                     <td>@(h.Clase?.Entrenador != null ? h.Clase.Entrenador.Nombre + " " + h.Clase.Entrenador.Apellido : "Sin entrenador")</td>
                                     <td>@h.HoraInicio.ToString(@"hh\:mm")</td>
                                     <td>@h.HoraFin.ToString(@"hh\:mm")</td>
-                                    <td>@(yaInscripto ? "Inscripto" : "Disponible")</td>
+                                    <td>
+                                        @if (yaInscripto)
+                                        {
+                                            <span class="badge bg-success">Inscripto</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">Disponible</span>
+                                        }
+                                    </td>
                                     <td class="actions">
                                         @if (!yaInscripto)
                                         {
                                             <form asp-action="Inscribirse" method="post" style="display:inline">
                                                 <input type="hidden" name="miembroId" value="@Model.MiembroId" />
                                                 <input type="hidden" name="horarioClaseId" value="@h.Id" />
-                                                <button type="submit" class="btn btn-success btn-sm">Inscribirse</button>
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-person-plus"></i> Inscribirse
+                                                </button>
                                             </form>
                                         }
                                         else
@@ -112,7 +140,9 @@
                                             <form asp-action="Desinscribirse" method="post" style="display:inline">
                                                 <input type="hidden" name="miembroId" value="@Model.MiembroId" />
                                                 <input type="hidden" name="horarioClaseId" value="@h.Id" />
-                                                <button type="submit" class="btn btn-danger btn-sm">Desinscribirse</button>
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-person-dash"></i> Desinscribirse
+                                                </button>
                                             </form>
                                         }
                                     </td>
@@ -123,8 +153,14 @@
                 </div>
             </div>
         </div>
+
+        @* 🟢 BOTÓN VOLVER - Abajo para mejor estética 🟢 *@
+        <div class="text-center mt-4">
+            <a asp-action="SeleccionarMiembro" class="btn btn-secondary px-4">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
     </div>
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

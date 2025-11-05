@@ -9,58 +9,136 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Eliminar Cobro - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    @* Si tienes un site.css con estilos generales, puedes mantenerlo aquí *@
+    @* <link rel="stylesheet" href="~/css/site.css" /> *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* ✅ MODIFICACIÓN: Contenedor más ancho (450px) para botones en línea ✅ */
+        .form-container {
+            max-width: 450px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: none;
+        }
+
+        /* 🟢 UNIFICADO: Título de Formulario (dentro de la tarjeta) 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Estilos específicos para la vista de eliminación/detalles */
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            display: block;
+            margin-bottom: 0.1rem;
+        }
+
+        .detail-value {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* 🟢 Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .title-logo {
+                font-size: 0.9rem;
+                color: #6c757d;
+            }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Eliminar Cobro</h1>
 
-        <div class="alert alert-warning">
-            <strong>Atención:</strong> Estás por eliminar el siguiente cobro. Esta acción no se puede deshacer.
-        </div>
-
-        <div class="mb-3">
-            <label>Socio / Miembro:</label>
-            <p>@Model.Miembro?.Nombre @Model.Miembro?.Apellido</p>
-        </div>
-
-        <div class="mb-3">
-            <label>Membresía:</label>
-            <p>@Model.Membresia?.Nombre</p>
-        </div>
-
-        <div class="mb-3">
-            <label>Monto:</label>
-            <p>@Model.Monto.ToString("C")</p>
-        </div>
-
-        <div class="mb-3">
-            <label>Fecha de Pago:</label>
-            <p>@Model.FechaPago.ToString("dd/MM/yyyy")</p>
-        </div>
-
-        <div class="mb-3">
-            <label>Estado:</label>
-            <p>
-                <span class="badge @(Model.Estado == "Vencido" ? "bg-danger" : "bg-success")">
-                    @Model.Estado
-                </span>
-            </p>
-        </div>
-
-        <form asp-action="Delete" method="post">
-            <input type="hidden" asp-for="Id" />
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-danger px-4">Confirmar Eliminación</button>
-                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
-            </div>
-        </form>
+    <div class="text-center main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
     </div>
 
+    @* Usamos form-container para limitar el ancho a 450px *@
+    <div class="form-container">
+        @* Tarjeta compacta (450px de ancho) con relleno p-4 *@
+        <div class="card p-4">
+
+            @* 🟢 Título interno de Formulario 🟢 *@
+            <h2 class="display-6 text-danger">@ViewData["Title"]</h2>
+
+            @* Usamos el estilo 'detail-label' para unificación *@
+            <div class="alert alert-danger" role="alert">
+                <strong>Atención:</strong> Estás por eliminar el siguiente cobro. Esta acción **no se puede deshacer**.
+            </div>
+
+            <div class="mb-3">
+                <label class="detail-label">Socio / Miembro:</label>
+                <p class="detail-value">@Model.Miembro?.Nombre @Model.Miembro?.Apellido</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="detail-label">Membresía:</label>
+                <p class="detail-value">@Model.Membresia?.Nombre</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="detail-label">Monto:</label>
+                <p class="detail-value">@Model.Monto.ToString("C")</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="detail-label">Fecha de Pago:</label>
+                <p class="detail-value">@Model.FechaPago.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="detail-label">Estado:</label>
+                <p class="detail-value">
+                    <span class="badge fw-bold @(Model.Estado == "Vencido" ? "bg-danger" : "bg-success")">
+                        @Model.Estado
+                    </span>
+                </p>
+            </div>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="Id" />
+                @* 🟢 AJUSTE: Se usa d-flex justify-content-center para separar los botones 🟢 *@
+                <div class="text-center mt-4 border-top pt-3 d-flex justify-content-center">
+                    @* ✅ MODIFICACIÓN: Botón principal solo dice "Eliminar" ✅ *@
+                    <button type="submit" class="btn btn-danger px-4 me-3">Eliminar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-3">Cancelar</a>
+                </div>
+            </form>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
-</html>
-
+</html></html>

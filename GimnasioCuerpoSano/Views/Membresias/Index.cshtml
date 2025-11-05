@@ -2,53 +2,151 @@
 
 @{
     Layout = null;
+    ViewData["Title"] = "Listado de Membresías";
 }
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Membresías - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
 
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Contenedor ancho de Miembros 🟢 */
+        .list-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto;
+            max-width: 100px;
+            height: auto;
+        }
+
+        /* 🟢 UNIFICADO: Título como h2 oscuro y centrado 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        table {
+            background: white;
+            width: 100%;
+            /* 🟢 CÓDIGO CLAVE DE MIEMBROS: Separación de filas 🟢 */
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        thead tr {
+            background-color: #f1f3f5;
+        }
+
+        th {
+            background-color: #f1f3f5 !important;
+            color: #212529 !important;
+            text-align: center;
+            padding: 1rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        td {
+            padding: 1rem;
+            text-align: center;
+            vertical-align: middle;
+            /* 🟢 CÓDIGO CLAVE DE MIEMBROS: La línea separadora inferior 🟢 */
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        /* 🔴 TRUCO FINAL: Quitar el border-bottom de la última fila, si no se ve mal 🔴 */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Listado de Membresías</h1>
+    <div class="list-container text-center">
+        @* 🟢 LOGO UNIFICADO 🟢 *@
+        <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
 
-        <div class="text-center mb-3">
-            <a asp-action="Create" class="btn btn-success">Nueva Membresía</a>
-            <a asp-action="ListadoPDF" class="btn btn-primary" target="_blank">
-                Imprimir Listado PDF
+        @* 🟢 TÍTULO UNIFICADO (H2 y Color) 🟢 *@
+        <h2 class="display-6">@ViewData["Title"]</h2>
+
+        <div class="text-center mb-4">
+            @* 🟢 BOTONES GLOBALES UNIFICADOS (VERDE/AZUL/GRIS) 🟢 *@
+            <a asp-action="Create" class="btn btn-success px-4 me-2">
+                <i class="bi bi-plus-circle"></i> Nueva Membresía
             </a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Volver al Menú</a>
+            <a asp-action="ListadoPDF" class="btn btn-primary px-4 me-2" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> Imprimir Listado PDF
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">
+                <i class="bi bi-arrow-left"></i> Volver al Menú
+            </a>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>@Html.DisplayNameFor(model => model.Nombre)</th>
-                    <th>@Html.DisplayNameFor(model => model.Precio)</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
-                        <td>$@item.Precio</td>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Editar</a>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Ver</a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Eliminar</a>
-
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        @if (Model != null && Model.Any())
+        {
+            @* 🟢 APLICACIÓN DEL ESQUELETO: Contenedor Card p-3 y table-responsive 🟢 *@
+            <div class="table-responsive **card p-3**">
+                <table class="table align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">@Html.DisplayNameFor(model => model.Nombre)</th>
+                            <th>@Html.DisplayNameFor(model => model.Precio)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="text-align: left;">@Html.DisplayFor(modelItem => item.Nombre)</td>
+                                <td>$@item.Precio</td>
+                                <td>
+                                    @* 🟢 BOTONES DE ACCIÓN POR FILA UNIFICADOS (AZUL/INFO/ROJO) 🟢 *@
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm me-2">Editar</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm me-2">Ver</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Eliminar</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">No hay membresías registradas.</div>
+        }
+    </div>
     </div>
 </body>
 </html>
-

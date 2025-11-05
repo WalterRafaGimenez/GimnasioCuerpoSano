@@ -10,12 +10,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
 
-    <!-- Ícono del navegador -->
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
 
-    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
 
@@ -26,32 +24,42 @@
             padding: 2rem;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Encabezado y Logo 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para la consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
         .card {
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             background: white;
             overflow: hidden;
-        }
-
-        .card-header {
-            background: linear-gradient(90deg, #0d6efd, #0dcaf0);
-            color: white;
-            font-weight: bold;
-            font-size: 1.25rem;
-            letter-spacing: 0.5px;
+            padding: 1.5rem; /* Añadimos padding al card para el contenido */
         }
 
         table {
             border-radius: 10px;
             overflow: hidden;
+            /* REVERTIDO: Eliminado border-collapse y border-spacing */
         }
 
+        /* 🟢 CAMBIO CLAVE: Cabecera gris/blanca con letra negra 🟢 */
         thead th {
-            background-color: #0d6efd !important;
-            color: white !important;
+            background-color: #f1f3f5 !important;
+            color: #212529 !important;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-size: 0.9rem;
+            font-weight: 600;
         }
 
         tbody tr:hover {
@@ -61,6 +69,7 @@
 
         .btn {
             border-radius: 8px;
+            font-weight: 500;
         }
 
         .table td, .table th {
@@ -70,27 +79,35 @@
         .top-buttons {
             text-align: center;
             margin-bottom: 1.5rem;
+            margin-top: 1rem; /* Ajuste para separar del título */
         }
 
             .top-buttons .btn {
                 margin: 0.3rem;
             }
+
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>@ViewData["Title"]</h4>
-            </div>
 
-            <div class="card-body">
+
+        <div class="main-header">
+            <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+            <h1 class="page-title">@ViewData["Title"]</h1>
+        </div>
+
+        <div class="card shadow-lg">
+
+            <div class="card-body p-0">
+                @* p-0 para que la tabla llegue al borde interno del card *@
                 <div class="top-buttons">
                     <a asp-action="Create" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Nueva Sala
+                        <i class="bi bi-plus-circle"></i> Agregar Sala
                     </a>
-                    <a asp-action="ListadoPDF" class="btn btn-danger" target="_blank">
+                    @* 🟢 UNIFICADO: Botón PDF en azul primary/info para seguir la tendencia de listados 🟢 *@
+                    <a asp-action="ListadoPDF" class="btn btn-primary" target="_blank">
                         <i class="bi bi-file-earmark-pdf"></i> Imprimir Listado PDF
                     </a>
                     <a href="/" class="btn btn-secondary">
@@ -99,7 +116,9 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle text-center shadow-sm">
+                    @* 🟢 REVERTIDO: Se usan table-bordered y table-striped para mantener el estilo de rejilla original 🟢 *@
+                    <table class="table table-bordered table-striped align-middle text-center shadow-sm mb-0">
+                        @* mb-0 para eliminar el margen inferior de la tabla *@
                         <thead>
                             <tr>
                                 <th>Número</th>
@@ -120,14 +139,21 @@
                                     <td>@sala.CapacidadMaxima</td>
                                     <td>@sala.Ubicacion</td>
                                     <td>@sala.TipoSala</td>
-                                    <td>@(sala.Disponible ? "Sí" : "No")</td>
                                     <td>
+                                        <span class="badge @(sala.Disponible ? "bg-success" : "bg-danger")">
+                                            @(sala.Disponible ? "Sí" : "No")
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@sala.ID_Sala" class="btn btn-primary btn-sm me-1">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+
                                         <a asp-action="Details" asp-route-id="@sala.ID_Sala" class="btn btn-info btn-sm me-1">
                                             <i class="bi bi-eye"></i> Ver
                                         </a>
-                                        <a asp-action="Edit" asp-route-id="@sala.ID_Sala" class="btn btn-warning btn-sm me-1">
-                                            <i class="bi bi-pencil"></i> Editar
-                                        </a>
+
                                         <a asp-action="Delete" asp-route-id="@sala.ID_Sala" class="btn btn-danger btn-sm">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </a>
@@ -137,8 +163,6 @@
                         </tbody>
                     </table>
                 </div>
-
-              
             </div>
         </div>
     </div>

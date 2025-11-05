@@ -10,8 +10,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -19,30 +21,60 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
-            text-align: center;
+        /* 🟢 UNIFICADO: Contenedor compacto (400px) 🟢 */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
         }
 
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             padding: 2rem;
             background: white;
-            max-width: 600px;
-            margin: auto;
         }
 
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                color: #212529; /* Título oscuro para consistencia */
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
         .btn {
             border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* 🟢 Etiquetas en negrita 🟢 */
+        .form-label {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    @* 🟢 UNIFICADO: Logo y Título Principal (Fuera de la Tarjeta) 🟢 *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+    @* Usamos form-container para limitar el ancho a 400px *@
+    <div class="form-container">
         <div class="card">
-            <h2>Editar Sala</h2>
+            @* Se eliminó el h2 original ya que usamos el h1/page-title fuera de la tarjeta *@
 
             <form asp-action="Edit" method="post">
                 <input type="hidden" asp-for="ID_Sala" />
@@ -87,18 +119,18 @@
                     <span asp-validation-for="Disponible" class="text-danger"></span>
                 </div>
 
-                <div class="text-center">
+                <div class="text-center mt-4 pt-3 border-top">
+                    @* 🟢 UNIFICADO: Guardar (Azul Primary) y Cancelar (Gris Secondary) 🟢 *@
                     <button type="submit" class="btn btn-primary px-4">Guardar cambios</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
             </form>
-        </div>
-    </div>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @section Scripts {
-        @await Html.PartialAsync("_ValidationScriptsPartial")
-    }
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
-

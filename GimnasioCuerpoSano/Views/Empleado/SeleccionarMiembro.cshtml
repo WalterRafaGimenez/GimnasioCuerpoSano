@@ -1,6 +1,7 @@
 ﻿@model List<GimnasioCuerpoSano.Models.Miembro>
 
 @{
+    Layout = null;
     ViewData["Title"] = "Seleccionar Miembro";
 }
 
@@ -10,51 +11,71 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
+                body {
+                        background-color: #f8f9fa;
+                        font-family: 'Segoe UI', sans-serif;
+                        padding: 2rem;
+
         }
 
-        .wide-container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 15px;
-        }
-
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .card-header {
+        /* Estilos para el Encabezado (Unificado) */
+        .main-header {
             text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            border-radius: 10px 10px 0 0;
-            padding: 15px;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .top-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+                margin-bottom: 5px;
+            }
+
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                font-size: 2rem;
+            }
+
+        /* La tarjeta ahora tiene el ancho y se centra en el body */
+                .card {
+                        **max-width: 400px;
+            ** /* ANCHO AJUSTADO Y COMPACTO APLICADO A LA TARJETA */
+            **margin: 0 auto;
+            ** /* CENTRADO EN LA PÁGINA */
+                        border-radius: 12px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                        background: white;
+                        padding: 20px;
+
         }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+
     </style>
 </head>
 <body>
-    <div class="wide-container">
+
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="container">
+       
         <div class="card shadow-lg">
-            <div class="card-header">
-                <h4>@ViewData["Title"]</h4>
-            </div>
+           
             <div class="card-body">
                 <form asp-action="VerClases" method="get">
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="miembroSelect" class="form-label">Miembro:</label>
                         <select id="miembroSelect" name="miembroId" class="form-select" required>
                             <option value="">-- Seleccione un miembro --</option>
@@ -65,18 +86,20 @@
                         </select>
                     </div>
 
-                    <div class="text-center mt-4 mb-3">
+                    <div class="text-center mt-5 d-flex justify-content-center gap-3">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-arrow-right-circle"></i> Ver Clases
+                            <i class="bi bi-calendar-check"></i> Ver Clases
                         </button>
+
+                        <a asp-action="ImprimirInscripciones" target="_blank" class="btn btn-success">
+                            <i class="bi bi-file-earmark-pdf"></i> Lista de clases inscriptas PDF
+                        </a>
+
+                        <a href="/" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Volver al Menú
+                        </a>
                     </div>
                 </form>
-
-                <div class="text-center mt-3">
-                    <a href="/" class="btn btn-secondary">
-                        <i class="bi bi-house-door"></i> Volver al Menú
-                    </a>
-                </div>
             </div>
         </div>
     </div>

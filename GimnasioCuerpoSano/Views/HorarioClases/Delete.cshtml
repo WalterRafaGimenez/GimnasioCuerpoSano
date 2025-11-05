@@ -10,38 +10,108 @@
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 2rem;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .logo {
+                width: 100px;
+                height: auto;
+                margin-bottom: 5px;
+            }
+
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                font-size: 2rem;
+            }
+
+        /* ⬆️ AUMENTADO: Contenedor más ancho para el mensaje ⬆️ */
+        .wide-container {
+            max-width: 700px; /* Ancho ajustado para que el mensaje quepa en una línea */
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .dl-horizontal dt {
+            font-weight: 600;
+            color: #495057;
+            text-align: left;
+        }
+
+        .dl-horizontal dd {
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 20px;
+        }
+
+        /* Estilo para el mensaje de confirmación en rojo */
+        .confirmation-message {
+            font-size: 1.1rem; /* Un poco más grande para destacar */
+            font-weight: 600; /* Negrita */
+            margin-bottom: 1.5rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-danger text-white text-center">
-                <h4>@ViewData["Title"]</h4>
-            </div>
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="wide-container">
+        <div class="card shadow-lg">
             <div class="card-body">
-                <p class="mb-4">¿Está seguro que desea eliminar el siguiente horario de clase?</p>
+                @* 🔴 TEXTO DE CONFIRMACIÓN EN ROJO Y EN UNA LÍNEA 🔴 *@
+                <p class="text-center text-danger confirmation-message">¿Está seguro que desea eliminar el siguiente horario de clase?</p>
 
-                <dl class="row">
-                    <dt class="col-sm-4">Clase</dt>
-                    <dd class="col-sm-8">@Model.Clase?.Nombre</dd>
+                <dl class="row dl-horizontal">
+                    <dt class="col-sm-6">Clase</dt>
+                    <dd class="col-sm-6">@Model.Clase?.Nombre</dd>
 
-                    <dt class="col-sm-4">Día de la Semana</dt>
-                    <dd class="col-sm-8">@Model.DiaSemana</dd>
+                    <dt class="col-sm-6">Día de la Semana</dt>
+                    <dd class="col-sm-6">@Model.DiaSemana</dd>
 
-                    <dt class="col-sm-4">Hora Inicio</dt>
-                    <dd class="col-sm-8">@Model.HoraInicio.ToString(@"hh\:mm")</dd>
+                    <dt class="col-sm-6">Hora Inicio</dt>
+                    <dd class="col-sm-6">@Model.HoraInicio.ToString(@"hh\:mm")</dd>
 
-                    <dt class="col-sm-4">Hora Fin</dt>
-                    <dd class="col-sm-8">@Model.HoraFin.ToString(@"hh\:mm")</dd>
+                    <dt class="col-sm-6">Hora Fin</dt>
+                    <dd class="col-sm-6">@Model.HoraFin.ToString(@"hh\:mm")</dd>
 
 
-                    <dt class="col-sm-4">Habilitado para inscripción</dt>
-                    <dd class="col-sm-8">@((Model.SePuedeInscribir) ? "Sí" : "No")</dd>
+                    <dt class="col-sm-6">Habilitado para inscripción</dt>
+                    <dd class="col-sm-6">@((Model.SePuedeInscribir) ? "Sí" : "No")</dd>
                 </dl>
 
-                <form asp-action="Delete" method="post" class="text-center mt-4">
+                <form asp-action="Delete" method="post" class="text-center mt-4 pt-3 border-top">
                     <input type="hidden" asp-for="Id" />
                     <button type="submit" class="btn btn-danger px-4">
                         <i class="bi bi-trash"></i> Eliminar

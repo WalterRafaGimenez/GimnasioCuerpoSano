@@ -11,78 +11,99 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <!-- Ícono del navegador -->
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
-        body {
-            background-color: #f8f9fa;
-            padding: 2rem;
-            font-family: 'Segoe UI', sans-serif;
+                body {
+                        background-color: #f8f9fa;
+                        padding: 2rem;
+                        font-family: 'Segoe UI', sans-serif;
+
         }
 
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            background: white;
-            padding: 2rem;
-            max-width: 600px;
-            margin: auto;
+
+        /* ✨ Nuevo Estilo para el Logo ✨ */
+                .header-logo {
+                        display: block;
+                        margin: 0 auto 15px auto; /* Centra horizontalmente y añade espacio abajo */
+                        max-width: 100px; /* Tamaño del logo ajustado */
+                        height: auto;
+
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
-            text-align: center;
+                .card {
+                        border-radius: 10px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        background: white;
+                        padding: 2rem;
+                        max-width: 600px;
+                        margin: auto;
+
         }
 
-        .form-label {
-            font-weight: bold;
-            color: #495057;
-            display: block;
-            text-align: center;
+                h2 {
+                        color: #0d6efd;
+                        margin-bottom: 1.5rem;
+                        text-align: center;
+
         }
 
-        .value-box {
-            background-color: #f1f3f5;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            margin-bottom: 1rem;
-            width: 100%;
-            text-align: center;
-            box-sizing: border-box;
+                .form-label {
+                        font-weight: bold;
+                        color: #495057;
+                        display: block;
+                        text-align: center;
+
         }
 
-        .btn {
-            border-radius: 8px;
+                .value-box {
+                        background-color: #f1f3f5;
+                        border-radius: 6px;
+                        padding: 0.5rem 1rem;
+                        margin-bottom: 1rem;
+                        width: 100%;
+                        text-align: center;
+                        box-sizing: border-box;
+
         }
 
-        .foto-miembro {
-            max-width: 150px;
-            max-height: 150px;
-            border-radius: 10px;
-            object-fit: cover;
-            margin-bottom: 1rem;
+                .btn {
+                        border-radius: 8px;
+
         }
 
-        .barcode {
-            margin-top: 1rem;
-            text-align: center;
+                .foto-miembro {
+                        max-width: 150px;
+                        max-height: 150px;
+                        border-radius: 10px;
+                        object-fit: cover;
+                        margin-bottom: 1rem;
+
         }
 
-            .barcode img {
-                display: block;
-                margin: auto;
-            }
+                .barcode {
+                        margin-top: 1rem;
+                        text-align: center;
+
+        }
+
+                    .barcode img {
+                            display: block;
+                            margin: auto;
+
+        }
+
+
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="card">
-            <h2>Detalles del Miembro</h2>
+            <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
 
-            <!-- FOTO -->
+            <h2>@ViewData["Title"]</h2>
+
             @if (!string.IsNullOrEmpty(Model.Foto))
             {
                 <div class="text-center">
@@ -90,7 +111,6 @@
                 </div>
             }
 
-            <!-- CÓDIGO DE BARRA -->
             @if (ViewBag.Barcode != null)
             {
                 <div class="barcode">
@@ -99,19 +119,17 @@
                 </div>
             }
 
-            <!-- TIPO DE DOCUMENTO -->
             <div class="mb-3">
                 <label class="form-label">Tipo de Documento</label>
                 <div class="value-box">@Model.TipoDocumento</div>
             </div>
 
-            <!-- DNI -->
+            @* 🟢 CORREGIDO: Cambiamos la etiqueta de 'DNI' a 'Número de Documento' para evitar la repetición visual. 🟢 *@
             <div class="mb-3">
-                <label class="form-label">DNI</label>
+                <label class="form-label">Número de Documento</label>
                 <div class="value-box">@Model.DNI</div>
             </div>
 
-            <!-- RESTO DE LOS CAMPOS -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="value-box">@Model.Nombre</div>
@@ -168,6 +186,3 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-

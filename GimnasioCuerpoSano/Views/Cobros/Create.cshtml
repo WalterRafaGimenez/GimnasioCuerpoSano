@@ -1,4 +1,5 @@
 ﻿@model GimnasioCuerpoSano.Models.Cobro
+
 @{
     Layout = null;
     ViewData["Title"] = "Registrar Cobro";
@@ -8,58 +9,134 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Registrar Cobro - Gimnasio Cuerpo Sano</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    @* Si tienes un site.css con estilos generales, puedes mantenerlo aquí *@
+    @* <link rel="stylesheet" href="~/css/site.css" /> *@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🟢 UNIFICADO: Contenedor compacto (400px) 🟢 */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
+        }
+
+        /* 🟢 UNIFICADO: Estilo para la tarjeta/card 🟢 */
+        .card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: none;
+        }
+
+        /* 🟢 UNIFICADO: Título como h2 oscuro y centrado 🟢 */
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Ajustes de formularios */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+            .form-group label {
+                font-weight: 500;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+
+        /* 🟢 UNIFICADO: Estilo de botón para consistencia de fuente 🟢 */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* 🟢 UNIFICADO: Estilos para el Título Principal y Logo (Fuera de la tarjeta) 🟢 */
+        .main-header {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .title-logo {
+                font-size: 0.9rem;
+                color: #6c757d;
+            }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Registrar Cobro</h1>
 
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-            <!-- SELECCIÓN DE MIEMBRO -->
-            <div class="form-group">
-                <label>Socio / Miembro</label>
-                <select asp-for="MiembroId" class="form-control" id="MiembroId">
-                    <option value="">-- Seleccione un miembro --</option>
-                    @foreach (var miembro in ViewBag.Miembros)
-                    {
-                        <option value="@miembro.Id">@($"{miembro.Nombre} {miembro.Apellido}")</option>
-                    }
-                </select>
-                <span asp-validation-for="MiembroId" class="text-danger"></span>
-            </div>
-
-            <!-- MEMBRESÍA (solo lectura) -->
-            <div class="form-group">
-                <label>Tipo de Membresía</label>
-                <input type="text" id="NombreMembresia" class="form-control" readonly placeholder="Se mostrará automáticamente" />
-                <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
-                <span asp-validation-for="MembresiaId" class="text-danger"></span>
-            </div>
-
-            <!-- MÉTODO DE PAGO -->
-            <div class="form-group">
-                <label>Método de Pago</label>
-                <select asp-for="MetodoPago" class="form-control">
-                    <option value="Efectivo">-- Seleccione método --</option>
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Transferencia">Transferencia Bancaria</option>
-                    <option value="Mercado Pago">Mercado Pago</option>
-                    <option value="Tarjeta Crédito">Tarjeta de Crédito</option>
-                    <option value="Tarjeta Débito">Tarjeta de Débito</option>
-                </select>
-                <span asp-validation-for="MetodoPago" class="text-danger"></span>
-            </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success px-4">Registrar</button>
-                <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
-            </div>
-        </form>
+    @* 🟢 AJUSTE DE TAMAÑO DEL LOGO A 100PX PARA CONSISTENCIA CON INDEX 🟢 *@
+    <div class="text-center main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        
     </div>
+
+    <div class="form-container">
+        <div class="card p-4">
+            <h2 class="display-6">@ViewData["Title"]</h2>
+
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="form-group">
+                    <label>Socio / Miembro</label>
+                    <select asp-for="MiembroId" class="form-control" id="MiembroId">
+                        <option value="">-- Seleccione un miembro --</option>
+                        @foreach (var miembro in ViewBag.Miembros)
+                        {
+                            <option value="@miembro.Id">@($"{miembro.Nombre} {miembro.Apellido}")</option>
+                        }
+                    </select>
+                    <span asp-validation-for="MiembroId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Membresía</label>
+                    <input type="text" id="NombreMembresia" class="form-control" readonly placeholder="Se mostrará automáticamente" />
+                    <input type="hidden" asp-for="MembresiaId" id="MembresiaId" />
+                    <span asp-validation-for="MembresiaId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Método de Pago</label>
+                    <select asp-for="MetodoPago" class="form-control">
+                        <option value="">-- Seleccione método --</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                        <option value="Mercado Pago">Mercado Pago</option>
+                        <option value="Tarjeta Crédito">Tarjeta de Crédito</option>
+                        <option value="Tarjeta Débito">Tarjeta de Débito</option>
+                    </select>
+                    <span asp-validation-for="MetodoPago" class="text-danger"></span>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-4">Registrar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver</a>
+                </div>
+            </form>
+        </div> @* Cierre de .card *@
+    </div> @* Cierre de .form-container *@
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
@@ -69,12 +146,10 @@
             var membresiaIdInput = document.getElementById("MembresiaId");
             var nombreMembresiaInput = document.getElementById("NombreMembresia");
 
-            // Limpiar campos mientras se carga
             membresiaIdInput.value = "";
             nombreMembresiaInput.value = "";
 
             if (miembroId) {
-                // USAMOS RAZOR PARA CONSTRUIR LA URL DE FORMA SEGURA
                 var url = '@Url.Action("ObtenerMembresiaPorMiembro", "Cobros")?miembroId=' + miembroId;
 
                 fetch(url)
@@ -83,8 +158,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        if (data && data.membresiaId > 0) { // Validar que se recibió un ID válido
-                            // Asignamos los valores devueltos por el JSON del Controller
+                        if (data && data.membresiaId > 0) {
                             membresiaIdInput.value = data.membresiaId;
                             nombreMembresiaInput.value = data.nombreMembresia || "Sin membresía";
                         } else {
@@ -98,13 +172,8 @@
             }
         });
 
-        // Disparamos el evento 'change' al cargar la página si ya hay un MiembroId seleccionado
-        // (útil si el formulario regresa con error de postback)
         document.getElementById("MiembroId").dispatchEvent(new Event('change'));
 
     </script>
-    }
-    
 </body>
 </html>
-

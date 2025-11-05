@@ -2,7 +2,7 @@
 
 @{
     Layout = null;
-    ViewData["Title"] = "Crear Membresía";
+    ViewData["Title"] = "Crear Membresía"; 
 }
 
 <!DOCTYPE html>
@@ -11,6 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
@@ -25,17 +26,29 @@
             margin: 0 auto;
         }
 
+        /* Estilo para el Logo */
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto; /* Centra horizontalmente y añade espacio abajo */
+            max-width: 100px;
+            height: auto;
+        }
+
         .card {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Sombra mejorada */
             border-radius: 10px;
+            padding: 2rem; /* Añadir padding dentro de la tarjeta */
+            background: white;
         }
 
         .btn {
             border-radius: 8px;
+            /* Se quitó el 'px-4' de los botones en el HTML para que no sean tan anchos */
         }
 
         h2 {
-            color: #0d6efd;
+            color: black; /* Cambiado a negro para estandarizar con otras vistas */
+            font-weight: 600;
             margin-bottom: 1.5rem;
             text-align: center;
         }
@@ -44,6 +57,8 @@
 <body>
     <div class="form-container">
         <div class="card p-4">
+            <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
+
             <h2>Crear Membresía</h2>
             <form asp-action="Create">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -60,9 +75,12 @@
                     <span asp-validation-for="Precio" class="text-danger"></span>
                 </div>
 
-                <div class="text-center">
-                    <input type="submit" value="Crear" class="btn btn-primary px-4 me-2" />
-                    <a asp-action="Index" class="btn btn-secondary px-4">Volver</a>
+              
+                <div class="d-flex justify-content-center mt-4">
+                    @* 1. y 3. Texto cambiado a "Guardar" y se quitó la clase 'px-4' para reducir el ancho. *@
+                    <input type="submit" value="Guardar" class="btn btn-success me-2" style="width: 120px;" />
+                    @* 2. El `d-flex` y `justify-content-center` los pone en línea y centrados. *@
+                    <a asp-action="Index" class="btn btn-secondary" style="width: 120px;">Volver</a>
                 </div>
             </form>
         </div>

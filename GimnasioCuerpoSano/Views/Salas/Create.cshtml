@@ -10,8 +10,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>@ViewData["Title"] - Gimnasio Cuerpo Sano</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -19,66 +21,98 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 1.5rem;
-            text-align: center;
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto 3rem auto;
+            padding: 0 15px;
         }
 
         .card {
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
             padding: 2rem;
             background: white;
-            max-width: 600px;
-            margin: auto;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+            .main-header .page-title {
+                /* TÍTULO PRINCIPAL: Negro y en negrita (estandarizado) */
+                color: #212529;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                font-size: 2rem;
+            }
+
+        h2 {
+            color: #212529;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
         }
 
         .btn {
             border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" style="width: 100px; height: auto;" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="form-container">
         <div class="card">
-            <h2>Crear Sala</h2>
 
             <form asp-action="Create" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">
-                    <label asp-for="Numero" class="form-label"></label>
+                    <label asp-for="Numero" class="form-label fw-bold"></label>
                     <input asp-for="Numero" class="form-control" />
                     <span asp-validation-for="Numero" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label"></label>
+                    <label asp-for="Nombre" class="form-label fw-bold"></label>
                     <input asp-for="Nombre" class="form-control" />
                     <span asp-validation-for="Nombre" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="CapacidadMaxima" class="form-label"></label>
+                    <label asp-for="CapacidadMaxima" class="form-label fw-bold"></label>
                     <input asp-for="CapacidadMaxima" class="form-control" />
                     <span asp-validation-for="CapacidadMaxima" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Ubicacion" class="form-label"></label>
+                    <label asp-for="Ubicacion" class="form-label fw-bold"></label>
                     <input asp-for="Ubicacion" class="form-control" />
                     <span asp-validation-for="Ubicacion" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="TipoSala" class="form-label"></label>
+                    <label asp-for="TipoSala" class="form-label fw-bold"></label>
                     <input asp-for="TipoSala" class="form-control" />
                     <span asp-validation-for="TipoSala" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Disponible" class="form-label"></label>
+                    <label asp-for="Disponible" class="form-label fw-bold"></label>
                     <select asp-for="Disponible" class="form-select">
                         <option value="true" selected>Sí</option>
                         <option value="false">No</option>
@@ -86,18 +120,18 @@
                     <span asp-validation-for="Disponible" class="text-danger"></span>
                 </div>
 
-                <div class="text-center">
-                    <button type="submit" class="btn btn-success px-4">Guardar Sala</button>
-                    <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Volver al listado</a>
+                <div class="form-actions mt-4 pt-3 border-top">
+                   
+                    <button type="submit" class="btn btn-success px-4" style="width: 150px;">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary px-4" style="width: 150px;">Volver</a>
                 </div>
             </form>
         </div>
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @section Scripts {
-        @await Html.PartialAsync("_ValidationScriptsPartial")
-    }
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
-

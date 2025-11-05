@@ -11,48 +11,90 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
-        body {
-            background-color: #f8f9fa;
+                body {
+                        background-color: #f8f9fa;
+                        padding: 2rem;
+                        font-family: 'Segoe UI', sans-serif;
+
+        }
+
+                .form-container {
+                        max-width: 450px; /* Reducimos el ancho para que se vea más centrado y compacto */
+                        margin: 0 auto;
+
+        }
+
+        /* Estilo para el Logo */
+        .header-logo {
+            display: block;
+            margin: 0 auto 15px auto;
+            max-width: 100px;
+            height: auto;
+        }
+
+                .card {
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Sombra consistente */
+                        border-radius: 10px;
+            background: white;
             padding: 2rem;
-            font-family: 'Segoe UI', sans-serif;
+
         }
 
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
+                .btn {
+                        border-radius: 8px;
+
         }
 
-        .card {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-radius: 10px;
+                h2 {
+                        color: #dc3545; /* Rojo para advertencia/eliminación */
+                        margin-bottom: 1.5rem;
+                        text-align: center;
+
         }
 
-        .btn {
-            border-radius: 8px;
+        /* Centrado de la lista de detalles */
+        .details-list {
+            margin-bottom: 2rem;
+            text-align: center; /* Centrar el bloque */
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        h2 {
-            color: #dc3545;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
+            .details-list dt, .details-list dd {
+                padding: 0.5rem 0;
+                margin-bottom: 0;
+                border-bottom: 1px dotted #dee2e6;
+            }
+
+            .details-list dd {
+                font-weight: bold;
+                color: #212529;
+            }
+
+
     </style>
 </head>
 <body>
     <div class="form-container">
-        <div class="card p-4">
-            <h2>Eliminar Membresía</h2>
-            <h5 class="text-center mb-4">¿Está seguro que desea eliminar esta membresía?</h5>
+        <div class="card">
+            @* 🟢 ¡Logo Agregado! 🟢 *@
+            <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
 
-            <dl class="row">
-                <dt class="col-sm-4">Nombre</dt>
-                <dd class="col-sm-8">@Model.Nombre</dd>
+            <h2>@ViewData["Title"]</h2>
+            <h5 class="text-center mb-4 text-danger">¿Está seguro que desea eliminar esta membresía?</h5>
 
-                <dt class="col-sm-4">Precio</dt>
-                <dd class="col-sm-8">$@Model.Precio</dd>
+            @* 📐 Detalle con Centrado Mejorado 📐 *@
+            <dl class="row details-list">
+                <dt class="col-sm-6 text-end">Nombre:</dt>
+                <dd class="col-sm-6 text-start">@Model.Nombre</dd>
+
+                <dt class="col-sm-6 text-end">Precio:</dt>
+                <dd class="col-sm-6 text-start">$@Model.Precio</dd>
             </dl>
 
             <form asp-action="Delete" method="post" class="text-center">
