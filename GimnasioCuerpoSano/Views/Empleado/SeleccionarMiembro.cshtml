@@ -23,40 +23,56 @@
 
         }
 
+
         /* Estilos para el Encabezado (Unificado) */
-        .main-header {
-            text-align: center;
-            margin-top: 1rem;
-            margin-bottom: 2rem;
+                .main-header {
+                        text-align: center;
+                        margin-top: 1rem;
+                        margin-bottom: 2rem;
+
         }
 
-            .main-header .logo {
-                width: 100px;
-                height: auto;
-                margin-bottom: 5px;
-            }
+                    .main-header .logo {
+                            width: 100px;
+                            height: auto;
+                            margin-bottom: 5px;
 
-            .main-header .page-title {
-                color: #212529;
-                font-weight: 700;
-                font-size: 2rem;
-            }
+        }
+
+                    .main-header .page-title {
+                            color: #212529;
+                            font-weight: 700;
+                            font-size: 2rem;
+
+        }
+
 
         /* La tarjeta ahora tiene el ancho y se centra en el body */
                 .card {
-                        **max-width: 400px;
-            ** /* ANCHO AJUSTADO Y COMPACTO APLICADO A LA TARJETA */
-            **margin: 0 auto;
-            ** /* CENTRADO EN LA PÁGINA */
+                        **max-width: 550px;
+            ** /* ANCHO AJUSTADO: 550px */
+                        margin: 0 auto; /* CENTRADO EN LA PÁGINA */
                         border-radius: 12px;
                         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
                         background: white;
                         padding: 20px;
+                        margin-top: 1.5rem; /* Separación de los botones de arriba */
 
         }
 
-        .form-label {
-            font-weight: 600;
+                .form-label {
+                        font-weight: 600;
+
+        }
+
+
+        /* Estilo para centrar los botones globales y ancho acordes */
+                .global-actions {
+                        **max-width: 550px;
+            ** /* Ancho para centrar el grupo de botones, igual que el card */
+                        margin: 0 auto; /* Centrado en la página */
+                        text-align: center;
+
         }
 
 
@@ -70,11 +86,31 @@
     </div>
 
     <div class="container">
+
        
+        <div class="global-actions d-flex justify-content-center gap-3">
+
+            @* 1.1. Botón 'Ver Clases': Usará Javascript para enviar el formulario *@
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('miembroForm').submit()">
+                <i class="bi bi-calendar-check"></i> Ver Clases
+            </button>
+
+            @* 1.2. Botón 'Lista PDF': Se mueve fuera y se ajusta la acción *@
+            <a asp-action="ImprimirInscripciones" target="_blank" class="btn btn-success" id="pdfLink">
+                <i class="bi bi-file-earmark-pdf"></i> Lista de clases inscriptas PDF
+            </a>
+
+            @* 1.3. Botón 'Volver al Menú': Se mueve fuera *@
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Volver
+            </a>
+        </div>
+
+        @* 2. TARJETA DE SELECCIÓN *@
         <div class="card shadow-lg">
-           
             <div class="card-body">
-                <form asp-action="VerClases" method="get">
+                @* El formulario ahora solo contiene el campo de selección *@
+                <form asp-action="VerClases" method="get" id="miembroForm">
                     <div class="mb-4">
                         <label for="miembroSelect" class="form-label">Miembro:</label>
                         <select id="miembroSelect" name="miembroId" class="form-select" required>
@@ -85,24 +121,15 @@
                             }
                         </select>
                     </div>
-
-                    <div class="text-center mt-5 d-flex justify-content-center gap-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-calendar-check"></i> Ver Clases
-                        </button>
-
-                        <a asp-action="ImprimirInscripciones" target="_blank" class="btn btn-success">
-                            <i class="bi bi-file-earmark-pdf"></i> Lista de clases inscriptas PDF
-                        </a>
-
-                        <a href="/" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Volver al Menú
-                        </a>
+                    @* Se mantiene el botón de "Ver Clases" dentro del form ya que es el que se ejecuta al enviar el formulario *@
+                    <div class="d-none">
+                        <button type="submit" id="submitVerClases"></button>
                     </div>
                 </form>
             </div>
         </div>
+
     </div>
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html></html>

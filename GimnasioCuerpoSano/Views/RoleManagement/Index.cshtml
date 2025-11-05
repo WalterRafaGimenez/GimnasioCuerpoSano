@@ -16,7 +16,7 @@
             "Empleado" => "bg-info text-dark",
             "Miembro" => "bg-secondary",
             _ => "bg-secondary", // Color por defecto para 'Sin rol'
-        };
+        };
     }
 
     string GetRoleButtonClass(string role)
@@ -28,7 +28,7 @@
             "Empleado" => "btn-info text-dark",
             "Miembro" => "btn-secondary",
             _ => "btn-primary", // Color por defecto al inicio
-        };
+        };
     }
 }
 
@@ -43,53 +43,67 @@
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 
     <style>
+
         /* ESTILOS DE ESTANDARIZACIÓN */
-        body {
-            background-color: #f8f9fa;
-            padding: 2rem;
-            font-family: 'Segoe UI', sans-serif;
+                body {
+                        background-color: #f8f9fa;
+                        padding: 2rem;
+                        font-family: 'Segoe UI', sans-serif;
+
         }
+
 
         /* AJUSTE DEL ANCHO DEL CARD */
-        .list-container {
-            max-width: 900px; /* Ancho ajustado para centrar y reducir */
-            margin: 0 auto;
-            padding: 0 15px;
+                .list-container {
+                        max-width: 900px; /* Ancho ajustado para centrar y reducir */
+                        margin: 0 auto;
+                        padding: 0 15px;
+
         }
 
-        .card {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-radius: 10px;
+                .card {
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                        border-radius: 10px;
+
         }
 
-        table {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
+                table {
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+
         }
 
-        th {
-            background-color: #0d6efd; /* Azul de Bootstrap Primary */
-            color: white;
+                th {
+                        background-color: #0d6efd; /* Azul de Bootstrap Primary */
+                        color: white;
+
         }
 
-        .btn {
-            border-radius: 8px;
+                .btn {
+                        border-radius: 8px;
+
         }
+
 
         /* 2. Título en negro y centrado, sin afectar el margin-bottom */
-        h2 {
-            color: black;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+                h2 {
+                        color: black;
+                        font-weight: 600;
+                        margin-bottom: 1.5rem;
+
         }
 
+
         /* Estilo para que el botón de Info tenga texto oscuro, como definimos arriba */
-        .btn-info.text-dark {
-            color: #212529 !important;
-            background-color: #0dcaf0;
-            border-color: #0dcaf0;
+                .btn-info.text-dark {
+                        color: #212529 !important;
+                        background-color: #0dcaf0;
+                        border-color: #0dcaf0;
+
         }
+
+
     </style>
 </head>
 <body>
@@ -118,12 +132,16 @@
                     </div>
                 }
 
+                
+                <div class="text-center mb-3">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">Volver al Menú</a>
+                </div>
             </div>
 
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">
-                    @* Quité la clase 'card' de aquí para que solo esté en el contenedor principal *@
+                    
                     <table class="table table-striped table-bordered align-middle text-center">
                         <thead>
                             <tr>
@@ -138,7 +156,7 @@
                                 <tr>
                                     <td>@user.Email</td>
                                     <td>
-                                        @* 3. BADGE DE COLOR DINÁMICO *@
+                                        
                                         @{
                                             var badgeClass = GetRoleBadgeClass(user.CurrentRole);
                                         }
@@ -159,7 +177,7 @@
                                                 @foreach (var role in allRoles)
                                                 {
                                                     <option value="@role"
-                                                            selected="@(user.CurrentRole == role ? "selected" : null)">
+                                                                                          selected="@(user.CurrentRole == role ? "selected" : null)">
                                                         @role
                                                     </option>
                                                 }
@@ -182,10 +200,6 @@
             {
                 <div class="alert alert-info text-center">No hay usuarios registrados para gestionar roles.</div>
             }
-
-            <div class="text-center mt-4">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">Volver al Menú</a>
-            </div>
 
         </div> @* Cierre del card *@
     </div>

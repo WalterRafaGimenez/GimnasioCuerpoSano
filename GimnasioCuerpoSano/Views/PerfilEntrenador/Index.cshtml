@@ -15,31 +15,97 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+                body {
+                        background-color: #f8f9fa;
+                        font-family: 'Segoe UI', sans-serif;
+                        padding: 2rem;
+
+        }
+
+
+        /* Estilos para el Encabezado (Unificado) */
+                .main-header {
+                        text-align: center;
+                        margin-top: 1rem;
+                        margin-bottom: 2rem;
+
+        }
+
+                    .main-header .logo {
+                            width: 100px;
+                            height: auto;
+                            margin-bottom: 5px;
+
+        }
+
+                    .main-header .page-title {
+                            color: #212529;
+                            font-weight: 700;
+                            font-size: 2rem;
+
+        }
+
+
+
+
+
+
+        /* Estilo para centrar el botón Volver arriba del card */
+                .top-action {
+                        max-width: 500px;
+                        margin: 0 auto 1.5rem auto;
+                        text-align: center;
+
+        }
+
+                .card {
+                        max-width: 500px; /* Ancho compacto para detalle */
+                        margin: 0 auto;
+
+        }
+
+
+    </style>
 </head>
 <body class="bg-light">
 
-    <div class="container mt-5">
-        <div class="card shadow-lg p-4 rounded-4 mx-auto" style="max-width: 800px;">
-            <h2 class="text-center text-primary mb-4">
-                <i class="bi bi-person-circle"></i> Mi Perfil
-            </h2>
+    @* 1. AÑADIDO: Logo y Título principal al inicio *@
+    <div class="main-header">
+        <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+
+
+    <div class="container">
+
+        @* 2. MOVIDO: Botón "Volver" arriba de la tarjeta *@
+        <div class="top-action">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Volver
+            </a>
+        </div>
+
+        @* Reducimos el max-width del card a 500px para que se vea más compacto como Mi Perfil Miembro *@
+        <div class="card shadow-lg p-4 rounded-4">
+           
 
             @if (Model != null)
             {
                 <dl class="row">
-                    <dt class="col-sm-4">Nombre:</dt>
+                    <dt class="col-sm-4 font-weight-bold">Nombre:</dt>
                     <dd class="col-sm-8">@Model.Nombre</dd>
 
-                    <dt class="col-sm-4">Apellido:</dt>
+                    <dt class="col-sm-4 font-weight-bold">Apellido:</dt>
                     <dd class="col-sm-8">@Model.Apellido</dd>
 
-                    <dt class="col-sm-4">Correo Electrónico:</dt>
+                    <dt class="col-sm-4 font-weight-bold">Correo Electrónico:</dt>
                     <dd class="col-sm-8">@Model.Email</dd>
 
-                    <dt class="col-sm-4">Teléfono:</dt>
+                    <dt class="col-sm-4 font-weight-bold">Teléfono:</dt>
                     <dd class="col-sm-8">@Model.Telefono</dd>
 
-                    <dt class="col-sm-4">Certificado Vto:</dt>
+                    <dt class="col-sm-4 font-weight-bold">Certificado Vto:</dt>
                     <dd class="col-sm-8">
                         @Model.FechaVencimientoCertificado.Value.ToString("dd/MM/yyyy")
                     </dd>
@@ -50,15 +116,10 @@
                 <p class="text-danger text-center">Error: No se encontró la información del entrenador.</p>
             }
 
-            <div class="text-center mt-4">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
-                    <i class="bi bi-house-door"></i> Volver al Inicio
-                </a>
-            </div>
+            
         </div>
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

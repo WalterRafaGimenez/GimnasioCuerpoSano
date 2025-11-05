@@ -28,12 +28,29 @@ namespace GimnasioCuerpoSano.Models
 
         public string Especialidad { get; set; } = null!;
 
-        // Usar el atributo [Remote]
-        [Remote("VerificarFechaVencimiento", "Entrenadores", ErrorMessage = "La fecha debe ser al menos 30 días a partir de hoy.")]
+        [Required(ErrorMessage = "La fecha de vencimiento del certificado es obligatoria.")]
         [DataType(DataType.Date)]
+        [Display(Name = "Fecha de vencimiento del certificado médico")]
+        [CustomValidation(typeof(Entrenador), nameof(ValidarFechaVencimiento))]
         public DateTime? FechaVencimientoCertificado { get; set; }
 
-       
+        // 🔹 Validación personalizada
+        public static ValidationResult ValidarFechaVencimiento(DateTime? fecha, ValidationContext context)
+        {
+            if (!fecha.HasValue)
+                return new ValidationResult("La fecha de vencimiento del certificado es obligatoria.");
+
+            var hoy = DateTime.Today;
+            var fechaMinima = hoy.AddDays(30);
+
+            if (fecha.Value < fechaMinima)
+                return new ValidationResult("La fecha de vencimiento debe ser al menos 30 días posterior a la fecha actual.");
+
+            return ValidationResult.Success;
+        }
+
+
+
         public string? RutaCertificado { get; set; }
 
         [Required(ErrorMessage = "El DNI es obligatorio")]

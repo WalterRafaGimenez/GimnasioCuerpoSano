@@ -15,79 +15,135 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
-</head>
-<body>
-    <div class="container mt-4">
-        <h2 class="text-center">@ViewData["Title"]</h2>
+    <style>
+                body {
+                        background-color: #f8f9fa;
+                        font-family: 'Segoe UI', sans-serif;
+                        padding: 2rem;
 
-        <div class="d-flex justify-content-center mb-3">
+        }
+
+
+        /* Estilos para el Encabezado (Unificado) */
+                .main-header {
+                        text-align: center;
+                        margin-top: 1rem;
+                        margin-bottom: 2rem;
+
+        }
+
+                .main-header .logo {
+                        width: 100px;
+                        height: auto;
+                        margin-bottom: 5px;
+
+        }
+
+                .main-header .page-title {
+                        color: #212529;
+                        font-weight: 700;
+                        font-size: 2rem;
+
+        }
+
+
+        /* Para centrar y dar margen a la tabla */
+                .container {
+                        max-width: 900px; /* Ancho máximo para mantenerla legible */
+
+        }
+
+
+        /* Estilo del botón 'Volver' */
+                .btn-volver {
+                        margin-bottom: 1.5rem;
+
+        }
+
+
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container mt-4">
+
+        @* AÑADIDO: Logo y Título principal al inicio *@
+        <div class="main-header">
+            <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
+            <h1 class="page-title">@ViewData["Title"]</h1>
+        </div>
+
+        @* BOTÓN REUBICADO: Ahora está entre el título y la tabla *@
+        <div class="d-flex justify-content-center btn-volver">
             <a href="/" class="btn btn-secondary">
-                <i class="bi bi-house-door"></i> Volver
+                <i class="bi bi-arrow-left-circle"></i> Volver
             </a>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Clase / Sala</th>
-                        <th>Día</th>
-                        <th>Horario</th>
-                        <th>Duración (min)</th>
-                        <th>Precio</th>
-                        <th>Entrenador</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
+        <div class="card shadow-lg p-3 rounded-4">
+            @* Agregamos el estilo de tarjeta para el listado consistente *@
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Clase / Sala</th>
+                            <th>Día</th>
+                            <th>Horario</th>
+                            <th>Duración (min)</th>
+                            <th>Precio</th>
+                            <th>Entrenador</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.NombreClase</strong> / @item.SalaNombre
+                                    </td>
+                                    <td>@item.DiaSemana</td>
+                                    <td>@item.HoraInicio.ToString(@"hh\:mm")</td> @* Formato de Horario mejorado *@
+                                    <td>@item.DuracionMinutos</td>
+                                    <td>@item.Precio.ToString("C")</td>
+                                    <td>@item.EntrenadorNombre</td> @* Muestra el nombre completo del entrenador *@
+                                    <td>
+                                        @if (item.EstaInscripto)
+                                        {
+                                            <a asp-controller="Inscripciones" asp-action="Desinscribirse"
+                                                                                asp-route-horarioClaseId="@item.HorarioClaseId"
+                                                                                class="btn btn-danger btn-sm">
+                                                <i class="bi bi-x-circle"></i> Desinscribirse
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Inscripciones" asp-action="Inscribirse"
+                                                                                asp-route-horarioClaseId="@item.HorarioClaseId"
+                                                                                class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle"></i> Inscribirse
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>
-                                    <strong>@item.NombreClase</strong> / @item.SalaNombre
-                                </td>
-                                <td>@item.DiaSemana</td>
-                                <td>@item.HoraInicio.ToString(@"hh\:mm")</td>
-                                <td>@item.DuracionMinutos</td>
-                                <td>@item.Precio.ToString("C")</td>
-                                <td>@item.EntrenadorNombre?.Split(' ').Last()</td> @* Toma solo el apellido *@
-                                <td>
-                                    @if (item.EstaInscripto)
-                                    {
-                                        <a asp-controller="Inscripciones" asp-action="Desinscribirse"
-                                           asp-route-horarioClaseId="@item.HorarioClaseId"
-                                           class="btn btn-danger btn-sm">
-                                            <i class="bi bi-x-circle"></i> Desinscribirse
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a asp-controller="Inscripciones" asp-action="Inscribirse"
-                                           asp-route-horarioClaseId="@item.HorarioClaseId"
-                                           class="btn btn-success btn-sm">
-                                            <i class="bi bi-check-circle"></i> Inscribirse
-                                        </a>
-                                    }
+                                <td colspan="7" class="text-muted text-center py-3">
+                                    No hay clases disponibles por el momento.
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-muted text-center">
-                                No hay clases disponibles por el momento.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
