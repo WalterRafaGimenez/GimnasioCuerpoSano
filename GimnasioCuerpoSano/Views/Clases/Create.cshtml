@@ -110,6 +110,13 @@
                 </div>
 
                 <div class="mb-3">
+                    <label asp-for="CupoMaximo" class="form-label">Cupo máximo</label>
+                    <input asp-for="CupoMaximo" class="form-control" type="number" min="1" max="500" />
+                    <span asp-validation-for="CupoMaximo" class="text-danger"></span>
+                </div>
+
+
+                <div class="mb-3">
                     <label asp-for="EntrenadorId" class="form-label">Entrenador</label>
                     <select asp-for="EntrenadorId" asp-items="ViewBag.Entrenadores" class="form-select">
                         <option value="">-- Seleccione un entrenador --</option>

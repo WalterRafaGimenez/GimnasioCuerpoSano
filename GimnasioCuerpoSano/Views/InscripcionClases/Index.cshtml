@@ -20,6 +20,13 @@
     <div class="container mt-4">
         <h2 class="text-center">@ViewData["Title"]</h2>
         <h5 class="text-center">@ViewBag.Miembro?.Nombre @ViewBag.Miembro?.Apellido</h5>
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success text-center" role="alert">
+                @TempData["Mensaje"]
+            </div>
+        }
+
 
         <form asp-action="Index" method="get" class="d-flex justify-content-center mb-3">
             <input type="text" name="dni" class="form-control" placeholder="Ingrese DNI" required

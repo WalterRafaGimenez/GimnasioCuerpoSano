@@ -66,6 +66,19 @@ namespace GimnasioCuerpoSano.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Clase clase)
         {
+            var sala = await _context.Salas.FirstOrDefaultAsync(s => s.ID_Sala == clase.SalaId);
+
+            // 🔹 Validaciones personalizadas
+            if (sala != null && clase.CupoMaximo > sala.CapacidadMaxima)
+            {
+                ModelState.AddModelError("CupoMaximo", $"El cupo máximo no puede ser mayor que la capacidad de la sala (máximo {sala.CapacidadMaxima}).");
+            }
+
+            if (clase.CupoMaximo <= 0)
+            {
+                ModelState.AddModelError("CupoMaximo", "El cupo máximo debe ser mayor que cero.");
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Entrenadores = new SelectList(_context.Entrenadores, "Id", "Apellido", clase.EntrenadorId);
@@ -99,6 +112,19 @@ namespace GimnasioCuerpoSano.Controllers
         public async Task<IActionResult> Edit(int id, Clase clase)
         {
             if (id != clase.Id) return NotFound();
+
+            var sala = await _context.Salas.FirstOrDefaultAsync(s => s.ID_Sala == clase.SalaId);
+
+            // 🔹 Validaciones personalizadas
+            if (sala != null && clase.CupoMaximo > sala.CapacidadMaxima)
+            {
+                ModelState.AddModelError("CupoMaximo", $"El cupo máximo no puede ser mayor que la capacidad de la sala (máximo {sala.CapacidadMaxima}).");
+            }
+
+            if (clase.CupoMaximo <= 0)
+            {
+                ModelState.AddModelError("CupoMaximo", "El cupo máximo debe ser mayor que cero.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -242,4 +268,3 @@ namespace GimnasioCuerpoSano.Controllers
         }
     }
 }
-

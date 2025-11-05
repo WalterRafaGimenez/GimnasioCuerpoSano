@@ -70,6 +70,7 @@
 
             <div class="card-body">
                 <form asp-action="Create" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
                     <div class="mb-3">
                         <label asp-for="MiembroId" class="form-label">Miembro</label>
                         <select asp-for="MiembroId" asp-items="@(new SelectList(ViewBag.Miembros, "Id", "NombreApellido"))" class="form-select"></select>

@@ -105,6 +105,12 @@
                 <i class="bi bi-x-circle"></i> Volver
             </a>
         </div>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center" role="alert">
+                @TempData["Error"]
+            </div>
+        }
 
         @* 2. TARJETA DE SELECCIÓN *@
         <div class="card shadow-lg">

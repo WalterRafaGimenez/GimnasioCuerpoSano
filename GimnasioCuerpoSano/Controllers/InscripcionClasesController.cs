@@ -36,7 +36,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
 
-    
+
         // GET: InscripcionClases
         public IActionResult Index(string dni)
         {
@@ -152,10 +152,6 @@ namespace GimnasioCuerpoSano.Controllers
 
             return View(viewModel);
         }
-
-
-
-
 
 
 
@@ -298,47 +294,134 @@ namespace GimnasioCuerpoSano.Controllers
             return stream.ToArray();
         }
 
-        public IActionResult Inscribirse(int id, string dni)
+        public async Task<IActionResult> Inscribirse(int horarioClaseId)
         {
-            var miembro = _context.Miembros.FirstOrDefault(m => m.DNI == dni);
-            if (miembro == null) return NotFound();
+            // 1️⃣ Obtener el DNI o email del miembro logueado
+            var dniClaim = User.Claims.FirstOrDefault(c => c.Type == "DNI")?.Value;
+            var email = User.Identity?.Name;
 
-            var inscripcion = _context.InscripcionClase
-                .FirstOrDefault(i => i.HorarioClaseId == id && i.MiembroId == miembro.Id);
+            Miembro? miembro = null;
+
+            if (!string.IsNullOrEmpty(dniClaim))
+                miembro = await _context.Miembros.FirstOrDefaultAsync(m => m.DNI == dniClaim);
+            else if (!string.IsNullOrEmpty(email))
+                miembro = await _context.Miembros.FirstOrDefaultAsync(m => m.Mail == email);
+
+            if (miembro == null)
+                return Unauthorized("Miembro no encontrado en la base de datos.");
+
+            // 2️⃣ Buscar el horario
+            var horario = await _context.HorariosClase
+                .Include(h => h.Clase)
+                .FirstOrDefaultAsync(h => h.Id == horarioClaseId);
+
+            if (horario == null)
+                return NotFound("El horario de clase no existe.");
+
+            // 3️⃣ Verificar si el miembro ya está inscripto
+            var yaInscripto = await _context.InscripcionClase
+                .AnyAsync(i => i.HorarioClaseId == horarioClaseId && i.MiembroId == miembro.Id);
+
+            if (yaInscripto)
+            {
+                TempData["Mensaje"] = "Ya estás inscripto en esta clase.";
+                return RedirectToAction("Index", "ClasesMiembro");
+            }
+
+            // 4️⃣ Verificar cupo disponible
+            var cupoMaximo = horario.Clase?.CupoMaximo ?? 0;
+            var inscriptosActuales = await _context.InscripcionClase
+                .CountAsync(i => i.HorarioClaseId == horarioClaseId);
+
+            if (cupoMaximo > 0 && inscriptosActuales >= cupoMaximo)
+            {
+                TempData["Error"] = "No hay cupos disponibles para esta clase.";
+                return RedirectToAction("Index", "ClasesMiembro");
+            }
+
+            // 5️⃣ Crear nueva inscripción
+            var nuevaInscripcion = new InscripcionClase
+            {
+                HorarioClaseId = horarioClaseId,
+                MiembroId = miembro.Id,
+                Estado = true,
+                FechaInscripcion = DateTime.Now
+            };
+
+            _context.InscripcionClase.Add(nuevaInscripcion);
+            await _context.SaveChangesAsync();
+
+            // 6️⃣ Verificar si con esta inscripción se completó el cupo
+            inscriptosActuales = await _context.InscripcionClase
+                .CountAsync(i => i.HorarioClaseId == horarioClaseId);
+
+            if (cupoMaximo > 0 && inscriptosActuales >= cupoMaximo)
+            {
+                // Si se completó el cupo, deshabilitamos la inscripción
+                horario.SePuedeInscribir = false;
+                _context.Update(horario);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Mensaje"] = "Inscripción realizada correctamente.";
+            return RedirectToAction("Index", "ClasesMiembro");
+        }
+
+
+        public async Task<IActionResult> Desinscribirse(int horarioClaseId)
+        {
+            // 1️⃣ Obtener el miembro logueado (por DNI o email)
+            var dniClaim = User.Claims.FirstOrDefault(c => c.Type == "DNI")?.Value;
+            var email = User.Identity?.Name;
+
+            Miembro? miembro = null;
+
+            if (!string.IsNullOrEmpty(dniClaim))
+                miembro = await _context.Miembros.FirstOrDefaultAsync(m => m.DNI == dniClaim);
+            else if (!string.IsNullOrEmpty(email))
+                miembro = await _context.Miembros.FirstOrDefaultAsync(m => m.Mail == email);
+
+            if (miembro == null)
+                return Unauthorized("Miembro no encontrado en la base de datos.");
+
+            // 2️⃣ Buscar la inscripción correspondiente
+            var inscripcion = await _context.InscripcionClase
+                .FirstOrDefaultAsync(i => i.HorarioClaseId == horarioClaseId && i.MiembroId == miembro.Id);
 
             if (inscripcion == null)
             {
-                _context.InscripcionClase.Add(new InscripcionClase
-                {
-                    HorarioClaseId = id,
-                    MiembroId = miembro.Id,
-                    Estado = true,
-                    FechaInscripcion = DateTime.Now
-                });
-                _context.SaveChanges();
-                TempData["Mensaje"] = "Inscripto correctamente.";
+                TempData["Error"] = "No estás inscripto en esta clase.";
+                return RedirectToAction("Index", "ClasesMiembro");
             }
 
-            return RedirectToAction(nameof(Index), new { dni = dni });
-        }
+            // 3️⃣ Eliminar la inscripción
+            _context.InscripcionClase.Remove(inscripcion);
+            await _context.SaveChangesAsync();
 
-        public IActionResult Desinscribirse(int id, string dni)
-        {
-            var miembro = _context.Miembros.FirstOrDefault(m => m.DNI == dni);
-            if (miembro == null) return NotFound();
+            // 4️⃣ Recalcular cupo actual
+            var horario = await _context.HorariosClase
+                .Include(h => h.Clase)
+                .FirstOrDefaultAsync(h => h.Id == horarioClaseId);
 
-            var inscripcion = _context.InscripcionClase
-                .FirstOrDefault(i => i.HorarioClaseId == id && i.MiembroId == miembro.Id);
-
-            if (inscripcion != null)
+            if (horario != null && horario.Clase != null)
             {
-                _context.InscripcionClase.Remove(inscripcion);
-                _context.SaveChanges();
-                TempData["Mensaje"] = "Inscripción cancelada.";
+                var cupoMaximo = horario.Clase.CupoMaximo;
+                var inscriptosActuales = await _context.InscripcionClase
+                    .CountAsync(i => i.HorarioClaseId == horarioClaseId);
+
+                // Si había estado completo y ahora se liberó un cupo, lo volvemos a habilitar
+                if (cupoMaximo > 0 && inscriptosActuales < cupoMaximo)
+                {
+                    horario.SePuedeInscribir = true;
+                    _context.Update(horario);
+                    await _context.SaveChangesAsync();
+                }
             }
 
-            return RedirectToAction(nameof(Index), new { dni = dni });
+            TempData["Mensaje"] = "Te has desinscripto correctamente.";
+            return RedirectToAction("Index", "ClasesMiembro");
         }
+
 
 
         // =====================================================

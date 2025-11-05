@@ -1,8 +1,8 @@
 ﻿@model GimnasioCuerpoSano.Models.ViewModels.ClasesEmpleadoViewModel
 
 @{
-    Layout = null; // Aseguramos que no se use un layout que pueda interferir con el estilo
-    ViewData["Title"] = "Clases Disponibles";
+    Layout = null;
+    ViewData["Title"] = "Clases Disponibles";
 }
 
 <!DOCTYPE html>
@@ -16,86 +16,64 @@
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <style>
-                                body {
-                                                background-color: #f8f9fa;
-                                                font-family: 'Segoe UI', sans-serif;
-                                                padding: 2rem;
-
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 2rem;
         }
 
-
-
-        /* 🟢 Estilos para el Encabezado (Unificado) 🟢 */
-                        .main-header {
-                                    text-align: center;
-                                    margin-top: 1rem;
-                                    margin-bottom: 2rem;
-
+        .main-header {
+            text-align: center;
+            margin: 1rem 0 2rem;
         }
 
-                            .main-header .logo {
-                                        width: 100px;
-                                        height: auto;
-                                        margin-bottom: 5px;
+            .main-header .logo {
+                width: 100px;
+                margin-bottom: 5px;
+            }
 
+            .main-header .page-title {
+                color: #212529;
+                font-weight: 700;
+                font-size: 2rem;
+            }
+
+        .wide-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
 
-                            .main-header .page-title {
-                                        color: #212529; /* Título oscuro para la consistencia */
-                                        font-weight: 700;
-                                        font-size: 2rem;
-
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white;
+            padding: 20px;
         }
 
-                                .wide-container {
-                                                max-width: 1000px; /* Ancho ajustado para la tabla */
-                                                margin: 0 auto; /* Centrar */
-                                                padding: 0 15px;
-
+        .table-light th {
+            background-color: #e9ecef !important;
+            color: #212529 !important;
+            vertical-align: middle;
+            font-weight: 700;
         }
 
-                                .card {
-                                                border-radius: 12px;
-                                                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-                                                background: white;
-                                                padding: 20px;
-
+        .table td.actions {
+            white-space: nowrap;
         }
 
-                                .table-light th {
-                                                **background-color: #e9ecef !important;
-                        ** /* Cabecera gris clara */
-                                                **color: #212529 !important;
-                        ** /* Letras oscuras */
-                                                vertical-align: middle;
-                        **font-weight: 700;
-                        **                 
-        }
-
-                                .table td.actions {
-                                                white-space: nowrap;
-
-        }
-
-        
         .global-actions {
-            margin: 1.5rem auto; /* Espacio y centrado */
+            margin: 1.5rem auto;
             text-align: center;
         }
-
-
-
     </style>
 </head>
 <body>
-
-   
     <div class="main-header">
         <img src="~/img/Logo.png" alt="Logo Cuerpo Sano" class="logo" />
         <h1 class="page-title">Clases Disponibles para @Model.NombreCompletoMiembro</h1>
     </div>
 
-   
     <div class="wide-container">
         <div class="global-actions">
             <a asp-action="SeleccionarMiembro" class="btn btn-secondary px-4">
@@ -104,12 +82,23 @@
         </div>
     </div>
 
-
     <div class="wide-container">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
+
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Mensaje"]
+            </div>
+        }
+
         <div class="card shadow-lg">
             <div class="card-body">
-
-
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle text-center">
                         <thead class="table-light">
@@ -125,12 +114,12 @@
                         <tbody>
                             @foreach (var h in Model.ClasesDisponibles)
                             {
-                                var yaInscripto = h.Inscripciones?.Any(i => i.MiembroId == Model.MiembroId) ?? false;
+                                var yaInscripto = h.Estado == "Inscripto";
                                 <tr>
-                                    <td>@(h.Clase?.Nombre ?? "Sin clase")</td>
-                                    <td>@(h.Clase?.Entrenador != null ? h.Clase.Entrenador.Nombre + " " + h.Clase.Entrenador.Apellido : "Sin entrenador")</td>
-                                    <td>@h.HoraInicio.ToString(@"hh\:mm")</td>
-                                    <td>@h.HoraFin.ToString(@"hh\:mm")</td>
+                                    <td>@h.NombreClase</td>
+                                    <td>@h.NombreEntrenador</td>
+                                    <td>@h.HoraInicio</td>
+                                    <td>@h.HoraFin</td>
                                     <td>
                                         @if (yaInscripto)
                                         {
@@ -170,9 +159,8 @@
                 </div>
             </div>
         </div>
-
-       
     </div>
+
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

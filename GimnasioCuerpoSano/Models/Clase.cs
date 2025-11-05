@@ -29,6 +29,11 @@ namespace GimnasioCuerpoSano.Models
         public int SalaId { get; set; }
         public Sala? Sala { get; set; }
 
+        [Required(ErrorMessage = "El campo {0} es obligatorio")]
+        [Range(1, 500, ErrorMessage = "El {0} debe ser entre 1 y 500")]
+        public int CupoMaximo { get; set; }
+
+
         // Relación con HorarioClase
         public virtual ICollection<HorarioClase> Horarios { get; set; } = new List<HorarioClase>();
     }

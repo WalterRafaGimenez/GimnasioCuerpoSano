@@ -23,5 +23,7 @@
 
         //Nueva propiedad para el botón Details
         public int? InscripcionId { get; set; }
+        public bool EstaLleno { get; set; }  // true si ya se alcanzó el cupo máximo
+
     }
 }

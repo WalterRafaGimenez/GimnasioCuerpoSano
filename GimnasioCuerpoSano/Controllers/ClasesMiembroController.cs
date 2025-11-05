@@ -1,5 +1,4 @@
 ﻿using GimnasioCuerpoSano.Data;
-using GimnasioCuerpoSano.Models;
 using GimnasioCuerpoSano.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,8 +47,10 @@ namespace GimnasioCuerpoSano.Controllers
                 DuracionMinutos = h.Clase.DuracionMinutos,
                 Precio = h.Clase.Precio,
                 EntrenadorNombre = h.Clase.Entrenador.Nombre,
-                EstaInscripto = h.Inscripciones.Any(i => i.MiembroId == miembro.Id)
+                EstaInscripto = h.Inscripciones.Any(i => i.MiembroId == miembro.Id && i.Estado),
+                EstaLleno = h.Inscripciones.Count(i => i.Estado) >= h.CapacidadMaxima // ✅ usar CapacidadMaxima del horario
             }).ToList();
+
 
             return View(model);
         }

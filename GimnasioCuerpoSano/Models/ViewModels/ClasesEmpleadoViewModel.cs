@@ -4,6 +4,6 @@
     {
         public int MiembroId { get; set; }
         public string NombreCompletoMiembro { get; set; } = string.Empty;
-        public List<HorarioClase> ClasesDisponibles { get; set; } = new List<HorarioClase>();
+        public List<InscripcionClaseViewModel> ClasesDisponibles { get; set; }
     }
 }

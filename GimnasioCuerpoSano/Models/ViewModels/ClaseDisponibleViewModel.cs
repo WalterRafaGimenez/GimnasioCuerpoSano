@@ -11,6 +11,8 @@
         public decimal Precio { get; set; }
         public string? EntrenadorNombre { get; set; }
         public bool EstaInscripto { get; set; } // Para mostrar Inscribirse / Desinscribirse
+        public bool EstaLleno { get; set; }
+
     }
 
 }
