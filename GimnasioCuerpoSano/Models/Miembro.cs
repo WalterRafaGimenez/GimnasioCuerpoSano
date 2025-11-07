@@ -59,6 +59,12 @@ namespace GimnasioCuerpoSano.Models
         [StringLength(12, ErrorMessage = "El DNI no puede superar los 12 caracteres")]
         public string DNI { get; set; } = string.Empty;
 
+        // Nuevo: campo para borrado lógico
+        public bool Activo { get; set; } = true;
+
+        //guardar cuándo se dio de baja
+        public DateTime? FechaBaja { get; set; }
+
         [Required(ErrorMessage = "El tipo de documento es obligatorio")]
         [Display(Name = "Tipo de Documento")]
         public string TipoDocumento { get; set; } = "DNI"; // valores: "DNI" o "DNI Extranjero"

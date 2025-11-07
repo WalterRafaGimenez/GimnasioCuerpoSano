@@ -134,6 +134,13 @@ using (var scope = app.Services.CreateScope())
             foreach (var error in result.Errors)
                 Console.WriteLine($"Error creando admin: {error.Description}");
     }
+    else
+    {
+        // ✅ Nuevo: si existe, aseguramos que tenga el rol
+        if (!await userManager.IsInRoleAsync(adminUser, "Administrador"))
+            await userManager.AddToRoleAsync(adminUser, "Administrador");
+    }
 }
+
 
 await app.RunAsync();

@@ -245,7 +245,7 @@ namespace GimnasioCuerpoSano.Controllers
         }
 
         // =====================================================
-        // GENERAR PDF (QuestPDF) - ABRIR EN NAVEGADOR
+        // GENERAR PDF (QuestPDF) - RECIBO CENTRADO CON LOGO
         // =====================================================
         public async Task<IActionResult> GenerarReciboPdf(int id)
         {
@@ -257,40 +257,66 @@ namespace GimnasioCuerpoSano.Controllers
             if (cobro == null)
                 return NotFound();
 
-            // Crear PDF en memoria
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
             var pdfBytes = Document.Create(container =>
             {
                 container.Page(page =>
                 {
+                    page.Size(PageSizes.A4);
                     page.Margin(40);
+                    page.DefaultTextStyle(x => x.FontSize(12));
+                    page.PageColor(Colors.White);
 
-                    page.Header()
-                        .Text("Gimnasio Cuerpo Sano")
-                        .SemiBold().FontSize(20).AlignCenter().FontColor(Colors.Blue.Medium);
+                    // ============= CABECERA =============
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
 
-                    page.Content()
-                        .PaddingVertical(20)
-                        .Column(column =>
-                        {
-                            column.Item().Text("Comprobante de Pago").Bold().FontSize(16).AlignCenter().FontColor(Colors.Black);
-                            column.Item().Text($"Código: {cobro.Codigo}");
-                            column.Item().Text($"Socio: {cobro.Miembro?.Nombre} {cobro.Miembro?.Apellido}");
-                            column.Item().Text($"Membresía: {cobro.Membresia?.Nombre}");
-                            column.Item().Text($"Método de Pago: {cobro.MetodoPago}");
-                            column.Item().Text($"Monto: ${cobro.Monto:N2}");
-                            column.Item().Text($"Fecha de Pago: {cobro.FechaPago:g}");
-                            column.Item().Text($"Estado: {cobro.Estado}")
-                                  .FontColor(cobro.Estado == "Vencido" ? Colors.Red.Medium : Colors.Green.Medium);
-                            column.Item().PaddingTop(20).Text("Gracias por su pago.").Italic().AlignCenter();
-                        });
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
 
-                    page.Footer()
-                        .AlignCenter()
-                        .Text(x =>
-                        {
-                            x.Span("© Gimnasio Cuerpo Sano ");
-                            x.Span(DateTime.Now.Year.ToString());
-                        });
+                        header.Item().PaddingTop(5).Text("Comprobante de Pago")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+
+                        // Línea divisoria sutil
+                        header.Item().PaddingVertical(10)
+                            .BorderBottom(1).BorderColor(Colors.Grey.Lighten2);
+                    });
+
+                    // ============= CONTENIDO CENTRADO =============
+                    page.Content().PaddingVertical(25).AlignCenter().Column(column =>
+                    {
+                        column.Spacing(8);
+                        column.Item().Text($"Código: {cobro.Codigo}");
+                        column.Item().Text($"Socio: {cobro.Miembro?.Nombre} {cobro.Miembro?.Apellido}");
+                        column.Item().Text($"Membresía: {cobro.Membresia?.Nombre}");
+                        column.Item().Text($"Método de Pago: {cobro.MetodoPago}");
+                        column.Item().Text($"Monto: ${cobro.Monto:N2}");
+                        column.Item().Text($"Fecha de Pago: {cobro.FechaPago:g}");
+                        column.Item().Text($"Estado: {cobro.Estado}")
+                              .FontColor(cobro.Estado == "Vencido" ? Colors.Red.Medium : Colors.Green.Medium)
+                              .Bold();
+
+                        column.Item().PaddingTop(20)
+                              .AlignCenter().Text("Gracias por su pago.")
+                              .Italic().FontColor(Colors.Grey.Darken1);
+                    });
+
+                    // ============= PIE DE PÁGINA =============
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("© Gimnasio Cuerpo Sano ");
+                        x.Span(DateTime.Now.Year.ToString());
+                    });
                 });
             })
             .GeneratePdf();
@@ -298,6 +324,8 @@ namespace GimnasioCuerpoSano.Controllers
             Response.Headers["Content-Disposition"] = $"inline; filename=Recibo_{cobro.Codigo}.pdf";
             return File(pdfBytes, "application/pdf");
         }
+
+
 
         // =====================================================
         // LISTADO DE COBROS EN PDF - ABRIR EN NAVEGADOR

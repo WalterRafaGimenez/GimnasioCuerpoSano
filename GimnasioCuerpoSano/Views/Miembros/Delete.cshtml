@@ -67,7 +67,11 @@
             @* 🟢 ¡Logo Agregado! 🟢 *@
             <img src="/img/Logo.png" alt="Logo Gimnasio Cuerpo Sano" class="header-logo" />
 
-            <h2 class="text-center">¿Eliminar este miembro?</h2>
+            <h2 class="text-center text-danger">¿Desea desactivar este miembro?</h2>
+
+            <div class="alert alert-warning text-center">
+                <strong>Atención:</strong> el miembro no se eliminará del sistema, solo quedará inactivo.
+            </div>
 
             <div class="mb-3">
                 <label class="form-label">Tipo de Documento</label>
@@ -106,8 +110,7 @@
             <form asp-action="Delete" method="post">
                 <input type="hidden" asp-for="Id" />
                 <div class="text-center">
-                    @* Botones correctos: Eliminar (Rojo) y Cancelar (Gris) *@
-                    <button type="submit" class="btn btn-danger px-4">Eliminar</button>
+                    <button type="submit" class="btn btn-danger px-4">Desactivar</button>
                     <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancelar</a>
                 </div>
             </form>

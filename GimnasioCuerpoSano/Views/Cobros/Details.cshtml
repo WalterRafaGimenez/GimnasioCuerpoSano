@@ -105,8 +105,9 @@
 
             <div class="text-center mt-4 pt-3 border-top">
                 @* 🟢 Botones Unificados: Volver (Gris/Secondary) y Generar PDF (Verde/Success) 🟢 *@
+                
+                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success px-4 ms-2" target="_blank">Generar recibo</a>
                 <a asp-action="Index" class="btn btn-secondary px-4">Volver</a>
-                <a asp-action="GenerarReciboPdf" asp-route-id="@Model.Id" class="btn btn-success px-4 ms-2" target="_blank">Generar PDF</a>
             </div>
         </div> @* Cierre de .card *@
     </div> @* Cierre de .form-container *@

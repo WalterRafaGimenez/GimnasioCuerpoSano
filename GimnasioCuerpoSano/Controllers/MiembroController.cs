@@ -51,14 +51,42 @@ namespace GimnasioCuerpoSano.Controllers
 
         // =====================================================
         // LISTADO DE MIEMBROS
+        // - Admin: ve todos (activos e inactivos)
+        // - Empleado: ve solo activos
         // =====================================================
-        public IActionResult Index()
+        [Authorize(Roles = "Administrador,Empleado")]
+        public async Task<IActionResult> Index()
+        {
+            IQueryable<Miembro> miembrosQuery = _context.Miembros
+                .Include(m => m.Membresia)
+                .OrderBy(m => m.Apellido)
+                .ThenBy(m => m.Nombre);
+
+            // Si es solo empleado, muestra activos
+            if (User.IsInRole("Empleado") && !User.IsInRole("Administrador"))
+            {
+                miembrosQuery = miembrosQuery.Where(m => m.Activo);
+            }
+
+            var miembros = await miembrosQuery.ToListAsync();
+            return View(miembros);
+        }
+
+
+
+
+        // =====================================================
+        // LISTADO COMPLETO (solo para ADMIN)
+        // =====================================================
+        [Authorize(Roles = "Administrador")]
+        public IActionResult IndexCompleto()
         {
             var miembros = _context.Miembros
                 .Include(m => m.Membresia)
                 .OrderBy(m => m.Apellido)
                 .ToList();
-            return View(miembros);
+
+            return View("Index", miembros); // usa la misma vista Index
         }
 
         // =====================================================
@@ -301,31 +329,59 @@ namespace GimnasioCuerpoSano.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-
         // =====================================================
-        // ELIMINAR MIEMBRO
+        // ELIMINAR MIEMBRO (BAJA LÓGICA)
         // =====================================================
         public async Task<IActionResult> Delete(int id)
         {
-            var miembro = await _context.Miembros.Include(m => m.Membresia).FirstOrDefaultAsync(m => m.Id == id);
+            var miembro = await _context.Miembros
+                .Include(m => m.Membresia)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (miembro == null) return NotFound();
             return View(miembro);
         }
+
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var miembro = await _context.Miembros.FindAsync(id);
-            if (miembro != null)
-            {
-                _context.Miembros.Remove(miembro);
-                await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Miembro eliminado correctamente.";
-            }
+            if (miembro == null) return NotFound();
+
+            // Marcamos como inactivo (baja lógica)
+            miembro.Activo = false;
+            miembro.FechaBaja = DateTime.Now;
+
+            _context.Update(miembro);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' dado de baja correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
+        // =====================================================
+        // REACTIVAR MIEMBRO (solo ADMIN)
+        // =====================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reactivar(int id)
+        {
+            var miembro = await _context.Miembros.FindAsync(id);
+            if (miembro == null) return NotFound();
+
+            // Reactivamos el miembro
+            miembro.Activo = true;
+            miembro.FechaBaja = null; // limpia la fecha de baja
+
+            _context.Update(miembro);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"Miembro '{miembro.Nombre} {miembro.Apellido}' reactivado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
 
         // =====================================================
         // PERFIL PERSONAL DEL MIEMBRO
@@ -345,11 +401,12 @@ namespace GimnasioCuerpoSano.Controllers
             return View(miembro);
         }
 
-        //IMPRIMIR POR PDF LISTA
+        // IMPRIMIR POR PDF LISTA
         public async Task<IActionResult> ImprimirListado()
         {
             var miembros = await _context.Miembros
                 .Include(m => m.Membresia)
+                .Where(m => m.Activo) // 🔹 Solo miembros activos
                 .OrderBy(m => m.Apellido)
                 .ThenBy(m => m.Nombre)
                 .ToListAsync();
@@ -383,7 +440,7 @@ namespace GimnasioCuerpoSano.Controllers
                             .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
                             .AlignCenter();
 
-                        header.Item().PaddingTop(5).Text("Listado de Miembros")
+                        header.Item().PaddingTop(5).Text("Listado de Miembros Activos")
                             .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
                             .AlignCenter();
                     });
@@ -393,40 +450,34 @@ namespace GimnasioCuerpoSano.Controllers
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                           // columns.ConstantColumn(30);   // ID
                             columns.RelativeColumn(2);    // Nombre
                             columns.RelativeColumn(2);    // Apellido
                             columns.RelativeColumn(2);    // DNI
                             columns.RelativeColumn(3);    // Mail
                             columns.RelativeColumn(2);    // Teléfono
                             columns.RelativeColumn(2);    // Tipo Membresía
-                           // columns.RelativeColumn(1);    // Valor
                         });
 
                         // Encabezado
                         table.Header(header =>
                         {
-                           // header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("ID").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Apellido").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("DNI").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Mail").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Teléfono").Bold();
                             header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Membresía").Bold();
-                           // header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Valor").Bold();
                         });
 
                         // Filas
                         foreach (var m in miembros)
                         {
-                            //table.Cell().Padding(5).Text(m.Id.ToString());
                             table.Cell().Padding(5).Text(m.Nombre);
                             table.Cell().Padding(5).Text(m.Apellido);
                             table.Cell().Padding(5).Text(m.DNI);
                             table.Cell().Padding(5).Text(m.Mail);
                             table.Cell().Padding(5).Text(m.Telefono);
                             table.Cell().Padding(5).Text(m.Membresia?.Nombre ?? "Sin Membresía");
-                           // table.Cell().Padding(5).Text($"${m.ValorMembresia:F2}");
                         }
                     });
 
@@ -440,10 +491,109 @@ namespace GimnasioCuerpoSano.Controllers
             })
             .GeneratePdf();
 
-            // Abrir PDF directamente en el navegador
             Response.Headers.Add("Content-Disposition", "inline; filename=ListadoMiembros.pdf");
             return File(pdfBytes, "application/pdf");
         }
+
+        // IMPRIMIR POR PDF LISTA COMPLETA (ACTIVOS + INACTIVOS)
+        public async Task<IActionResult> ImprimirListadoCompleto()
+        {
+            var miembros = await _context.Miembros
+                .Include(m => m.Membresia)
+                .OrderBy(m => m.Apellido)
+                .ThenBy(m => m.Nombre)
+                .ToListAsync();
+
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "Logo.png");
+            byte[]? logoBytes = System.IO.File.Exists(logoPath)
+                ? System.IO.File.ReadAllBytes(logoPath)
+                : null;
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+                    page.PageColor(Colors.White);
+
+                    // CABECERA
+                    page.Header().Column(header =>
+                    {
+                        if (logoBytes != null)
+                        {
+                            header.Item().AlignCenter().Container().Width(100).Image(logoBytes);
+                        }
+
+                        header.Item().PaddingTop(5).Text("Gimnasio Cuerpo Sano")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Medium)
+                            .AlignCenter();
+
+                        header.Item().PaddingTop(5).Text("Listado Completo de Miembros")
+                            .FontSize(16).Bold().FontColor(Colors.Grey.Darken1)
+                            .AlignCenter();
+                    });
+
+                    // CONTENIDO
+                    page.Content().PaddingVertical(15).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(2); // Nombre
+                            columns.RelativeColumn(2); // Apellido
+                            columns.RelativeColumn(2); // DNI
+                            columns.RelativeColumn(3); // Mail
+                            columns.RelativeColumn(2); // Teléfono
+                            columns.RelativeColumn(2); // Membresía
+                            columns.RelativeColumn(1); // Estado
+                        });
+
+                        // Encabezado
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Apellido").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("DNI").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Mail").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Teléfono").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Membresía").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Estado").Bold();
+                        });
+
+                        // Filas
+                        foreach (var m in miembros)
+                        {
+                            table.Cell().Padding(5).Text(m.Nombre);
+                            table.Cell().Padding(5).Text(m.Apellido);
+                            table.Cell().Padding(5).Text(m.DNI);
+                            table.Cell().Padding(5).Text(m.Mail);
+                            table.Cell().Padding(5).Text(m.Telefono);
+                            table.Cell().Padding(5).Text(m.Membresia?.Nombre ?? "Sin Membresía");
+
+                            var estadoTexto = m.Activo ? "Activo" : "Inactivo";
+                            var estadoColor = m.Activo ? Colors.Green.Darken1 : Colors.Red.Darken1;
+
+                            table.Cell().Padding(5).Text(estadoTexto).FontColor(estadoColor).Bold();
+                        }
+                    });
+
+                    // PIE DE PÁGINA
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Generado el ").FontSize(10);
+                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(10).Bold();
+                    });
+                });
+            })
+            .GeneratePdf();
+
+            Response.Headers.Add("Content-Disposition", "inline; filename=ListadoCompletoMiembros.pdf");
+            return File(pdfBytes, "application/pdf");
+        }
+
 
         // =====================================================
         // GENERAR PDF DEL CARNET DEL MIEMBRO
